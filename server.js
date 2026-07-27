@@ -5,17 +5,28 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3005;
 
-const DATA_FILE = path.join(__dirname, 'data', 'payroll_db.json');
+let DATA_FILE = path.join(__dirname, 'data', 'payroll_db.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PAYROLL_DIR = path.join(__dirname, 'public', 'payroll');
 
 app.use(express.json());
 
+// Health Check endpoint for Render / Cloud deployments
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Helper to read DB
 function readDb() {
   try {
     if (!fs.existsSync(DATA_FILE)) {
-      return { users: [], attendance: [], rosters: [], salarySlips: [] };
+      // Try /tmp fallback if local file not found
+      const tmpFile = path.join('/tmp', 'payroll_db.json');
+      if (fs.existsSync(tmpFile)) {
+        DATA_FILE = tmpFile;
+      } else {
+        return { users: [], attendance: [], rosters: [], salarySlips: [] };
+      }
     }
     const raw = fs.readFileSync(DATA_FILE, 'utf8');
     return JSON.parse(raw);
@@ -35,8 +46,15 @@ function writeDb(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
     return true;
   } catch (err) {
-    console.error('Error writing payroll_db.json:', err);
-    return false;
+    console.error('Error writing payroll_db.json, attempting /tmp fallback:', err);
+    try {
+      DATA_FILE = path.join('/tmp', 'payroll_db.json');
+      fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+      return true;
+    } catch (tmpErr) {
+      console.error('Error writing to /tmp:', tmpErr);
+      return false;
+    }
   }
 }
 
@@ -303,11 +321,10 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
   console.log(`🏗️  Shree RR Trading Company Corporate & Payroll Server`);
-  console.log(`🌐 Main Website: http://localhost:${PORT}`);
-  console.log(`💼 Payroll Portal: http://localhost:${PORT}/payroll`);
-  console.log(`🌐 Subdomain Simulation: http://payroll.localhost:${PORT}`);
+  console.log(`🌐 Server active on port ${PORT}`);
+  console.log(`💼 Payroll Portal: http://0.0.0.0:${PORT}/payroll`);
   console.log(`====================================================`);
 });
