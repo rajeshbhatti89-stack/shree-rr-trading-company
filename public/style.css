@@ -219,7 +219,8 @@ p {
 /* Existing Key Clients Logo Showcase */
 .client-logos-section {
   padding: 60px 0 40px 0;
-  background: var(--bg-white);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-light);
   position: relative;
   z-index: 2;
@@ -438,7 +439,7 @@ section {
   height: 100vh;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.55;
+  opacity: 1.0;
 }
 
 .hero-overlay {
@@ -447,7 +448,7 @@ section {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.4) 0%, rgba(248, 250, 252, 0.92) 85%);
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.25) 0%, rgba(248, 250, 252, 0.75) 85%);
   z-index: 1;
   pointer-events: none;
 }
@@ -617,10 +618,11 @@ section {
   font-size: 12px;
 }
 
-/* Timeline Section (Clean Light Ground) */
+/* Timeline Section (Clean Light Glass Ground) */
 .legacy-section {
   padding: 110px 0;
-  background: var(--bg-light-gray);
+  background: rgba(248, 250, 252, 0.78);
+  backdrop-filter: blur(8px);
 }
 
 .timeline-container {
@@ -692,7 +694,8 @@ section {
 /* Services Spectrum */
 .services-section {
   padding: 110px 0;
-  background: var(--bg-white);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(8px);
 }
 
 .services-grid {
@@ -754,7 +757,8 @@ section {
 /* Rental Fleet Catalog */
 .rentals-section {
   padding: 110px 0;
-  background: var(--bg-slate);
+  background: rgba(241, 245, 249, 0.82);
+  backdrop-filter: blur(8px);
 }
 
 .filter-tabs {
