@@ -85,11 +85,17 @@ const MACHINERY_SPECS = {
   }
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+function start3DEngines() {
   initHero3DMatrix();
   initViewer3DEngine();
   setupHUDControls();
-});
+}
+
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  setTimeout(start3DEngines, 10);
+} else {
+  document.addEventListener("DOMContentLoaded", start3DEngines);
+}
 
 /* ==========================================
    1. HERO BACKGROUND 3D CAT EXCAVATOR ENGINE (PEACHWEB SCROLLING)
@@ -212,6 +218,29 @@ function initHero3DMatrix() {
   catExcavatorGroup.scale.set(1.15, 1.15, 1.15);
   ThreeEngine.heroScene.add(catExcavatorGroup);
 
+  // 4. Floating 3D Glowing Dust & Particle Field (PeachWeb 3D Style)
+  const particleGeo = new THREE.BufferGeometry();
+  const particleCount = 250;
+  const posArray = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount * 3; i += 3) {
+    posArray[i] = (Math.random() - 0.5) * 50;
+    posArray[i + 1] = (Math.random() - 0.5) * 35 + 5;
+    posArray[i + 2] = (Math.random() - 0.5) * 50;
+  }
+
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+  const particleMat = new THREE.PointsMaterial({
+    size: 0.4,
+    color: 0xFF6B00,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending
+  });
+
+  const particleMesh = new THREE.Points(particleGeo, particleMat);
+  ThreeEngine.heroScene.add(particleMesh);
+
   // PeachWeb.io Dynamic Scrollytelling Path Engine
   let currentScrollProgress = 0;
 
@@ -229,12 +258,16 @@ function initHero3DMatrix() {
     const targetXRotation = Math.sin(currentScrollProgress * Math.PI * 2) * 0.12;
     const targetZPosition = Math.cos(currentScrollProgress * Math.PI * 1.5) * 3.0;
 
-    catExcavatorGroup.rotation.y += (targetYRotation - catExcavatorGroup.rotation.y) * 0.06 + 0.002;
+    catExcavatorGroup.rotation.y += (targetYRotation - catExcavatorGroup.rotation.y) * 0.06 + 0.003;
     catExcavatorGroup.rotation.x += (targetXRotation - catExcavatorGroup.rotation.x) * 0.06;
     catExcavatorGroup.position.z += (targetZPosition - catExcavatorGroup.position.z) * 0.06;
 
     // Hydraulic Boom Arm Digging Motion
     boomGroup.rotation.z = Math.sin(currentScrollProgress * Math.PI * 4) * 0.15;
+
+    // Animate 3D Particles
+    particleMesh.rotation.y += 0.0015;
+    particleMesh.rotation.x += 0.0008;
 
     ThreeEngine.heroCamera.lookAt(0, 2.5, 0);
     ThreeEngine.heroRenderer.render(ThreeEngine.heroScene, ThreeEngine.heroCamera);
