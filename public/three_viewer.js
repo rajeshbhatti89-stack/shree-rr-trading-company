@@ -98,7 +98,7 @@ if (document.readyState === "complete" || document.readyState === "interactive")
 }
 
 /* ==========================================
-   1. HERO BACKGROUND 3D LOGO CAT EXCAVATOR ENGINE (STRICT LOGO PALETTE)
+   1. HERO BACKGROUND 3D ENGINE (FLOATING DYNAMIC PARTICLES & RINGS)
    ========================================== */
 function initHero3DMatrix() {
   const container = document.getElementById("hero-3d-canvas");
@@ -110,7 +110,7 @@ function initHero3DMatrix() {
   // Scene, Camera, Renderer
   ThreeEngine.heroScene = new THREE.Scene();
   ThreeEngine.heroCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-  ThreeEngine.heroCamera.position.set(16, 10, 22);
+  ThreeEngine.heroCamera.position.set(0, 10, 30);
 
   ThreeEngine.heroRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
   ThreeEngine.heroRenderer.setSize(width, height);
@@ -122,210 +122,56 @@ function initHero3DMatrix() {
   ThreeEngine.heroRenderer.domElement.style.height = "100%";
   container.appendChild(ThreeEngine.heroRenderer.domElement);
 
-  // High-Fidelity Studio Lighting Setup (Strict Logo Palette Rim Glow)
+  // Studio Lighting
   const ambient = new THREE.AmbientLight(0xffffff, 1.4);
   ThreeEngine.heroScene.add(ambient);
 
-  const sunLight = new THREE.DirectionalLight(0xFFF7ED, 2.8);
-  sunLight.position.set(30, 45, 30);
-  ThreeEngine.heroScene.add(sunLight);
-
-  const logoOrangeRim = new THREE.DirectionalLight(0xFF6B00, 2.8);
-  logoOrangeRim.position.set(-25, 25, -30);
-  ThreeEngine.heroScene.add(logoOrangeRim);
+  const orangeRim = new THREE.DirectionalLight(0xFF6B00, 2.8);
+  orangeRim.position.set(-25, 25, -30);
+  ThreeEngine.heroScene.add(orangeRim);
 
   const navyFillLight = new THREE.DirectionalLight(0x0B1936, 1.5);
   navyFillLight.position.set(20, -10, 20);
   ThreeEngine.heroScene.add(navyFillLight);
 
-  // Build CAD-Precision Photorealistic 3D CAT Excavator Group
-  const catExcavatorGroup = new THREE.Group();
+  // 1. Ambient 3D Geometric Ring Accents (Strict Logo Palette)
+  const ringsGroup = new THREE.Group();
 
-  // Photorealistic PBR Materials (Logo Palette + Industrial CAD Steel)
-  const catOrangePaint = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.35, roughness: 0.18 });
-  const catNavyPaint = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.82, roughness: 0.22 });
-  const heavySteelMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9, roughness: 0.35 });
-  const chromeRodMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.98, roughness: 0.04 });
-  const rubberTreadMat = new THREE.MeshStandardMaterial({ color: 0x0F172A, metalness: 0.2, roughness: 0.9 });
-  const cabGlassMat = new THREE.MeshStandardMaterial({ color: 0x00D2FF, opacity: 0.45, transparent: true, metalness: 0.95, roughness: 0.05 });
-  const lampGlowMat = new THREE.MeshStandardMaterial({ color: 0xFFFBEB, emissive: 0xFFD166, emissiveIntensity: 0.8 });
+  const orangeRingMat = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.5, roughness: 0.2, wireframe: true });
+  const navyRingMat = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.8, roughness: 0.2, wireframe: true });
 
-  // 1. CRAWLER UNDERCARRIAGE (Realistic Track Shoes, Idlers, Sprockets & Roller Frames)
-  const trackGroup = new THREE.Group();
+  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(12, 0.15, 16, 100), orangeRingMat);
+  ring1.rotation.x = Math.PI / 3;
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(18, 0.2, 16, 100), navyRingMat);
+  ring2.rotation.y = Math.PI / 4;
 
-  [-2.6, 2.6].forEach(zPos => {
-    // Track Frame Side Members
-    const sideFrame = new THREE.Mesh(new THREE.BoxGeometry(9.6, 1.4, 1.0), catNavyPaint);
-    sideFrame.position.set(0, 0.8, zPos);
-    trackGroup.add(sideFrame);
+  ringsGroup.add(ring1, ring2);
+  ThreeEngine.heroScene.add(ringsGroup);
 
-    // Drive Sprocket (Rear) & Front Idler (Front)
-    const rearSprocket = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 1.1, 20), heavySteelMat);
-    rearSprocket.rotation.x = Math.PI / 2;
-    rearSprocket.position.set(-4.2, 0.95, zPos);
-
-    const frontIdler = rearSprocket.clone();
-    frontIdler.position.set(4.2, 0.95, zPos);
-    trackGroup.add(rearSprocket, frontIdler);
-
-    // Bottom Rollers (5 rollers per track)
-    for (let r = -3.0; r <= 3.0; r += 1.5) {
-      const roller = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.05, 12), heavySteelMat);
-      roller.rotation.x = Math.PI / 2;
-      roller.position.set(r, 0.35, zPos);
-      trackGroup.add(roller);
-    }
-
-    // Individual Track Shoes (Looping tread loop)
-    const shoeGeo = new THREE.BoxGeometry(0.55, 0.12, 1.35);
-    for (let i = 0; i < 28; i++) {
-      const angle = (i / 28) * Math.PI * 2;
-      const x = Math.cos(angle) * 4.2;
-      const y = Math.sin(angle) * 0.95 + 0.95;
-      const shoe = new THREE.Mesh(shoeGeo, rubberTreadMat);
-      shoe.position.set(x, y, zPos);
-      shoe.rotation.z = angle + Math.PI / 2;
-      trackGroup.add(shoe);
-    }
-  });
-
-  // Center X-Chassis & Swing Bearing
-  const centerCarbody = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.6, 1.1, 28), catNavyPaint);
-  centerCarbody.position.set(0, 1.45, 0);
-
-  const swingBearing = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 0.25, 32), heavySteelMat);
-  swingBearing.position.set(0, 2.05, 0);
-
-  trackGroup.add(centerCarbody, swingBearing);
-  catExcavatorGroup.add(trackGroup);
-
-  // 2. REVOLVING HOUSE & CANOPY (Engine Hood, Counterweight, Exhaust & ROPS/FOPS Cab)
-  const houseGroup = new THREE.Group();
-
-  // Lower Main Platform Frame
-  const platformDeck = new THREE.Mesh(new THREE.BoxGeometry(6.6, 0.4, 4.8), heavySteelMat);
-  platformDeck.position.set(-0.3, 2.35, 0);
-
-  // Engine Enclosure Body (Cat Navy)
-  const engineBody = new THREE.Mesh(new THREE.BoxGeometry(5.8, 2.6, 4.4), catNavyPaint);
-  engineBody.position.set(-0.5, 3.85, -0.1);
-
-  // Sloped Heavy Counterweight (Cat Orange with Logo Steel Accent)
-  const counterWeight = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.8, 4.5), catOrangePaint);
-  counterWeight.position.set(-4.0, 3.85, 0);
-
-  const logoBadgePlate = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 3.6), catNavyPaint);
-  logoBadgePlate.position.set(-5.15, 3.85, 0);
-
-  // Exhaust Stack & Air Cleaner
-  const exhaustPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 1.8, 16), heavySteelMat);
-  exhaustPipe.position.set(-2.8, 5.8, -1.5);
-
-  const exhaustCap = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.4, 12), heavySteelMat);
-  exhaustCap.position.set(-2.8, 6.7, -1.5);
-
-  const airFilter = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.8, 16), catNavyPaint);
-  airFilter.position.set(-1.8, 5.5, -1.5);
-
-  // Operator Cab (ROPS Steel Structure with Tinted Glass & Roof Spotlights)
-  const cabFrame = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.8, 2.2), catNavyPaint);
-  cabFrame.position.set(0.9, 4.05, 1.35);
-
-  const cabGlass = new THREE.Mesh(new THREE.BoxGeometry(2.85, 2.55, 2.05), cabGlassMat);
-  cabGlass.position.set(0.9, 4.05, 1.38);
-
-  const cabRoof = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 2.4), catOrangePaint);
-  cabRoof.position.set(0.9, 5.55, 1.35);
-
-  // Cab Work Lights
-  const lightL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.3), lampGlowMat);
-  lightL.position.set(2.4, 5.3, 2.1);
-  const lightR = lightL.clone();
-  lightR.position.z = 0.6;
-
-  houseGroup.add(platformDeck, engineBody, counterWeight, logoBadgePlate, exhaustPipe, exhaustCap, airFilter, cabFrame, cabGlass, cabRoof, lightL, lightR);
-  catExcavatorGroup.add(houseGroup);
-
-  // 3. HEAVY BOOM, STICK & HYDRAULIC DIGGING ASSEMBLY
-  const boomGroup = new THREE.Group();
-
-  // Boom Main Pivot Bracket
-  const boomFoot = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 16), heavySteelMat);
-  boomFoot.rotation.x = Math.PI / 2;
-  boomFoot.position.set(1.8, 3.8, 0);
-  boomGroup.add(boomFoot);
-
-  // Main Box Boom Arm (Curved High-Strength Welded Steel)
-  const boomMesh = new THREE.Mesh(new THREE.BoxGeometry(8.4, 1.2, 1.1), catNavyPaint);
-  boomMesh.position.set(5.2, 5.4, 0);
-  boomMesh.rotation.z = 0.48;
-
-  // Stick Arm
-  const stickMesh = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.95, 0.9), catNavyPaint);
-  stickMesh.position.set(9.4, 6.2, 0);
-  stickMesh.rotation.z = -0.75;
-
-  // Hydraulic Cylinders (Dual Main Boom Cylinders + Stick Cylinder)
-  const boomCylinderL = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 4.8, 16), heavySteelMat);
-  boomCylinderL.position.set(3.4, 3.8, 0.65);
-  boomCylinderL.rotation.z = 0.82;
-
-  const boomRodL = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 4.2, 16), chromeRodMat);
-  boomRodL.position.set(5.0, 5.3, 0.65);
-  boomRodL.rotation.z = 0.82;
-
-  const boomCylinderR = boomCylinderL.clone();
-  boomCylinderR.position.z = -0.65;
-  const boomRodR = boomRodL.clone();
-  boomRodR.position.z = -0.65;
-
-  boomGroup.add(boomMesh, stickMesh, boomCylinderL, boomRodL, boomCylinderR, boomRodR);
-
-  // Heavy Excavator Bucket (Cat Orange #FF6B00 Shell with 5 Forged Teeth)
-  const bucketGroup = new THREE.Group();
-  const bucketShell = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.4), catOrangePaint);
-  bucketShell.position.set(11.2, 3.0, 0);
-  bucketShell.rotation.z = Math.PI / 3.8;
-
-  for (let z = -0.95; z <= 0.95; z += 0.48) {
-    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.8, 4), heavySteelMat);
-    tooth.rotation.z = -Math.PI / 2.2;
-    tooth.position.set(12.4, 2.0, z);
-    bucketGroup.add(tooth);
-  }
-
-  bucketGroup.add(bucketShell);
-  boomGroup.add(bucketGroup);
-  catExcavatorGroup.add(boomGroup);
-
-  catExcavatorGroup.position.set(0, -1.2, 0);
-  catExcavatorGroup.scale.set(1.1, 1.1, 1.1);
-  ThreeEngine.heroScene.add(catExcavatorGroup);
-
-  // 4. Floating 3D Glowing Dust & Particle Field (PeachWeb 3D Style)
+  // 2. Floating 3D Glowing Dust & Particle Field (400 Particles)
   const particleGeo = new THREE.BufferGeometry();
-  const particleCount = 250;
+  const particleCount = 400;
   const posArray = new Float32Array(particleCount * 3);
 
   for (let i = 0; i < particleCount * 3; i += 3) {
-    posArray[i] = (Math.random() - 0.5) * 50;
-    posArray[i + 1] = (Math.random() - 0.5) * 35 + 5;
-    posArray[i + 2] = (Math.random() - 0.5) * 50;
+    posArray[i] = (Math.random() - 0.5) * 60;
+    posArray[i + 1] = (Math.random() - 0.5) * 40;
+    posArray[i + 2] = (Math.random() - 0.5) * 60;
   }
 
   particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
   const particleMat = new THREE.PointsMaterial({
-    size: 0.4,
+    size: 0.45,
     color: 0xFF6B00,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.85,
     blending: THREE.AdditiveBlending
   });
 
   const particleMesh = new THREE.Points(particleGeo, particleMat);
   ThreeEngine.heroScene.add(particleMesh);
 
-  // PeachWeb.io Dynamic Scrollytelling Path Engine
+  // PeachWeb.io Dynamic Scrollytelling Engine
   let currentScrollProgress = 0;
 
   function onScrollUpdate() {
@@ -337,23 +183,17 @@ function initHero3DMatrix() {
   function animateHero() {
     requestAnimationFrame(animateHero);
     
-    // Smooth Interpolated 3D Excavator Motion & Rotation on Scroll
-    const targetYRotation = currentScrollProgress * Math.PI * 2.5;
-    const targetXRotation = Math.sin(currentScrollProgress * Math.PI * 2) * 0.12;
-    const targetZPosition = Math.cos(currentScrollProgress * Math.PI * 1.5) * 3.0;
+    // Smooth Camera & 3D Ring Motion on Scroll
+    const targetYAngle = currentScrollProgress * Math.PI * 2;
+    const targetYPos = 10 - currentScrollProgress * 8;
 
-    catExcavatorGroup.rotation.y += (targetYRotation - catExcavatorGroup.rotation.y) * 0.06 + 0.003;
-    catExcavatorGroup.rotation.x += (targetXRotation - catExcavatorGroup.rotation.x) * 0.06;
-    catExcavatorGroup.position.z += (targetZPosition - catExcavatorGroup.position.z) * 0.06;
+    ringsGroup.rotation.y += 0.003 + (targetYAngle - ringsGroup.rotation.y) * 0.04;
+    ringsGroup.rotation.x = Math.sin(currentScrollProgress * Math.PI * 2) * 0.4;
+    particleMesh.rotation.y += 0.001;
 
-    // Hydraulic Boom Arm Digging Motion
-    boomGroup.rotation.z = Math.sin(currentScrollProgress * Math.PI * 4) * 0.15;
+    ThreeEngine.heroCamera.position.y += (targetYPos - ThreeEngine.heroCamera.position.y) * 0.05;
+    ThreeEngine.heroCamera.lookAt(0, 0, 0);
 
-    // Animate 3D Particles
-    particleMesh.rotation.y += 0.0015;
-    particleMesh.rotation.x += 0.0008;
-
-    ThreeEngine.heroCamera.lookAt(0, 2.5, 0);
     ThreeEngine.heroRenderer.render(ThreeEngine.heroScene, ThreeEngine.heroCamera);
   }
   animateHero();
