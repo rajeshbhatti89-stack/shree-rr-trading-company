@@ -1,0 +1,13 @@
+{
+  "name": "shree-rr-trading-company-3d-website",
+  "version": "1.0.0",
+  "description": "Shree RR Trading Company 3D Website - 40+ Yrs Mining O&M, Heavy Fleets & Infra",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

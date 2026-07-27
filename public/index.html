@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shree RR Trading Company | 40+ Years Industrial Mining O&M, Heavy Fleets & Infra</title>
+  <meta name="description" content="Shree RR Trading Company - 40+ years of industrial leadership in Mining O&M, Heavy Earth Moving Machinery (HEMM), Tippers, Heavy Fleet Garage O&M, Machine Rentals (Bobcats, JCBs), and Government Road Contracts. Premier partner to Adani ACC & Ambuja Cements.">
+  <meta name="keywords" content="Shree RR Trading Company, Mining O&M, Heavy Fleet Garage O&M, Adani ACC, Ambuja Cement, HEMM, Tippers, Bobcat rental, JCB rental, Road Construction, Heavy Equipment Lease">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Three.js, OrbitControls & GLTFLoader from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-logo">
+        <div class="logo-icon"><i class="fa-solid fa-truck-monster"></i></div>
+        <div class="logo-text">
+          <span class="company-name">SHREE RR</span>
+          <span class="company-sub">TRADING COMPANY</span>
+        </div>
+      </a>
+
+      <nav class="nav-menu" id="nav-menu">
+        <a href="#hero" class="nav-link active">Home</a>
+        <a href="#legacy" class="nav-link">40+ Yrs Legacy</a>
+        <a href="#contracts" class="nav-link">Key Contracts</a>
+        <a href="#viewer-3d" class="nav-link">Real Site Fleet Inspector</a>
+        <a href="#services" class="nav-link">Services & O&M</a>
+        <a href="#rentals" class="nav-link">Equipment Rental</a>
+        <a href="#calculator" class="nav-link">Cost Estimator</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn btn-outline" id="wireframe-toggle-btn" title="Toggle 3D Wireframe View">
+          <i class="fa-solid fa-cubes"></i> <span>3D Wireframe</span>
+        </button>
+        <button class="btn btn-primary" onclick="openQuoteModal()">
+          <i class="fa-solid fa-paper-plane"></i> <span>Get Quote</span>
+        </button>
+        <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Navigation">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section with 3D Background Matrix -->
+  <section class="hero-section" id="hero">
+    <div id="hero-3d-canvas" class="hero-canvas-container"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <div class="badge-pill">
+        <i class="fa-solid fa-award"></i> 40+ Years of Industrial Excellence (Est. 1984)
+      </div>
+      <h1 class="hero-title">
+        POWERING HEAVY MINING, <br>
+        <span class="text-gradient">FLEET O&M & INFRASTRUCTURE</span>
+      </h1>
+      <p class="hero-subtitle">
+        Trusted contract partner for <strong>Adani ACC</strong> & <strong>Ambuja Cements</strong>. Specialists in heavy earth moving machinery (HEMM), tipper fleet deployment, precision garage O&M, industrial machinery rentals (Bobcats, JCBs), and government highway contracts.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#viewer-3d" class="btn btn-lg btn-primary glow-effect">
+          <i class="fa-solid fa-camera-retro"></i> Explore Real Site Machinery Fleet
+        </a>
+        <a href="#calculator" class="btn btn-lg btn-secondary">
+          <i class="fa-solid fa-calculator"></i> Calculate Rental Cost
+        </a>
+        <a href="https://wa.me/919999999999?text=Hello%20Shree%20RR%20Trading%20Company,%20I%20would%20like%20to%20inquire%20about%20your%20Mining%20O%26M%20and%20Heavy%20Equipment%20Services." target="_blank" class="btn btn-lg btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> Direct WhatsApp
+        </a>
+      </div>
+
+      <!-- Quick Metrics Bar -->
+      <div class="hero-metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <div class="metric-info">
+            <span class="metric-number" data-target="40">40+</span>
+            <span class="metric-label">Years Expertise</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-truck-pickup"></i></div>
+          <div class="metric-info">
+            <span class="metric-number" data-target="500">500+</span>
+            <span class="metric-label">Tippers & HEMM</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-handshake-angle"></i></div>
+          <div class="metric-info">
+            <span class="metric-number" data-target="100">100%</span>
+            <span class="metric-label">Adani & Ambuja SLA Compliance</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon"><i class="fa-solid fa-road"></i></div>
+          <div class="metric-info">
+            <span class="metric-number" data-target="1200">1,200+</span>
+            <span class="metric-label">Km Govt Roads Built</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contract & Strategic Partners Bar -->
+  <section class="partners-section" id="contracts">
+    <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag">STRATEGIC CONTRACT PARTNERS</span>
+        <h2 class="section-title">Trusted By Global Mining & Infra Giants</h2>
+        <p class="section-desc">Executing high-volume mining overburden contracts, site garage O&M, and government infrastructure projects.</p>
+      </div>
+
+      <div class="partners-grid">
+        <div class="partner-card glow-card">
+          <div class="partner-badge">LONG-TERM MINING O&M</div>
+          <div class="partner-logo">
+            <i class="fa-solid fa-industry"></i> ADANI ACC
+          </div>
+          <h3>Adani ACC Cement Works</h3>
+          <p>Full-scope mining operations, limestone extraction, overburden haulage with 100+ tippers, and site garage maintenance.</p>
+          <div class="partner-tags">
+            <span><i class="fa-solid fa-check"></i> HEMM Operations</span>
+            <span><i class="fa-solid fa-check"></i> Garage O&M</span>
+            <span><i class="fa-solid fa-check"></i> Tipper Fleet</span>
+          </div>
+        </div>
+
+        <div class="partner-card glow-card">
+          <div class="partner-badge">FLAGSHIP CONTRACT</div>
+          <div class="partner-logo">
+            <i class="fa-solid fa-mountain"></i> AMBUJA CEMENT
+          </div>
+          <h3>Ambuja Cements Operations</h3>
+          <p>Heavy quarry excavation, crushing feed logistics, dumper breakdown teams, and zero-downtime equipment availability.</p>
+          <div class="partner-tags">
+            <span><i class="fa-solid fa-check"></i> Excavator Deployment</span>
+            <span><i class="fa-solid fa-check"></i> Preventive Maintenance</span>
+            <span><i class="fa-solid fa-check"></i> 24/7 Operations</span>
+          </div>
+        </div>
+
+        <div class="partner-card glow-card">
+          <div class="partner-badge">PUBLIC INFRASTRUCTURE</div>
+          <div class="partner-logo">
+            <i class="fa-solid fa-road-bridge"></i> GOVT ROAD CONTRACTS
+          </div>
+          <h3>State & National Highways</h3>
+          <p>Government road construction, asphalt paving, heavy grader leveling, earthworks, and sub-base compaction contracts.</p>
+          <div class="partner-tags">
+            <span><i class="fa-solid fa-check"></i> Highway Paving</span>
+            <span><i class="fa-solid fa-check"></i> Heavy Rollers</span>
+            <span><i class="fa-solid fa-check"></i> Bridge Approaches</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Real Operational Site Machinery & Interactive Inspector Section -->
+  <section class="viewer-3d-section" id="viewer-3d">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">REAL OPERATIONAL FLEET SHOWCASE</span>
+        <h2 class="section-title">Actual Heavy Machinery in Operation</h2>
+        <p class="section-desc">View actual operational site photography and CAD-grade 3D mechanical models deployed across Adani ACC, Ambuja Cement, and Government Road sites.</p>
+      </div>
+
+      <div class="viewer-3d-wrapper">
+        <!-- Machinery Selector Bar -->
+        <div class="machinery-selector-bar">
+          <div class="selector-group">
+            <button class="selector-btn active" data-model="tipper">
+              <i class="fa-solid fa-truck-field"></i> Heavy Tipper Truck (35T)
+            </button>
+            <button class="selector-btn" data-model="excavator">
+              <i class="fa-solid fa-bore-hole"></i> Mining HEMM Excavator
+            </button>
+            <button class="selector-btn" data-model="bobcat">
+              <i class="fa-solid fa-tractor"></i> Bobcat Skid Loader
+            </button>
+            <button class="selector-btn" data-model="jcb">
+              <i class="fa-solid fa-snowplow"></i> JCB Backhoe Loader
+            </button>
+            <button class="selector-btn" data-model="roller">
+              <i class="fa-solid fa-car-side"></i> Govt Road Asphalt Roller
+            </button>
+          </div>
+
+          <div class="view-mode-toggle">
+            <button class="mode-btn active" id="mode-photo-btn">
+              <i class="fa-solid fa-image"></i> Real Site Photo
+            </button>
+            <button class="mode-btn" id="mode-3d-btn">
+              <i class="fa-solid fa-cube"></i> Interactive 3D CAD
+            </button>
+          </div>
+        </div>
+
+        <div class="viewer-3d-main">
+          <!-- Real Site Photo View Mount -->
+          <div id="real-photo-view" class="real-photo-container">
+            <img id="real-machine-img" src="images/tipper.png" alt="Real Heavy Machine Operational Site Photo">
+            <div class="photo-overlay-badge">
+              <span id="photo-contract-tag"><i class="fa-solid fa-location-dot"></i> ADANI ACC LIMESTONE MINE PIT</span>
+            </div>
+          </div>
+
+          <!-- 3D Canvas Mount Point -->
+          <div id="equipment-3d-canvas" class="canvas-3d" style="display: none;"></div>
+
+          <!-- Floating 3D HUD Controls -->
+          <div class="hud-overlay" id="hud-overlay-controls" style="display: none;">
+            <div class="hud-controls">
+              <button class="hud-btn" id="hud-rotate" title="Auto Rotate Camera">
+                <i class="fa-solid fa-rotate"></i> <span>Auto Orbit</span>
+              </button>
+              <button class="hud-btn" id="hud-wireframe" title="Toggle Wireframe Structural View">
+                <i class="fa-solid fa-vector-square"></i> <span>Wireframe</span>
+              </button>
+              <button class="hud-btn" id="hud-reset" title="Reset View">
+                <i class="fa-solid fa-arrows-to-dot"></i> <span>Reset View</span>
+              </button>
+            </div>
+            
+            <div class="hud-hint">
+              <i class="fa-solid fa-hand-pointer"></i> Drag to rotate 3D model | Scroll to zoom
+            </div>
+          </div>
+
+          <!-- Dynamic Machinery Specs Card -->
+          <div class="specs-panel" id="specs-panel">
+            <div class="specs-header">
+              <span class="specs-tag" id="spec-tag">MINING DUMPER / FLEET</span>
+              <h3 id="spec-title">Tata Signa 3525.K Heavy Tipper Truck (35T)</h3>
+            </div>
+            <div class="specs-list" id="specs-list">
+              <!-- Injected by JS -->
+            </div>
+            <div class="specs-footer">
+              <button class="btn btn-sm btn-primary w-100" onclick="openQuoteForCurrentModel()">
+                <i class="fa-solid fa-key"></i> Request Rental / Lease Quote
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 40+ Years Legacy & History Timeline -->
+  <section class="legacy-section" id="legacy">
+    <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag">ESTABLISHED 1984</span>
+        <h2 class="section-title">40+ Years of Operational Heritage</h2>
+        <p class="section-desc">Four decades of uninterrupted service in industrial mining O&M, machinery leasing, heavy garage overhauls, and government infrastructure creation.</p>
+      </div>
+
+      <div class="timeline-container">
+        <div class="timeline-line"></div>
+
+        <div class="timeline-item left">
+          <div class="timeline-dot"><i class="fa-solid fa-flag"></i></div>
+          <div class="timeline-content glow-card">
+            <span class="timeline-year">1984 - 1995</span>
+            <h3>Foundational Earthworks & Civil Contracting</h3>
+            <p>Started operations with initial civil earthmoving machinery, executing regional road infrastructure and local stone quarrying operations.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item right">
+          <div class="timeline-dot"><i class="fa-solid fa-truck-monster"></i></div>
+          <div class="timeline-content glow-card">
+            <span class="timeline-year">1996 - 2008</span>
+            <h3>Fleet Expansion & Heavy HEMM Leasing</h3>
+            <p>Inducted high-capacity excavators, bulldozers, and multi-axle tippers. Built specialized heavy equipment garage facilities for 24/7 fleet overhauls.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item left">
+          <div class="timeline-dot"><i class="fa-solid fa-industry"></i></div>
+          <div class="timeline-content glow-card">
+            <span class="timeline-year">2009 - 2018</span>
+            <h3>Adani ACC & Ambuja Mining O&M Contracts</h3>
+            <p>Secured landmark multi-year Mining O&M and Garage Management contracts with cement giants Adani ACC and Ambuja Cements across limestone mines.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item right">
+          <div class="timeline-dot"><i class="fa-solid fa-road"></i></div>
+          <div class="timeline-content glow-card">
+            <span class="timeline-year">2019 - Present</span>
+            <h3>Govt Highways & Modern Industrial Machinery Rentals</h3>
+            <p>Expanded into State & National Highway Paving, expanding rental fleet options including compact Bobcats, heavy JCBs, and automated asphalt rollers.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Services & O&M Spectrum -->
+  <section class="services-section" id="services">
+    <div class="container">
+      <div class="section-header text-center">
+        <span class="section-tag">WHAT WE DO</span>
+        <h2 class="section-title">Specialized Operations & Maintenance Services</h2>
+        <p class="section-desc">Tailored operational solutions for mining giants, construction firms, and government infrastructure projects.</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card glow-card">
+          <div class="service-icon"><i class="fa-solid fa-mountain-city"></i></div>
+          <h3>Mining Operations & Maintenance</h3>
+          <p>End-to-end site management, overburden removal, benches preparation, limestone & mineral hauling using high-tonnage HEMM and Tipper fleets.</p>
+          <ul class="service-features">
+            <li><i class="fa-solid fa-circle-check"></i> Overburden Drilling & Haulage</li>
+            <li><i class="fa-solid fa-circle-check"></i> Blasting & Excavation Logistics</li>
+            <li><i class="fa-solid fa-circle-check"></i> Adani ACC & Ambuja Standard Compliance</li>
+          </ul>
+        </div>
+
+        <div class="service-card glow-card">
+          <div class="service-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+          <h3>Mining Fleet Garage O&M</h3>
+          <p>On-site heavy garage setups with dedicated mechanical, hydraulic, and electrical engineering crews for zero-downtime fleet availability.</p>
+          <ul class="service-features">
+            <li><i class="fa-solid fa-circle-check"></i> Preventive Maintenance Protocols</li>
+            <li><i class="fa-solid fa-circle-check"></i> Hydraulic & Engine Overhauls</li>
+            <li><i class="fa-solid fa-circle-check"></i> Telemetry & Fuel Efficiency Tracking</li>
+          </ul>
+        </div>
+
+        <div class="service-card glow-card">
+          <div class="service-icon"><i class="fa-solid fa-trailer"></i></div>
+          <h3>Industrial Machine Rental Fleet</h3>
+          <p>Flexible short-term and long-term rental leases for Bobcat skid loaders, JCB backhoe loaders, heavy excavators, and dump trucks.</p>
+          <ul class="service-features">
+            <li><i class="fa-solid fa-circle-check"></i> Daily, Monthly & Annual Lease Plans</li>
+            <li><i class="fa-solid fa-circle-check"></i> Trained Certified Operators Included</li>
+            <li><i class="fa-solid fa-circle-check"></i> Rapid On-Site Machine Replacement</li>
+          </ul>
+        </div>
+
+        <div class="service-card glow-card">
+          <div class="service-icon"><i class="fa-solid fa-road-barrier"></i></div>
+          <h3>Govt Road Contracts & Civil Infra</h3>
+          <p>Turnkey execution of government highway contracts, asphalt paving, road leveling, sub-base compaction, and drainage structures.</p>
+          <ul class="service-features">
+            <li><i class="fa-solid fa-circle-check"></i> State & National Highway Paving</li>
+            <li><i class="fa-solid fa-circle-check"></i> Heavy Road Roller & Paver Fleets</li>
+            <li><i class="fa-solid fa-circle-check"></i> Quality Material Testing Lab Support</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Industrial Rental Fleet Catalog Section -->
+  <section class="rentals-section" id="rentals">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">FLEET CATALOG</span>
+        <h2 class="section-title">Industrial Equipment Available for Lease</h2>
+        <p class="section-desc">Select from our 500+ unit strong fleet of heavy machinery equipped with telematics and certified operators.</p>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="filter-tabs" id="filter-tabs">
+        <button class="tab-btn active" data-filter="all">All Machinery</button>
+        <button class="tab-btn" data-filter="mining">Mining & HEMM</button>
+        <button class="tab-btn" data-filter="compact">Compact Loaders (Bobcat/JCB)</button>
+        <button class="tab-btn" data-filter="road">Road & Infra Equipment</button>
+      </div>
+
+      <div class="rental-cards-grid" id="rental-cards-grid">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Lease Cost Estimator / Calculator -->
+  <section class="calculator-section" id="calculator">
+    <div class="container">
+      <div class="calculator-wrapper glow-card">
+        <div class="calc-header">
+          <span class="section-tag">INSTANT ESTIMATE</span>
+          <h2>Heavy Machinery Lease Cost Estimator</h2>
+          <p>Select machinery, deployment duration, and operator requirements to generate an instant estimate.</p>
+        </div>
+
+        <div class="calc-grid">
+          <div class="calc-form">
+            <div class="form-group">
+              <label><i class="fa-solid fa-truck-ramp-box"></i> Select Machine Type</label>
+              <select id="calc-machine" class="form-control">
+                <option value="tipper" data-rate="4500">Heavy Tipper Truck (28T-35T) - ₹4,500/Shift</option>
+                <option value="excavator" data-rate="8500">Mining HEMM Excavator (30T-45T) - ₹8,500/Shift</option>
+                <option value="bobcat" data-rate="2800">Bobcat Compact Loader S450 - ₹2,800/Shift</option>
+                <option value="jcb" data-rate="3200">JCB 3CX Backhoe Loader - ₹3,200/Shift</option>
+                <option value="roller" data-rate="3800">Vibratory Asphalt Road Roller - ₹3,800/Shift</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label><i class="fa-solid fa-boxes-stacked"></i> Quantity of Machines</label>
+                <input type="number" id="calc-qty" class="form-control" value="2" min="1" max="50">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-calendar-days"></i> Lease Duration (Days)</label>
+                <input type="number" id="calc-days" class="form-control" value="30" min="1" max="365">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-user-gear"></i> Operator & Fuel Options</label>
+              <div class="radio-options">
+                <label class="radio-card">
+                  <input type="radio" name="calc-operator" value="with_operator" checked>
+                  <span>With Certified Operator & Maintenance</span>
+                </label>
+                <label class="radio-card">
+                  <input type="radio" name="calc-operator" value="dry_lease">
+                  <span>Dry Lease (Machine Only)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-summary">
+            <div class="summary-card">
+              <h3>Estimated Commercial Terms</h3>
+              <div class="summary-line">
+                <span>Base Shift Rate:</span>
+                <strong id="summary-base">₹4,500</strong>
+              </div>
+              <div class="summary-line">
+                <span>Fleet Quantity:</span>
+                <strong id="summary-qty">2 Units</strong>
+              </div>
+              <div class="summary-line">
+                <span>Total Shift Volume:</span>
+                <strong id="summary-shifts">60 Shifts</strong>
+              </div>
+              <div class="summary-line">
+                <span>Volume Discount Applied:</span>
+                <strong id="summary-discount" class="text-success">15% Off</strong>
+              </div>
+              
+              <div class="summary-divider"></div>
+              
+              <div class="summary-total">
+                <span>Total Estimated Lease:</span>
+                <h2 id="summary-total-price">₹2,29,500</h2>
+              </div>
+              
+              <p class="summary-note">* Final quote subject to site survey and haulage distance for mining/road projects.</p>
+
+              <button class="btn btn-primary btn-lg w-100 glow-effect" onclick="submitCalculatedQuote()">
+                <i class="fa-solid fa-file-contract"></i> Reserve Fleet & Request Formal Proposal
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo-icon"><i class="fa-solid fa-truck-monster"></i></div>
+          <span class="company-name">SHREE RR TRADING COMPANY</span>
+          <p>40+ Years of Industrial Leadership in Mining O&M, Heavy Earth Moving Machinery Deployment, Fleet Garage Maintenance, Machine Rentals, and Govt Road Contracts.</p>
+          <div class="footer-contracts">
+            <span>Key Clients: Adani ACC | Ambuja Cement | Govt Roads</span>
+          </div>
+        </div>
+
+        <div class="footer-links">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#legacy">40+ Yrs Heritage</a></li>
+            <li><a href="#contracts">Adani & Ambuja Contracts</a></li>
+            <li><a href="#viewer-3d">Real Fleet Showcase</a></li>
+            <li><a href="#rentals">Industrial Machine Rentals</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#services">Mining O&M</a></li>
+            <li><a href="#services">Garage O&M</a></li>
+            <li><a href="#services">Bobcat & JCB Rentals</a></li>
+            <li><a href="#services">Govt Road Highway Contracts</a></li>
+            <li><a href="#services">HEMM Fleet Deployment</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-contact">
+          <h4>Corporate Headquarters</h4>
+          <p><i class="fa-solid fa-location-dot"></i> Industrial Mining Complex, Gujarat & Rajasthan Sector, India</p>
+          <p><i class="fa-solid fa-envelope"></i> contact@shreerrtrading.com</p>
+          <p><i class="fa-solid fa-phone"></i> +91 99999 99999 / +91 98888 88888</p>
+          <div class="footer-socials">
+            <a href="#" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="https://wa.me/919999999999" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" title="Phone"><i class="fa-solid fa-phone"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 Shree RR Trading Company. All Rights Reserved. Photorealistic Machinery Showcase.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Quick Actions -->
+  <div class="floating-actions">
+    <a href="https://wa.me/919999999999?text=Hello%20Shree%20RR%20Trading%20Company,%20I%20need%20heavy%20machinery%20or%20Mining%20O%26M%20quotation." target="_blank" class="float-btn btn-whatsapp" title="WhatsApp Business Direct">
+      <i class="fa-brands fa-whatsapp"></i>
+    </a>
+    <button class="float-btn btn-primary" onclick="openQuoteModal()" title="Request Proposal">
+      <i class="fa-solid fa-file-signature"></i>
+    </button>
+  </div>
+
+  <!-- Quote Request Modal Dialog -->
+  <div class="modal-backdrop" id="quote-modal">
+    <div class="modal-card glow-card">
+      <button class="modal-close" onclick="closeQuoteModal()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header">
+        <span class="section-tag">INQUIRY & CONTRACT FORM</span>
+        <h2>Request Project Proposal / Fleet Rental</h2>
+        <p>Direct communication line with Shree RR Trading Company contract directors.</p>
+      </div>
+
+      <form id="quote-form" onsubmit="handleFormSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Your Name / Contact Person *</label>
+            <input type="text" class="form-control" required placeholder="e.g. Rajesh Bhatti">
+          </div>
+          <div class="form-group">
+            <label>Company / Organization Name *</label>
+            <input type="text" class="form-control" required placeholder="e.g. Mining & Civil Infra Corp">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone / WhatsApp Number *</label>
+            <input type="tel" class="form-control" required placeholder="+91 99999 99999">
+          </div>
+          <div class="form-group">
+            <label>Service / Contract Type *</label>
+            <select class="form-control" id="modal-service-type">
+              <option value="Mining O&M">Mining O&M Contract (Adani/Ambuja Level)</option>
+              <option value="Garage O&M">Mining Fleet Garage O&M</option>
+              <option value="Machine Rental">Industrial Machinery Rental (Bobcat, JCB, Tipper)</option>
+              <option value="Govt Road Contract">Government Road / Highway Contract</option>
+              <option value="HEMM Deployment">HEMM & Excavator Fleet Deployment</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Project Details / Fleet Requirements</label>
+          <textarea class="form-control" rows="3" placeholder="Specify mine location, required tonnage, estimated fleet numbers, or road contract length..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeQuoteModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary glow-effect">
+            <i class="fa-solid fa-paper-plane"></i> Submit Proposal Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="three_viewer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
