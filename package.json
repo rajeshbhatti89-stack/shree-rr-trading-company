@@ -2,6 +2,7 @@
   "name": "shree-rr-trading-company-3d-website",
   "version": "1.0.0",
   "description": "Shree RR Trading Company 3D Website - 40+ Yrs Mining O&M, Heavy Fleets & Infra",
+  "license": "MIT",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
