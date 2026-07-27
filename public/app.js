@@ -395,20 +395,36 @@ function setupMobileNav() {
   const navMenu = document.getElementById("nav-menu");
 
   if (toggleBtn && navMenu) {
-    toggleBtn.addEventListener("click", () => {
-      if (navMenu.style.display === "flex") {
+    toggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = navMenu.classList.contains("mobile-open");
+      if (isOpen) {
+        navMenu.classList.remove("mobile-open");
         navMenu.style.display = "none";
       } else {
+        navMenu.classList.add("mobile-open");
         navMenu.style.display = "flex";
         navMenu.style.flexDirection = "column";
         navMenu.style.position = "absolute";
-        navMenu.style.top = "100%";
+        navMenu.style.top = "calc(100% + 8px)";
         navMenu.style.left = "0";
         navMenu.style.width = "100%";
-        navMenu.style.background = "#0A1424";
+        navMenu.style.background = "rgba(255, 255, 255, 0.98)";
         navMenu.style.padding = "20px";
-        navMenu.style.borderBottom = "1px solid #1E3056";
+        navMenu.style.borderRadius = "16px";
+        navMenu.style.border = "1px solid #E2E8F0";
+        navMenu.style.boxShadow = "0 15px 35px rgba(11, 25, 54, 0.12)";
       }
+    });
+
+    const mobileNavLinks = navMenu.querySelectorAll(".nav-link");
+    mobileNavLinks.forEach(link => {
+      link.addEventListener("click", () => {
+        if (window.innerWidth <= 768) {
+          navMenu.classList.remove("mobile-open");
+          navMenu.style.display = "none";
+        }
+      });
     });
   }
 }

@@ -1165,24 +1165,88 @@ section {
   margin-top: 24px;
 }
 
-/* Responsive Media Queries */
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE OPTIMIZATIONS
+   ========================================================================== */
+
+/* Tablet & Medium Screens (max-width: 1024px) */
 @media (max-width: 1024px) {
-  .hero-title { font-size: 44px; }
-  .hero-metrics-grid { grid-template-columns: repeat(2, 1fr); }
-  .partners-grid, .rental-cards-grid { grid-template-columns: repeat(2, 1fr); }
-  .calc-grid { grid-template-columns: 1fr; }
-  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .container { padding: 0 20px; }
+  .navbar { width: calc(100% - 32px); top: 12px; padding: 10px 18px; }
+  .hero-section { padding-top: 130px; padding-bottom: 60px; }
+  .hero-title { font-size: clamp(34px, 5vw, 48px); }
+  .hero-subtitle { font-size: 18px; }
+  .client-logos-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .hero-metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .partners-grid, .rental-cards-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .services-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .calc-grid { grid-template-columns: 1fr; gap: 24px; }
+  .calculator-wrapper { padding: 32px 24px; }
+  .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
 }
 
-@media (max-width: 768px) {
-  .navbar { width: calc(100% - 24px); top: 12px; }
+/* Mobile Devices (max-width: 767px) */
+@media (max-width: 767px) {
+  .navbar { width: calc(100% - 20px); top: 10px; padding: 8px 14px; }
+  .official-logo-img { height: 42px; }
   .nav-menu { display: none; }
-  .mobile-toggle { display: block; }
-  .hero-title { font-size: 34px; }
-  .hero-subtitle { font-size: 16px; }
-  .partners-grid, .services-grid, .rental-cards-grid { grid-template-columns: 1fr; }
-  .timeline-line { left: 20px; }
-  .timeline-item { width: 100%; left: 0 !important; padding-left: 60px !important; padding-right: 0 !important; }
-  .timeline-dot { left: 2px !important; }
-  .footer-grid { grid-template-columns: 1fr; }
+  .mobile-toggle { display: block; font-size: 22px; padding: 6px; }
+  .nav-link { font-size: 15px; padding: 10px 0; border-bottom: 1px dotted var(--border-light); }
+
+  /* Hero Section Mobile */
+  .hero-section { padding-top: 110px; padding-bottom: 40px; min-height: auto; }
+  .hero-title { font-size: clamp(26px, 7.5vw, 36px); line-height: 1.25; margin-bottom: 16px; }
+  .hero-subtitle { font-size: 15px; margin-bottom: 28px; }
+  .hero-buttons { flex-direction: column; width: 100%; gap: 12px; }
+  .hero-buttons .btn { width: 100%; justify-content: center; min-height: 48px; }
+
+  .hero-metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .metric-card { padding: 16px 12px; gap: 10px; }
+  .metric-icon { width: 42px; height: 42px; font-size: 18px; }
+  .metric-number { font-size: 22px; }
+  .metric-label { font-size: 11px; }
+
+  /* Client Logos Grid Mobile */
+  .client-logos-section { padding: 40px 0 24px 0; }
+  .client-logos-title { font-size: 18px; }
+  .client-logos-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .client-logo-card { padding: 16px 10px; }
+  .official-client-logo { max-height: 38px; }
+  .client-label { font-size: 11px; }
+
+  /* Section Spacing */
+  .partners-section, .legacy-section, .services-section, .rentals-section, .calculator-section {
+    padding: 55px 0;
+  }
+  .section-title { font-size: 26px; }
+  .section-desc { font-size: 15px; }
+
+  /* Grids to Single Column */
+  .partners-grid, .services-grid, .rental-cards-grid { grid-template-columns: 1fr; gap: 20px; }
+  .partner-card, .service-card, .rental-card { padding: 24px 18px; }
+
+  /* Timeline Mobile */
+  .timeline-container { padding: 0 10px; }
+  .timeline-line { left: 16px; }
+  .timeline-item { width: 100%; left: 0 !important; padding-left: 48px !important; padding-right: 0 !important; margin-bottom: 24px; }
+  .timeline-dot { left: 0px !important; width: 32px; height: 32px; font-size: 12px; }
+  .timeline-content { padding: 20px 16px; }
+
+  /* Calculator Mobile */
+  .calculator-wrapper { padding: 24px 16px; }
+  .form-row { grid-template-columns: 1fr; gap: 12px; }
+  .summary-card { padding: 20px 16px; }
+  .summary-total h2 { font-size: 26px; }
+
+  /* Footer Mobile */
+  .footer { padding: 50px 0 24px 0; }
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  .footer-logo-img { height: 48px; }
+
+  /* Floating Action Buttons Mobile */
+  .floating-actions { bottom: 20px; right: 16px; gap: 10px; }
+  .float-btn { width: 48px; height: 48px; font-size: 18px; }
+
+  /* Modal Form Mobile */
+  .modal-card { padding: 24px 16px; margin: 10px; max-height: 90vh; overflow-y: auto; }
 }
