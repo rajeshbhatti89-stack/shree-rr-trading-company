@@ -313,18 +313,18 @@ function handleFormSubmit(event) {
   event.preventDefault();
   
   const form = event.target;
-  const name = form.querySelector("input[placeholder*='Rajesh']")?.value || "Client";
-  const company = form.querySelector("input[placeholder*='Mining']")?.value || "Company";
+  const nameInput = form.querySelector("input[required]")?.value || "Client";
+  const companyInput = form.querySelectorAll("input[required]")[1]?.value || "Company";
   const phone = form.querySelector("input[type='tel']")?.value || "";
   const service = document.getElementById("modal-service-type")?.value || "General Inquiry";
   const details = form.querySelector("textarea")?.value || "";
 
-  alert(`Thank you, ${name}! Your proposal request for Shree RR Trading Company (Ambuja Cement Darlaghat operations) has been received.\n\nOur Director of Operations will contact you shortly.`);
+  alert(`Thank you! Your proposal request for Shree RR Trading Company (Ambuja Cement Darlaghat operations) has been received.\n\nOur Director of Operations will contact you shortly.`);
   
   closeQuoteModal();
   form.reset();
 
-  const waMsg = encodeURIComponent(`Hello Shree RR Trading Company,\n\nName: ${name}\nCompany: ${company}\nPhone: ${phone}\nService Required: ${service}\nDetails: ${details}`);
+  const waMsg = encodeURIComponent(`Hello Shree RR Trading Company,\n\nName: ${nameInput}\nCompany: ${companyInput}\nPhone: ${phone}\nService Required: ${service}\nDetails: ${details}`);
   window.open(`https://wa.me/919999999999?text=${waMsg}`, '_blank');
 }
 
@@ -337,15 +337,15 @@ function setupScrollEffects() {
   const navLinks = document.querySelectorAll(".nav-link");
 
   window.addEventListener("scroll", () => {
-    // Navbar Shrink & Glow
+    // Navbar Shrink & Shadow
     if (window.scrollY > 50) {
-      navbar.style.padding = "8px 0";
-      navbar.style.background = "rgba(10, 20, 36, 0.96)";
-      navbar.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.8)";
+      navbar.style.padding = "8px 24px";
+      navbar.style.background = "rgba(255, 255, 255, 0.98)";
+      navbar.style.boxShadow = "0 10px 30px rgba(11, 25, 54, 0.12)";
     } else {
-      navbar.style.padding = "12px 0";
-      navbar.style.background = "rgba(10, 20, 36, 0.9)";
-      navbar.style.boxShadow = "none";
+      navbar.style.padding = "10px 24px";
+      navbar.style.background = "rgba(255, 255, 255, 0.95)";
+      navbar.style.boxShadow = "0 10px 30px rgba(11, 25, 54, 0.08)";
     }
 
     // ScrollSpy Active Links

@@ -16,11 +16,8 @@
   <!-- Styles -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- Three.js, OrbitControls & GLTFLoader from CDN -->
+  <!-- Three.js from CDN for Hero Matrix -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -35,16 +32,12 @@
         <a href="#hero" class="nav-link active">Home</a>
         <a href="#legacy" class="nav-link">40+ Yrs Legacy</a>
         <a href="#contracts" class="nav-link">Ambuja Darlaghat Contracts</a>
-        <a href="#viewer-3d" class="nav-link">Interactive 3D & Fleet</a>
         <a href="#services" class="nav-link">Services & O&M</a>
         <a href="#rentals" class="nav-link">Equipment Lease</a>
         <a href="#calculator" class="nav-link">Cost Estimator</a>
       </nav>
 
       <div class="nav-actions">
-        <button class="btn btn-outline" id="wireframe-toggle-btn" title="Toggle 3D Wireframe View">
-          <i class="fa-solid fa-cubes"></i> <span>3D Wireframe</span>
-        </button>
         <button class="btn btn-primary" onclick="openQuoteModal()">
           <i class="fa-solid fa-paper-plane"></i> <span>Get Quote</span>
         </button>
@@ -55,7 +48,7 @@
     </div>
   </header>
 
-  <!-- Hero Section with 3D Cinematic Background Matrix (PeachWeb Interactive Style) -->
+  <!-- Hero Section (Light Clean Theme with Crisp Particles) -->
   <section class="hero-section" id="hero">
     <div id="hero-3d-canvas" class="hero-canvas-container"></div>
     <div class="hero-overlay"></div>
@@ -73,8 +66,8 @@
       </p>
 
       <div class="hero-buttons">
-        <a href="#viewer-3d" class="btn btn-lg btn-primary glow-effect">
-          <i class="fa-solid fa-cubes-stacked"></i> Explore 3D Machinery & Real Fleet
+        <a href="#rentals" class="btn btn-lg btn-primary glow-effect">
+          <i class="fa-solid fa-truck-monster"></i> Explore Equipment & Fleets
         </a>
         <a href="#calculator" class="btn btn-lg btn-secondary">
           <i class="fa-solid fa-calculator"></i> Calculate Rental Cost
@@ -84,7 +77,7 @@
         </a>
       </div>
 
-      <!-- Quick Metrics Bar (PeachWeb Glass Card Style) -->
+      <!-- Quick Metrics Bar (PeachWeb Light Glass Style) -->
       <div class="hero-metrics-grid">
         <div class="metric-card peach-glass">
           <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
@@ -167,97 +160,6 @@
             <span><i class="fa-solid fa-check"></i> Highway Paving</span>
             <span><i class="fa-solid fa-check"></i> Heavy Rollers</span>
             <span><i class="fa-solid fa-check"></i> Bridge Approaches</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Interactive 3D & Real Site Machinery Showcase Section -->
-  <section class="viewer-3d-section" id="viewer-3d">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">CINEMATIC 3D & REAL FLEET SHOWCASE</span>
-        <h2 class="section-title">Interactive 3D Machinery Inspector</h2>
-        <p class="section-desc">Experience PeachWeb-style interactive 3D WebGL machinery models and real operational site photos from Ambuja Cement Darlaghat.</p>
-      </div>
-
-      <div class="viewer-3d-wrapper peach-glass">
-        <!-- Machinery Selector Bar -->
-        <div class="machinery-selector-bar">
-          <div class="selector-group">
-            <button class="selector-btn active" data-model="tipper">
-              <i class="fa-solid fa-truck-field"></i> Heavy Tipper Truck (35T)
-            </button>
-            <button class="selector-btn" data-model="excavator">
-              <i class="fa-solid fa-bore-hole"></i> Mining HEMM Excavator
-            </button>
-            <button class="selector-btn" data-model="bobcat">
-              <i class="fa-solid fa-tractor"></i> Bobcat Skid Loader
-            </button>
-            <button class="selector-btn" data-model="jcb">
-              <i class="fa-solid fa-snowplow"></i> JCB Backhoe Loader
-            </button>
-            <button class="selector-btn" data-model="roller">
-              <i class="fa-solid fa-car-side"></i> Govt Road Asphalt Roller
-            </button>
-          </div>
-
-          <div class="view-mode-toggle">
-            <button class="mode-btn active" id="mode-3d-btn">
-              <i class="fa-solid fa-cube"></i> Interactive 3D CAD
-            </button>
-            <button class="mode-btn" id="mode-photo-btn">
-              <i class="fa-solid fa-image"></i> Real Site Photo
-            </button>
-          </div>
-        </div>
-
-        <div class="viewer-3d-main">
-          <!-- 3D Canvas Mount Point -->
-          <div id="equipment-3d-canvas" class="canvas-3d"></div>
-
-          <!-- Real Site Photo View Mount -->
-          <div id="real-photo-view" class="real-photo-container" style="display: none;">
-            <img id="real-machine-img" src="images/tipper.png" alt="Real Heavy Machine Operational Site Photo">
-            <div class="photo-overlay-badge">
-              <span id="photo-contract-tag"><i class="fa-solid fa-location-dot"></i> AMBUJA CEMENT DARLAGHAT LIMESTONE MINE PIT</span>
-            </div>
-          </div>
-
-          <!-- Floating 3D HUD Controls -->
-          <div class="hud-overlay" id="hud-overlay-controls">
-            <div class="hud-controls">
-              <button class="hud-btn" id="hud-rotate" title="Auto Rotate Camera">
-                <i class="fa-solid fa-rotate"></i> <span>Auto Orbit</span>
-              </button>
-              <button class="hud-btn" id="hud-wireframe" title="Toggle Wireframe Structural View">
-                <i class="fa-solid fa-vector-square"></i> <span>Wireframe</span>
-              </button>
-              <button class="hud-btn" id="hud-reset" title="Reset View">
-                <i class="fa-solid fa-arrows-to-dot"></i> <span>Reset View</span>
-              </button>
-            </div>
-            
-            <div class="hud-hint">
-              <i class="fa-solid fa-hand-pointer"></i> Drag to rotate 3D model | Scroll to zoom
-            </div>
-          </div>
-
-          <!-- Dynamic Machinery Specs Card -->
-          <div class="specs-panel peach-glass" id="specs-panel">
-            <div class="specs-header">
-              <span class="specs-tag" id="spec-tag">MINING DUMPER / FLEET</span>
-              <h3 id="spec-title">Tata Signa 3525.K Heavy Tipper Truck (35T)</h3>
-            </div>
-            <div class="specs-list" id="specs-list">
-              <!-- Injected by JS -->
-            </div>
-            <div class="specs-footer">
-              <button class="btn btn-sm btn-primary w-100" onclick="openQuoteForCurrentModel()">
-                <i class="fa-solid fa-key"></i> Request Rental / Lease Quote
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -501,7 +403,7 @@
             <li><a href="#hero">Home</a></li>
             <li><a href="#legacy">40+ Yrs Heritage</a></li>
             <li><a href="#contracts">Ambuja Darlaghat Contract</a></li>
-            <li><a href="#viewer-3d">3D & Real Fleet Showcase</a></li>
+            <li><a href="#services">Specialized Services</a></li>
             <li><a href="#rentals">Industrial Machine Rentals</a></li>
           </ul>
         </div>
@@ -531,7 +433,7 @@
       </div>
 
       <div class="footer-bottom">
-        <p>© 2026 Shree RR Trading Company. All Rights Reserved. Designed with PeachWeb 3D Technology.</p>
+        <p>© 2026 Shree RR Trading Company. All Rights Reserved. Designed with PeachWeb Technology.</p>
       </div>
     </div>
   </footer>
@@ -546,7 +448,7 @@
     </button>
   </div>
 
-  <!-- Quote Request Modal Dialog -->
+  <!-- Quote Request Modal Dialog (Clean Placeholder Text) -->
   <div class="modal-backdrop" id="quote-modal">
     <div class="modal-card glow-card peach-glass">
       <button class="modal-close" onclick="closeQuoteModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -560,11 +462,11 @@
         <div class="form-row">
           <div class="form-group">
             <label>Your Name / Contact Person *</label>
-            <input type="text" class="form-control" required placeholder="e.g. Rajesh Bhatti">
+            <input type="text" class="form-control" required placeholder="Authorized Representative / Contact Officer">
           </div>
           <div class="form-group">
             <label>Company / Organization Name *</label>
-            <input type="text" class="form-control" required placeholder="e.g. Mining & Civil Infra Corp">
+            <input type="text" class="form-control" required placeholder="Mining / Construction Firm">
           </div>
         </div>
 
@@ -601,7 +503,6 @@
   </div>
 
   <!-- Scripts -->
-  <script src="three_viewer.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
