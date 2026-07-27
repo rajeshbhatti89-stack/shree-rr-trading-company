@@ -440,7 +440,18 @@ section {
   height: 100vh !important;
   z-index: 0 !important;
   pointer-events: none !important;
-  opacity: 1.0 !important;
+  opacity: 0.95 !important;
+  overflow: hidden;
+}
+
+#sketchfab-bg-iframe {
+  width: 100vw !important;
+  height: 100vh !important;
+  border: none !important;
+  pointer-events: none !important;
+  transform: scale(1.18);
+  transform-origin: center center;
+  filter: contrast(1.08) saturate(1.1);
 }
 
 .hero-overlay {
@@ -449,7 +460,7 @@ section {
   left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.05) 0%, rgba(248, 250, 252, 0.35) 85%) !important;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.02) 0%, rgba(248, 250, 252, 0.25) 85%) !important;
   z-index: 1 !important;
   pointer-events: none !important;
 }
