@@ -216,6 +216,57 @@ p {
   font-family: var(--font-mono);
 }
 
+/* Existing Key Clients Logo Showcase */
+.client-logos-section {
+  padding: 60px 0 40px 0;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border-light);
+  position: relative;
+  z-index: 2;
+}
+
+.client-logos-header {
+  margin-bottom: 32px;
+}
+
+.client-logos-title {
+  font-size: 24px;
+  color: var(--logo-navy);
+  margin-top: 4px;
+}
+
+.client-logos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.client-logo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  text-align: center;
+  border-radius: 16px;
+  background: #FFFFFF !important;
+}
+
+.client-logo-img {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.client-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
 /* Header & Section Common */
 section {
   position: relative;
