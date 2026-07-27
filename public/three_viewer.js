@@ -98,19 +98,22 @@ function initHero3DMatrix() {
   const container = document.getElementById("hero-3d-canvas");
   if (!container) return;
 
-  const width = container.clientWidth;
-  const height = container.clientHeight;
+  const width = container.clientWidth || window.innerWidth;
+  const height = container.clientHeight || window.innerHeight;
 
   // Scene, Camera, Renderer
   ThreeEngine.heroScene = new THREE.Scene();
   ThreeEngine.heroCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
   ThreeEngine.heroCamera.position.set(16, 10, 22);
 
-  ThreeEngine.heroRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  ThreeEngine.heroRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
   ThreeEngine.heroRenderer.setSize(width, height);
   ThreeEngine.heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   ThreeEngine.heroRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-  ThreeEngine.heroRenderer.toneMappingExposure = 1.3;
+  ThreeEngine.heroRenderer.toneMappingExposure = 1.35;
+  
+  ThreeEngine.heroRenderer.domElement.style.width = "100%";
+  ThreeEngine.heroRenderer.domElement.style.height = "100%";
   container.appendChild(ThreeEngine.heroRenderer.domElement);
 
   // High-Fidelity Studio Lighting Setup
