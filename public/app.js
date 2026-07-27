@@ -1,25 +1,26 @@
 /**
  * SHREE RR TRADING COMPANY - MAIN WEB APPLICATION LOGIC
- * Interactivity, Real Site Fleet Showcase, Lease Calculator & Quote Modal
+ * Theme: Official Logo Palette (#FF7A00 Excavator Orange & Deep Navy)
+ * Interactivity: Ambuja Cement Darlaghat Fleet Showcase, Lease Calculator & PeachWeb Tilt Effects
  */
 
-// Real Machinery Site Metadata Dictionary
+// Real Machinery Site Metadata Dictionary (Ambuja Cement Darlaghat Contract)
 const REAL_MACHINE_SITE_DATA = {
   tipper: {
     img: "images/tipper.png",
-    locationTag: "<i class='fa-solid fa-location-dot'></i> ADANI ACC LIMESTONE MINE PIT (GUJARAT)",
+    locationTag: "<i class='fa-solid fa-location-dot'></i> AMBUJA CEMENT DARLAGHAT LIMESTONE MINE PIT (HIMACHAL PRADESH)",
     title: "Tata Signa 3525.K Heavy Tipper Truck (35T)",
     tag: "MINING DUMPER / FLEET"
   },
   excavator: {
     img: "images/excavator.png",
-    locationTag: "<i class='fa-solid fa-location-dot'></i> AMBUJA CEMENTS HEAVY QUARRY (RAJASTHAN)",
+    locationTag: "<i class='fa-solid fa-location-dot'></i> AMBUJA CEMENT DARLAGHAT HEAVY QUARRY (HIMACHAL PRADESH)",
     title: "CAT 380 / Komatsu PC500 Mining Excavator",
     tag: "HEMM / EXCAVATOR"
   },
   bobcat: {
     img: "images/bobcat.png",
-    locationTag: "<i class='fa-solid fa-location-dot'></i> INDUSTRIAL MINING SITE CLEANUP & LEASE",
+    locationTag: "<i class='fa-solid fa-location-dot'></i> INDUSTRIAL MINING SITE CLEANUP & LEASE (DARLAGHAT SECTOR)",
     title: "Bobcat S450 Skid-Steer Compact Loader",
     tag: "COMPACT UTILITY LEASE"
   },
@@ -37,14 +38,14 @@ const REAL_MACHINE_SITE_DATA = {
   }
 };
 
-// Fleet Catalog Data with Real Site Imagery
+// Fleet Catalog Data with Real Site Imagery (Ambuja Darlaghat Contract Focus)
 const RENTAL_FLEET_DATA = [
   {
     id: 1,
     name: "Tata Signa 3525.K Mining Tipper Truck",
     category: "mining",
     rate: "₹4,500 / Shift",
-    badge: "ADANI ACC & AMBUJA FLEET",
+    badge: "AMBUJA DARLAGHAT FLEET",
     img: "images/tipper.png",
     specs: ["35 Tonne Payload", "250 HP Cummins Engine", "8x4 Heavy Axle"]
   },
@@ -53,7 +54,7 @@ const RENTAL_FLEET_DATA = [
     name: "CAT 380 / Komatsu PC500 HEMM Excavator",
     category: "mining",
     rate: "₹8,500 / Shift",
-    badge: "HEAVY MINING OVERBURDEN",
+    badge: "AMBUJA DARLAGHAT QUARRY",
     img: "images/excavator.png",
     specs: ["48 Tonne Class", "3.2 m³ Rock Bucket", "High Hydro Output"]
   },
@@ -103,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
   animateNumericCounters();
   setupMobileNav();
   setupViewModeToggle();
+  setupPeachWebTiltEffects();
 });
 
 /* ==========================================
@@ -157,7 +159,7 @@ function renderFleetCatalog(filterCategory) {
     : RENTAL_FLEET_DATA.filter(item => item.category === filterCategory);
 
   grid.innerHTML = filteredItems.map(item => `
-    <div class="rental-card glow-card">
+    <div class="rental-card glow-card peach-glass">
       <div class="rental-card-img">
         <span class="rental-card-badge">${item.badge}</span>
         <img src="${item.img}" alt="${item.name}">
@@ -257,7 +259,26 @@ function submitCalculatedQuote() {
 }
 
 /* ==========================================
-   4. MODAL & FORM CONTROLLER
+   4. PEACHWEB TILT & SCROLL EFFECTS
+   ========================================== */
+function setupPeachWebTiltEffects() {
+  const cards = document.querySelectorAll(".peach-glass");
+  cards.forEach(card => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      card.style.transform = `perspective(1000px) rotateX(${-y * 0.03}deg) rotateY(${x * 0.03}deg) translateY(-6px)`;
+    });
+
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)";
+    });
+  });
+}
+
+/* ==========================================
+   5. MODAL & FORM CONTROLLER
    ========================================== */
 function openQuoteModal() {
   const modal = document.getElementById("quote-modal");
@@ -274,7 +295,7 @@ function openQuoteForCurrentModel() {
   openQuoteModal();
   const detailsTextarea = document.querySelector("#quote-form textarea");
   if (detailsTextarea) {
-    detailsTextarea.value = `Inquiry regarding Machinery Model: ${specTitle}`;
+    detailsTextarea.value = `Inquiry regarding Machinery Model (Ambuja Darlaghat): ${specTitle}`;
   }
 }
 
@@ -296,7 +317,7 @@ function handleFormSubmit(event) {
   const service = document.getElementById("modal-service-type")?.value || "General Inquiry";
   const details = form.querySelector("textarea")?.value || "";
 
-  alert(`Thank you, ${name}! Your contract & fleet proposal request has been received by Shree RR Trading Company.\n\nOur Director of Mining & Operations will contact you shortly.`);
+  alert(`Thank you, ${name}! Your proposal request for Shree RR Trading Company (Ambuja Cement Darlaghat operations) has been received.\n\nOur Director of Operations will contact you shortly.`);
   
   closeQuoteModal();
   form.reset();
@@ -306,7 +327,7 @@ function handleFormSubmit(event) {
 }
 
 /* ==========================================
-   5. SCROLL & ANIMATION EFFECTS
+   6. SCROLL & ANIMATION EFFECTS
    ========================================== */
 function setupScrollEffects() {
   const navbar = document.getElementById("navbar");
@@ -316,12 +337,12 @@ function setupScrollEffects() {
   window.addEventListener("scroll", () => {
     // Navbar Shrink & Glow
     if (window.scrollY > 50) {
-      navbar.style.padding = "10px 0";
-      navbar.style.background = "rgba(7, 9, 14, 0.95)";
+      navbar.style.padding = "8px 0";
+      navbar.style.background = "rgba(10, 20, 36, 0.96)";
       navbar.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.8)";
     } else {
-      navbar.style.padding = "16px 0";
-      navbar.style.background = "rgba(7, 9, 14, 0.85)";
+      navbar.style.padding = "12px 0";
+      navbar.style.background = "rgba(10, 20, 36, 0.9)";
       navbar.style.boxShadow = "none";
     }
 
@@ -391,9 +412,9 @@ function setupMobileNav() {
         navMenu.style.top = "100%";
         navMenu.style.left = "0";
         navMenu.style.width = "100%";
-        navMenu.style.background = "#0C101A";
+        navMenu.style.background = "#0A1424";
         navMenu.style.padding = "20px";
-        navMenu.style.borderBottom = "1px solid #1E293B";
+        navMenu.style.borderBottom = "1px solid #1E3056";
       }
     });
   }
