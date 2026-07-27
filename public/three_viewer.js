@@ -98,48 +98,191 @@ if (document.readyState === "complete" || document.readyState === "interactive")
 }
 
 /* ==========================================
-   1. HERO BACKGROUND 3D CAT EXCAVATOR ENGINE (EXACT SKETCHFAB MODEL 5f195244108c46e495a1e78040f02f7e)
+   1. HERO BACKGROUND 3D LOGO CAT EXCAVATOR ENGINE (STRICT LOGO PALETTE)
    ========================================== */
 function initHero3DMatrix() {
-  const iframe = document.getElementById("sketchfab-bg-iframe");
-  if (!iframe) return;
+  const container = document.getElementById("hero-3d-canvas");
+  if (!container) return;
 
-  if (window.Sketchfab) {
-    try {
-      const client = new window.Sketchfab('1.12.1', iframe);
-      client.init('5f195244108c46e495a1e78040f02f7e', {
-        success: function(api) {
-          api.start();
-          api.addEventListener('viewerready', function() {
-            let scrollPos = 0;
-            window.addEventListener('scroll', () => {
-              scrollPos = window.scrollY;
-              const total = document.documentElement.scrollHeight - window.innerHeight;
-              const progress = total > 0 ? scrollPos / total : 0;
-              const angle = progress * Math.PI * 2.2;
-              const dist = 16;
-              const eyeX = Math.sin(angle) * dist;
-              const eyeZ = Math.cos(angle) * dist;
-              const eyeY = 5 + Math.sin(progress * Math.PI * 3) * 2;
-              api.setCameraLookAt([eyeX, eyeY, eyeZ], [0, 1.5, 0], 0.2);
-            });
-          });
-        },
-        error: function(err) {
-          console.warn("Sketchfab API Load:", err);
-        },
-        autostart: 1,
-        transparent: 1,
-        ui_controls: 0,
-        ui_infos: 0,
-        ui_inspector: 0,
-        ui_watermark: 0,
-        ui_stop: 0
-      });
-    } catch(e) {
-      console.warn("Sketchfab initialization handled smoothly:", e);
-    }
+  const width = container.clientWidth || window.innerWidth;
+  const height = container.clientHeight || window.innerHeight;
+
+  // Scene, Camera, Renderer
+  ThreeEngine.heroScene = new THREE.Scene();
+  ThreeEngine.heroCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+  ThreeEngine.heroCamera.position.set(16, 10, 22);
+
+  ThreeEngine.heroRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
+  ThreeEngine.heroRenderer.setSize(width, height);
+  ThreeEngine.heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  ThreeEngine.heroRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  ThreeEngine.heroRenderer.toneMappingExposure = 1.35;
+  
+  ThreeEngine.heroRenderer.domElement.style.width = "100%";
+  ThreeEngine.heroRenderer.domElement.style.height = "100%";
+  container.appendChild(ThreeEngine.heroRenderer.domElement);
+
+  // High-Fidelity Studio Lighting Setup (Strict Logo Palette Rim Glow)
+  const ambient = new THREE.AmbientLight(0xffffff, 1.4);
+  ThreeEngine.heroScene.add(ambient);
+
+  const sunLight = new THREE.DirectionalLight(0xFFF7ED, 2.8);
+  sunLight.position.set(30, 45, 30);
+  ThreeEngine.heroScene.add(sunLight);
+
+  const logoOrangeRim = new THREE.DirectionalLight(0xFF6B00, 2.8);
+  logoOrangeRim.position.set(-25, 25, -30);
+  ThreeEngine.heroScene.add(logoOrangeRim);
+
+  const navyFillLight = new THREE.DirectionalLight(0x0B1936, 1.5);
+  navyFillLight.position.set(20, -10, 20);
+  ThreeEngine.heroScene.add(navyFillLight);
+
+  // Build Prominent 3D Logo-Colored CAT Excavator Group
+  const catExcavatorGroup = new THREE.Group();
+
+  // Strict Logo Materials: Logo Navy (#0B1936) & Excavator Orange (#FF6B00)
+  const logoOrangeMat = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.45, roughness: 0.28 });
+  const logoNavyMat = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.85, roughness: 0.2 });
+  const chromeSteelMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.98, roughness: 0.05 });
+  const glassMat = new THREE.MeshStandardMaterial({ color: 0x00D2FF, opacity: 0.5, transparent: true, metalness: 0.9, roughness: 0.1 });
+
+  // 1. Heavy Crawler Tracks & Undercarriage (Logo Navy & Chrome Sprockets)
+  const trackSideL = new THREE.Mesh(new THREE.BoxGeometry(9.0, 1.6, 1.2), logoNavyMat);
+  trackSideL.position.set(0, 0.8, 2.6);
+  const trackSideR = trackSideL.clone();
+  trackSideR.position.z = -2.6;
+  catExcavatorGroup.add(trackSideL, trackSideR);
+
+  const sprocketGeo = new THREE.CylinderGeometry(0.8, 0.8, 1.25, 18);
+  [[-3.8, 0.8, 2.6], [3.8, 0.8, 2.6], [-3.8, 0.8, -2.6], [3.8, 0.8, -2.6]].forEach(p => {
+    const sp = new THREE.Mesh(sprocketGeo, chromeSteelMat);
+    sp.rotation.x = Math.PI / 2;
+    sp.position.set(...p);
+    catExcavatorGroup.add(sp);
+  });
+
+  const xChassis = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.4, 0.9, 24), logoNavyMat);
+  xChassis.position.set(0, 1.6, 0);
+  catExcavatorGroup.add(xChassis);
+
+  // 2. Revolving House & Cab (Logo Navy Main Body & Excavator Orange Counterweight)
+  const houseMain = new THREE.Mesh(new THREE.BoxGeometry(6.2, 2.8, 4.4), logoNavyMat);
+  houseMain.position.set(-0.4, 3.2, 0);
+
+  const counterWeight = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.8, 4.4), logoOrangeMat);
+  counterWeight.position.set(-3.8, 3.2, 0);
+
+  const cabBox = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.6, 2.0), glassMat);
+  cabBox.position.set(1.0, 3.6, 1.4);
+
+  const fopsRoof = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.15, 2.2), logoNavyMat);
+  fopsRoof.position.set(1.0, 4.95, 1.4);
+
+  catExcavatorGroup.add(houseMain, counterWeight, cabBox, fopsRoof);
+
+  // 3. Hydraulic Boom, Arm & Excavator Bucket (CAT Signature Logo Styling)
+  const boomGroup = new THREE.Group();
+
+  const boomMesh = new THREE.Mesh(new THREE.BoxGeometry(7.8, 1.1, 1.0), logoNavyMat);
+  boomMesh.position.set(3.6, 2.2, 0);
+  boomMesh.rotation.z = 0.52;
+
+  const stickMesh = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.85, 0.85), logoNavyMat);
+  stickMesh.position.set(7.4, 3.6, 0);
+  stickMesh.rotation.z = -0.72;
+
+  // Hydraulic Cylinders (Chrome Steel)
+  const hydroCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.5), chromeSteelMat);
+  hydroCyl.position.set(4.0, 4.2, 0);
+  hydroCyl.rotation.z = -0.1;
+  boomGroup.add(hydroCyl);
+
+  // Excavator Bucket (Excavator Orange #FF6B00 with Chrome Teeth)
+  const bucketMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.2, 2.2), logoOrangeMat);
+  bucketMesh.position.set(9.0, 0.6, 0);
+  bucketMesh.rotation.z = Math.PI / 4;
+
+  for (let z = -0.9; z <= 0.9; z += 0.45) {
+    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.7, 4), chromeSteelMat);
+    tooth.rotation.z = -Math.PI / 2;
+    tooth.position.set(10.1, -0.3, z);
+    boomGroup.add(tooth);
   }
+
+  boomGroup.add(boomMesh, stickMesh, bucketMesh);
+  boomGroup.position.set(1.4, 3.6, 0);
+  catExcavatorGroup.add(boomGroup);
+
+  catExcavatorGroup.position.set(0, -1.2, 0);
+  catExcavatorGroup.scale.set(1.2, 1.2, 1.2);
+  ThreeEngine.heroScene.add(catExcavatorGroup);
+
+  // 4. Floating 3D Glowing Dust & Particle Field (PeachWeb 3D Style)
+  const particleGeo = new THREE.BufferGeometry();
+  const particleCount = 250;
+  const posArray = new Float32Array(particleCount * 3);
+
+  for (let i = 0; i < particleCount * 3; i += 3) {
+    posArray[i] = (Math.random() - 0.5) * 50;
+    posArray[i + 1] = (Math.random() - 0.5) * 35 + 5;
+    posArray[i + 2] = (Math.random() - 0.5) * 50;
+  }
+
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+  const particleMat = new THREE.PointsMaterial({
+    size: 0.4,
+    color: 0xFF6B00,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending
+  });
+
+  const particleMesh = new THREE.Points(particleGeo, particleMat);
+  ThreeEngine.heroScene.add(particleMesh);
+
+  // PeachWeb.io Dynamic Scrollytelling Path Engine
+  let currentScrollProgress = 0;
+
+  function onScrollUpdate() {
+    const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+    currentScrollProgress = totalHeight > 0 ? window.scrollY / totalHeight : 0;
+  }
+  window.addEventListener('scroll', onScrollUpdate);
+
+  function animateHero() {
+    requestAnimationFrame(animateHero);
+    
+    // Smooth Interpolated 3D Excavator Motion & Rotation on Scroll
+    const targetYRotation = currentScrollProgress * Math.PI * 2.5;
+    const targetXRotation = Math.sin(currentScrollProgress * Math.PI * 2) * 0.12;
+    const targetZPosition = Math.cos(currentScrollProgress * Math.PI * 1.5) * 3.0;
+
+    catExcavatorGroup.rotation.y += (targetYRotation - catExcavatorGroup.rotation.y) * 0.06 + 0.003;
+    catExcavatorGroup.rotation.x += (targetXRotation - catExcavatorGroup.rotation.x) * 0.06;
+    catExcavatorGroup.position.z += (targetZPosition - catExcavatorGroup.position.z) * 0.06;
+
+    // Hydraulic Boom Arm Digging Motion
+    boomGroup.rotation.z = Math.sin(currentScrollProgress * Math.PI * 4) * 0.15;
+
+    // Animate 3D Particles
+    particleMesh.rotation.y += 0.0015;
+    particleMesh.rotation.x += 0.0008;
+
+    ThreeEngine.heroCamera.lookAt(0, 2.5, 0);
+    ThreeEngine.heroRenderer.render(ThreeEngine.heroScene, ThreeEngine.heroCamera);
+  }
+  animateHero();
+
+  // Resize handler
+  window.addEventListener('resize', () => {
+    if (!ThreeEngine.heroRenderer) return;
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    ThreeEngine.heroCamera.aspect = w / h;
+    ThreeEngine.heroCamera.updateProjectionMatrix();
+    ThreeEngine.heroRenderer.setSize(w, h);
+  });
 }
 
 /* ==========================================
