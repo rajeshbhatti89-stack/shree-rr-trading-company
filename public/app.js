@@ -325,7 +325,7 @@ function handleFormSubmit(event) {
   form.reset();
 
   const waMsg = encodeURIComponent(`Hello Shree RR Trading Company,\n\nName: ${nameInput}\nCompany: ${companyInput}\nPhone: ${phone}\nService Required: ${service}\nDetails: ${details}`);
-  window.open(`https://wa.me/919999999999?text=${waMsg}`, '_blank');
+  window.open(`https://wa.me/917461008100?text=${waMsg}`, '_blank');
 }
 
 /* ==========================================
