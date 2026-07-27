@@ -483,14 +483,50 @@
     </div>
   </footer>
 
-  <!-- Floating Quick Actions -->
+  <!-- Floating Quick Actions & AI Fleet Assistant Chatbot -->
   <div class="floating-actions">
+    <button class="float-btn btn-chatbot" onclick="toggleChatbot()" title="AI Fleet Assistant Chatbot">
+      <i class="fa-solid fa-robot"></i>
+    </button>
     <a href="https://wa.me/917461008100?text=Hello%20Shree%20RR%20Trading%20Company,%20I%20need%20heavy%20machinery%20or%20Ambuja%20Darlaghat%20Mining%20O%26M%20quotation." target="_blank" class="float-btn btn-whatsapp" title="WhatsApp Business Direct">
       <i class="fa-brands fa-whatsapp"></i>
     </a>
     <button class="float-btn btn-primary" onclick="openQuoteModal()" title="Request Proposal">
       <i class="fa-solid fa-file-signature"></i>
     </button>
+  </div>
+
+  <!-- AI Fleet Assistant Chatbot Window -->
+  <div class="chatbot-window" id="chatbot-window">
+    <div class="chatbot-header">
+      <div class="chatbot-header-info">
+        <div class="chatbot-avatar"><i class="fa-solid fa-robot"></i></div>
+        <div class="chatbot-title">
+          <h4>AI Fleet Assistant</h4>
+          <span class="chatbot-status"><i class="fa-solid fa-circle"></i> Online 24/7</span>
+        </div>
+      </div>
+      <button class="chatbot-close" onclick="toggleChatbot()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="chatbot-messages" id="chatbot-messages">
+      <div class="chat-bubble bot">
+        Hello! Welcome to <strong>Shree RR Trading Company</strong>. How can I assist you today? Select an option below or type your inquiry.
+      </div>
+    </div>
+
+    <div class="chatbot-chips">
+      <button class="chat-chip" onclick="sendChatbotChip('Ambuja Darlaghat Mining O&M')">🚜 Ambuja Mining O&M</button>
+      <button class="chat-chip" onclick="sendChatbotChip('Equipment Rental Rates')">💰 Fleet Rental Rates</button>
+      <button class="chat-chip" onclick="sendChatbotChip('Garage Maintenance Services')">🔧 Garage O&M</button>
+      <button class="chat-chip" onclick="sendChatbotChip('Govt Highway Contracts')">🛣️ Road Contracts</button>
+      <button class="chat-chip" onclick="sendChatbotChip('Speak with Director')">📞 Contact Director</button>
+    </div>
+
+    <form class="chatbot-input-bar" onsubmit="handleChatbotSubmit(event)">
+      <input type="text" id="chatbot-input" placeholder="Type your fleet or contract question..." required autocomplete="off">
+      <button type="submit" class="chatbot-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+    </form>
   </div>
 
   <!-- Quote Request Modal Dialog (Clean Placeholder Text) -->

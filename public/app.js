@@ -428,3 +428,61 @@ function setupMobileNav() {
     });
   }
 }
+
+/* ==========================================
+   7. AI FLEET ASSISTANT CHATBOT ENGINE
+   ========================================== */
+function toggleChatbot() {
+  const win = document.getElementById("chatbot-window");
+  if (win) win.classList.toggle("active");
+}
+
+function appendChatMessage(sender, text) {
+  const container = document.getElementById("chatbot-messages");
+  if (!container) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = `chat-bubble ${sender}`;
+  bubble.innerHTML = text;
+  container.appendChild(bubble);
+  container.scrollTop = container.scrollHeight;
+}
+
+function processChatbotQuery(query) {
+  const q = query.toLowerCase();
+  let reply = "";
+
+  if (q.includes("ambuja") || q.includes("mining") || q.includes("darlaghat")) {
+    reply = "Shree RR Trading Company operates flagship <strong>Mining O&M & Tipper Fleet contracts at Ambuja Cement Darlaghat</strong> (Himachal Pradesh). We handle limestone quarry excavation, crushing feed logistics, and overburden haulage.";
+  } else if (q.includes("rate") || q.includes("rental") || q.includes("cost") || q.includes("price")) {
+    reply = "Machinery rental shift rates:<br>• <strong>Tata Tipper Truck (35T):</strong> ₹4,500/Shift<br>• <strong>CAT/Komatsu Excavator (48T):</strong> ₹8,500/Shift<br>• <strong>Bobcat S450:</strong> ₹2,800/Shift<br>• <strong>JCB 3CX:</strong> ₹3,200/Shift<br><br>Use our <a href='#calculator' onclick='toggleChatbot()'>Cost Estimator</a> for instant bulk discounts!";
+  } else if (q.includes("garage") || q.includes("maintenance") || q.includes("repair")) {
+    reply = "We establish on-site <strong>Heavy Mining Garage Facilities</strong> staffed 24/7 with hydraulic, mechanical, and electrical engineers to maintain 100% equipment availability.";
+  } else if (q.includes("road") || q.includes("govt") || q.includes("highway") || q.includes("pwd")) {
+    reply = "We execute turnkey <strong>Government Highway Contracts for HP PWD</strong>, including asphalt paving, sub-base compaction, bridge approach earthworks, and heavy road roller fleets.";
+  } else if (q.includes("contact") || q.includes("director") || q.includes("phone") || q.includes("whatsapp")) {
+    reply = "You can reach our Director of Operations directly at <strong>+91 7461008100</strong>, email <strong>Ishav.ratwan@shreerrtradingcompany.com</strong>, or click <a href='https://wa.me/917461008100' target='_blank'>Direct WhatsApp</a>.";
+  } else {
+    reply = "Thank you for contacting Shree RR Trading Company! We specialize in Mining O&M, Heavy HEMM Deployment, Garage Operations, Machine Rentals, and Govt Road Contracts. Click <button class='btn btn-primary btn-sm' onclick='openQuoteModal(); toggleChatbot();'>Request Proposal</button> for a formal quote.";
+  }
+
+  setTimeout(() => {
+    appendChatMessage("bot", reply);
+  }, 400);
+}
+
+function sendChatbotChip(chipText) {
+  appendChatMessage("user", chipText);
+  processChatbotQuery(chipText);
+}
+
+function handleChatbotSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById("chatbot-input");
+  if (!input || !input.value.trim()) return;
+
+  const val = input.value.trim();
+  appendChatMessage("user", val);
+  input.value = "";
+  processChatbotQuery(val);
+}
