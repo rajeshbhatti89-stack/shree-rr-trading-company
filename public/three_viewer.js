@@ -1,7 +1,7 @@
 /**
  * SHREE RR TRADING COMPANY - REAL-TIME THREE.JS 3D ENGINE
- * Theme: Official Logo Palette (#FF7A00 Excavator Orange & Deep Navy)
- * High-performance WebGL 3D machinery renderer & interactive particle matrix
+ * Theme: Strict Logo Palette (#0B1936 Deep Logo Navy & #FF6B00 Excavator Orange)
+ * Style: PeachWeb.io Interactive 3D Canvas, Particles & Scrollytelling
  */
 
 // Global 3D State
@@ -111,26 +111,26 @@ function initHero3DMatrix() {
   ThreeEngine.heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(ThreeEngine.heroRenderer.domElement);
 
-  // 3D Particle Topography Geometry with Logo Orange & Cyan Glow
-  const particleCount = 3200;
+  // 3D Particle Geometry with Strict Logo Palette Colors
+  const particleCount = 3500;
   const positions = new Float32Array(particleCount * 3);
   const colors = new Float32Array(particleCount * 3);
 
-  const colorOrange = new THREE.Color(0xFF7A00);
-  const colorCyan = new THREE.Color(0x00D2FF);
-  const colorNavy = new THREE.Color(0x1E3056);
+  const colorLogoOrange = new THREE.Color(0xFF6B00);
+  const colorLogoCyan = new THREE.Color(0x00D2FF);
+  const colorLogoNavy = new THREE.Color(0x1D2E54);
 
   for (let i = 0; i < particleCount; i++) {
-    const x = (Math.random() - 0.5) * 400;
-    const y = (Math.random() - 0.5) * 150;
-    const z = (Math.random() - 0.5) * 400;
+    const x = (Math.random() - 0.5) * 420;
+    const y = (Math.random() - 0.5) * 160;
+    const z = (Math.random() - 0.5) * 420;
 
     positions[i * 3] = x;
     positions[i * 3 + 1] = y;
     positions[i * 3 + 2] = z;
 
     const rand = Math.random();
-    const mixColor = rand > 0.75 ? colorOrange : (rand > 0.55 ? colorCyan : colorNavy);
+    const mixColor = rand > 0.7 ? colorLogoOrange : (rand > 0.45 ? colorLogoCyan : colorLogoNavy);
     colors[i * 3] = mixColor.r;
     colors[i * 3 + 1] = mixColor.g;
     colors[i * 3 + 2] = mixColor.b;
@@ -144,14 +144,14 @@ function initHero3DMatrix() {
     size: 2.4,
     vertexColors: true,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.85,
     blending: THREE.AdditiveBlending
   });
 
   ThreeEngine.heroParticles = new THREE.Points(particleGeometry, particleMaterial);
   ThreeEngine.heroScene.add(ThreeEngine.heroParticles);
 
-  // Interactive Mouse Motion (PeachWeb Depth Parallax)
+  // Interactive Mouse Depth Parallax (PeachWeb Style)
   let mouseX = 0, mouseY = 0;
   window.addEventListener('mousemove', (e) => {
     mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
@@ -163,7 +163,7 @@ function initHero3DMatrix() {
     requestAnimationFrame(animateHero);
     
     if (ThreeEngine.heroParticles) {
-      ThreeEngine.heroParticles.rotation.y += 0.0014;
+      ThreeEngine.heroParticles.rotation.y += 0.0015;
       ThreeEngine.heroParticles.rotation.x += 0.0006;
     }
 
@@ -198,7 +198,7 @@ function initViewer3DEngine() {
 
   // Scene
   ThreeEngine.viewerScene = new THREE.Scene();
-  ThreeEngine.viewerScene.background = new THREE.Color(0x060D1A);
+  ThreeEngine.viewerScene.background = new THREE.Color(0x050B1A);
 
   // Camera
   ThreeEngine.viewerCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
@@ -211,7 +211,7 @@ function initViewer3DEngine() {
   ThreeEngine.viewerRenderer.shadowMap.enabled = true;
   ThreeEngine.viewerRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
   ThreeEngine.viewerRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-  ThreeEngine.viewerRenderer.toneMappingExposure = 1.15;
+  ThreeEngine.viewerRenderer.toneMappingExposure = 1.2;
   container.appendChild(ThreeEngine.viewerRenderer.domElement);
 
   // OrbitControls
@@ -229,7 +229,7 @@ function initViewer3DEngine() {
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
   ThreeEngine.viewerScene.add(ambientLight);
 
-  const keySunLight = new THREE.DirectionalLight(0xFFF7ED, 2.4);
+  const keySunLight = new THREE.DirectionalLight(0xFFF7ED, 2.5);
   keySunLight.position.set(30, 45, 30);
   keySunLight.castShadow = true;
   keySunLight.shadow.mapSize.width = 2048;
@@ -237,21 +237,21 @@ function initViewer3DEngine() {
   keySunLight.shadow.bias = -0.0001;
   ThreeEngine.viewerScene.add(keySunLight);
 
-  const fillCyanLight = new THREE.DirectionalLight(0x00D2FF, 1.2);
+  const fillCyanLight = new THREE.DirectionalLight(0x00D2FF, 1.3);
   fillCyanLight.position.set(-25, 20, -20);
   ThreeEngine.viewerScene.add(fillCyanLight);
 
-  const warmOrangeRimLight = new THREE.DirectionalLight(0xFF7A00, 1.8);
+  const warmOrangeRimLight = new THREE.DirectionalLight(0xFF6B00, 2.0);
   warmOrangeRimLight.position.set(0, 25, -35);
   ThreeEngine.viewerScene.add(warmOrangeRimLight);
 
   // Ground Grid & Studio Floor
-  const gridHelper = new THREE.GridHelper(60, 60, 0xFF7A00, 0x1E3056);
+  const gridHelper = new THREE.GridHelper(60, 60, 0xFF6B00, 0x1D2E54);
   gridHelper.position.y = -0.01;
   ThreeEngine.viewerScene.add(gridHelper);
 
   const floorGeo = new THREE.PlaneGeometry(100, 100);
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x050A14, roughness: 0.85, metalness: 0.2 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x040916, roughness: 0.85, metalness: 0.2 });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
@@ -298,29 +298,27 @@ function loadProcedural3DModel(type) {
   ThreeEngine.currentModelType = type;
   const group = new THREE.Group();
 
-  // Realistic PBR Industrial Materials Matching Logo (#FF7A00 Excavator Orange & Deep Navy)
-  const logoOrangeEnamel = new THREE.MeshStandardMaterial({ color: 0xFF7A00, metalness: 0.45, roughness: 0.3, wireframe: ThreeEngine.isWireframe });
-  const darkNavySteel = new THREE.MeshStandardMaterial({ color: 0x0F1C3F, metalness: 0.85, roughness: 0.2, wireframe: ThreeEngine.isWireframe });
+  // Strict Logo Materials (#FF6B00 Excavator Orange & #0B1936 Logo Navy)
+  const logoOrangeEnamel = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.45, roughness: 0.3, wireframe: ThreeEngine.isWireframe });
+  const logoNavySteel = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.85, roughness: 0.2, wireframe: ThreeEngine.isWireframe });
   const chromeSteel = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.98, roughness: 0.05, wireframe: ThreeEngine.isWireframe });
   const rubberTire = new THREE.MeshStandardMaterial({ color: 0x070C16, roughness: 0.92, metalness: 0.1, wireframe: ThreeEngine.isWireframe });
   const rimSteel = new THREE.MeshStandardMaterial({ color: 0xCBD5E1, metalness: 0.9, roughness: 0.2, wireframe: ThreeEngine.isWireframe });
   const glassMat = new THREE.MeshStandardMaterial({ color: 0x00D2FF, opacity: 0.45, transparent: true, metalness: 0.9, roughness: 0.1, wireframe: ThreeEngine.isWireframe });
   const emissiveRed = new THREE.MeshStandardMaterial({ color: 0xEF4444, emissive: 0xEF4444, emissiveIntensity: 0.8 });
-  const emissiveOrange = new THREE.MeshStandardMaterial({ color: 0xFF7A00, emissive: 0xFF7A00, emissiveIntensity: 0.8 });
+  const emissiveOrange = new THREE.MeshStandardMaterial({ color: 0xFF6B00, emissive: 0xFF6B00, emissiveIntensity: 0.9 });
   const ledHeadlight = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, emissive: 0xFFFFFF, emissiveIntensity: 1.2 });
 
   if (type === 'tipper') {
     // --- TATA SIGNA 3525.K HEAVY TIPPER TRUCK ---
-
-    // 1. Chassis Main I-Beams
-    const beam1 = new THREE.Mesh(new THREE.BoxGeometry(11, 0.4, 0.2), darkNavySteel);
+    const beam1 = new THREE.Mesh(new THREE.BoxGeometry(11, 0.4, 0.2), logoNavySteel);
     beam1.position.set(0, 1.8, 1.1);
     const beam2 = beam1.clone();
     beam2.position.z = -1.1;
     group.add(beam1, beam2);
 
     for (let x = -4.5; x <= 4.5; x += 1.8) {
-      const cross = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.35, 2.2), darkNavySteel);
+      const cross = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.35, 2.2), logoNavySteel);
       cross.position.set(x, 1.8, 0);
       group.add(cross);
     }
@@ -330,8 +328,8 @@ function loadProcedural3DModel(type) {
     fuelTank.position.set(0.5, 1.6, 1.6);
     group.add(fuelTank);
 
-    // Driver Cabin (Logo Orange & Dark Navy)
-    const cabMain = new THREE.Mesh(new THREE.BoxGeometry(3.2, 3.4, 3.4), darkNavySteel);
+    // Driver Cabin (Logo Orange & Logo Navy)
+    const cabMain = new THREE.Mesh(new THREE.BoxGeometry(3.2, 3.4, 3.4), logoNavySteel);
     cabMain.position.set(3.8, 3.8, 0);
     cabMain.castShadow = true;
     group.add(cabMain);
@@ -367,20 +365,20 @@ function loadProcedural3DModel(type) {
     headlightR.position.z = -1.2;
     group.add(headlightL, headlightR);
 
-    // Tipper Dump Bed (Logo Orange Accent Ribs)
+    // Tipper Dump Bed (Logo Orange Stiffener Ribs)
     const bedGroup = new THREE.Group();
-    const bedFloor = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.3, 3.4), darkNavySteel);
+    const bedFloor = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.3, 3.4), logoNavySteel);
     bedFloor.position.set(-0.2, 0.15, 0);
 
-    const bedSideL = new THREE.Mesh(new THREE.BoxGeometry(7.2, 2.8, 0.2), darkNavySteel);
+    const bedSideL = new THREE.Mesh(new THREE.BoxGeometry(7.2, 2.8, 0.2), logoNavySteel);
     bedSideL.position.set(-0.2, 1.55, 1.6);
     const bedSideR = bedSideL.clone();
     bedSideR.position.z = -1.6;
 
-    const bedFront = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.8, 3.4), darkNavySteel);
+    const bedFront = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.8, 3.4), logoNavySteel);
     bedFront.position.set(3.3, 2.0, 0);
 
-    const bedTailgate = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.8, 3.4), darkNavySteel);
+    const bedTailgate = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.8, 3.4), logoNavySteel);
     bedTailgate.position.set(-3.7, 1.55, 0);
 
     bedGroup.add(bedFloor, bedSideL, bedSideR, bedFront, bedTailgate);
@@ -398,7 +396,7 @@ function loadProcedural3DModel(type) {
     bedGroup.castShadow = true;
     group.add(bedGroup);
 
-    const hydroOuter = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 2.5), darkNavySteel);
+    const hydroOuter = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 2.5), logoNavySteel);
     hydroOuter.position.set(1.6, 2.6, 0);
     hydroOuter.rotation.z = -0.3;
     const hydroInner = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 2.5), chromeSteel);
@@ -406,7 +404,7 @@ function loadProcedural3DModel(type) {
     hydroInner.rotation.z = -0.3;
     group.add(hydroOuter, hydroInner);
 
-    // 8x4 Tires
+    // 8x4 Axle Wheels
     const wheelPositions = [
       [4.2, 1.2, 1.9], [4.2, 1.2, -1.9],
       [2.2, 1.2, 1.9], [2.2, 1.2, -1.9],
@@ -431,10 +429,10 @@ function loadProcedural3DModel(type) {
     });
 
   } else if (type === 'excavator') {
-    // --- CAT 380 / KOMATSU PC500 MINING EXCAVATOR (Matching Logo Bucket & Body) ---
+    // --- CAT 380 / KOMATSU PC500 MINING EXCAVATOR (Exact Match to Logo Excavator) ---
 
     const trackSideL = new THREE.BoxGeometry(7.5, 1.4, 0.9);
-    const trackMeshL = new THREE.Mesh(trackSideL, darkNavySteel);
+    const trackMeshL = new THREE.Mesh(trackSideL, logoNavySteel);
     trackMeshL.position.set(0, 0.9, 2.2);
     const trackMeshR = trackMeshL.clone();
     trackMeshR.position.z = -2.2;
@@ -448,12 +446,11 @@ function loadProcedural3DModel(type) {
       group.add(sp);
     });
 
-    const xFrame = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.2, 0.8, 24), darkNavySteel);
+    const xFrame = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.2, 0.8, 24), logoNavySteel);
     xFrame.position.set(0, 1.6, 0);
     group.add(xFrame);
 
-    // Revolving Upper House (Logo Orange & Dark Navy)
-    const houseMain = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.4, 3.8), darkNavySteel);
+    const houseMain = new THREE.Mesh(new THREE.BoxGeometry(5.2, 2.4, 3.8), logoNavySteel);
     houseMain.position.set(-0.4, 3.0, 0);
     houseMain.castShadow = true;
     group.add(houseMain);
@@ -466,20 +463,20 @@ function loadProcedural3DModel(type) {
     cabBox.position.set(0.8, 3.2, 1.2);
     group.add(cabBox);
 
-    const fopsGuard = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.15, 1.7), darkNavySteel);
+    const fopsGuard = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.15, 1.7), logoNavySteel);
     fopsGuard.position.set(0.8, 4.35, 1.2);
     group.add(fopsGuard);
 
-    // Boom & Orange Excavation Bucket (Exact Match to Logo)
+    // Boom & Excavation Bucket (Matching Logo Image)
     const boomGroup = new THREE.Group();
 
-    const boomMesh = new THREE.Mesh(new THREE.BoxGeometry(6.5, 0.9, 0.8), darkNavySteel);
+    const boomMesh = new THREE.Mesh(new THREE.BoxGeometry(6.5, 0.9, 0.8), logoNavySteel);
     boomMesh.position.set(3.0, 2.0, 0);
     boomMesh.rotation.z = 0.55;
     boomMesh.castShadow = true;
     boomGroup.add(boomMesh);
 
-    const stickMesh = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.7, 0.7), darkNavySteel);
+    const stickMesh = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.7, 0.7), logoNavySteel);
     stickMesh.position.set(6.2, 3.2, 0);
     stickMesh.rotation.z = -0.75;
     stickMesh.castShadow = true;
@@ -503,13 +500,13 @@ function loadProcedural3DModel(type) {
 
   } else if (type === 'bobcat') {
     // --- BOBCAT S450 COMPACT LOADER ---
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.4, 2.4), darkNavySteel);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.4, 2.4), logoNavySteel);
     body.position.set(0, 2.2, 0);
     body.castShadow = true;
     group.add(body);
 
     const cageGeo = new THREE.BoxGeometry(2.2, 2.0, 2.2);
-    const cage = new THREE.Mesh(cageGeo, darkNavySteel);
+    const cage = new THREE.Mesh(cageGeo, logoNavySteel);
     cage.position.set(-0.1, 4.0, 0);
     group.add(cage);
 
@@ -548,7 +545,7 @@ function loadProcedural3DModel(type) {
     cab.position.set(-0.2, 4.3, 0);
     group.add(cab);
 
-    const frontArmL = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.4, 0.3), darkNavySteel);
+    const frontArmL = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.4, 0.3), logoNavySteel);
     frontArmL.position.set(3.0, 2.5, 1.3);
     frontArmL.rotation.z = -0.15;
     const frontArmR = frontArmL.clone();
@@ -563,7 +560,7 @@ function loadProcedural3DModel(type) {
     const backBoom = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.6, 0.5), logoOrangeEnamel);
     backBoom.position.set(-4.2, 3.8, 0);
     backBoom.rotation.z = -0.6;
-    const dipper = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.5, 0.5), darkNavySteel);
+    const dipper = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.5, 0.5), logoNavySteel);
     dipper.position.set(-5.8, 2.4, 0);
     dipper.rotation.z = 0.7;
 
@@ -598,7 +595,7 @@ function loadProcedural3DModel(type) {
     rearDrum.position.set(-2.6, 1.7, 0);
     group.add(rearDrum);
 
-    const roof = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.18, 2.5), darkNavySteel);
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.18, 2.5), logoNavySteel);
     roof.position.set(0, 6.0, 0);
     group.add(roof);
   }

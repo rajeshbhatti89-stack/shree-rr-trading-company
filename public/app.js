@@ -174,6 +174,8 @@ function renderFleetCatalog(filterCategory) {
       </button>
     </div>
   `).join("");
+
+  setupPeachWebTiltEffects();
 }
 
 function setupFilterTabs() {
