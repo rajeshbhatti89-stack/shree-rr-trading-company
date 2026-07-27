@@ -134,21 +134,7 @@ function initHero3DMatrix() {
   navyFillLight.position.set(20, -10, 20);
   ThreeEngine.heroScene.add(navyFillLight);
 
-  // 1. Ambient 3D Geometric Ring Accents (Strict Logo Palette)
-  const ringsGroup = new THREE.Group();
-
-  const orangeRingMat = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.5, roughness: 0.2, wireframe: true });
-  const navyRingMat = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.8, roughness: 0.2, wireframe: true });
-
-  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(12, 0.15, 16, 100), orangeRingMat);
-  ring1.rotation.x = Math.PI / 3;
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(18, 0.2, 16, 100), navyRingMat);
-  ring2.rotation.y = Math.PI / 4;
-
-  ringsGroup.add(ring1, ring2);
-  ThreeEngine.heroScene.add(ringsGroup);
-
-  // 2. Floating 3D Glowing Dust & Particle Field (400 Particles)
+  // Floating 3D Glowing Dust & Particle Field (400 Particles Strictly)
   const particleGeo = new THREE.BufferGeometry();
   const particleCount = 400;
   const posArray = new Float32Array(particleCount * 3);
@@ -171,7 +157,7 @@ function initHero3DMatrix() {
   const particleMesh = new THREE.Points(particleGeo, particleMat);
   ThreeEngine.heroScene.add(particleMesh);
 
-  // PeachWeb.io Dynamic Scrollytelling Engine
+  // Dynamic Scrollytelling Particle Rotation Engine
   let currentScrollProgress = 0;
 
   function onScrollUpdate() {
@@ -183,13 +169,10 @@ function initHero3DMatrix() {
   function animateHero() {
     requestAnimationFrame(animateHero);
     
-    // Smooth Camera & 3D Ring Motion on Scroll
-    const targetYAngle = currentScrollProgress * Math.PI * 2;
+    // Smooth Camera & Particle Motion on Scroll
     const targetYPos = 10 - currentScrollProgress * 8;
-
-    ringsGroup.rotation.y += 0.003 + (targetYAngle - ringsGroup.rotation.y) * 0.04;
-    ringsGroup.rotation.x = Math.sin(currentScrollProgress * Math.PI * 2) * 0.4;
-    particleMesh.rotation.y += 0.001;
+    particleMesh.rotation.y += 0.0015 + currentScrollProgress * 0.002;
+    particleMesh.rotation.x += 0.0008;
 
     ThreeEngine.heroCamera.position.y += (targetYPos - ThreeEngine.heroCamera.position.y) * 0.05;
     ThreeEngine.heroCamera.lookAt(0, 0, 0);
