@@ -60,18 +60,31 @@ function writeDb(data) {
 
 // --- SUBDOMAIN & PATH ROUTING MIDDLEWARE ---
 app.use((req, res, next) => {
-  const host = req.headers.host || '';
-  // Check if host starts with payroll. (e.g., payroll.shreerrtradingcompany.com or payroll.localhost:3005)
-  const isPayrollSubdomain = host.toLowerCase().startsWith('payroll.');
+  // Check both host and x-forwarded-host for proxy / Render / Cloudflare compatibility
+  const rawHost = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const host = String(rawHost).toLowerCase();
+  const isPayrollSubdomain = host.startsWith('payroll.');
 
-  if (isPayrollSubdomain && req.path === '/') {
+  if (isPayrollSubdomain) {
+    // If request is for API endpoint, pass to API handlers below
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+
+    // Serve static files from PAYROLL_DIR if file exists
+    const requestedFile = path.join(PAYROLL_DIR, req.path);
+    if (fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
+      return res.sendFile(requestedFile);
+    }
+
+    // Fallback: serve payroll portal index.html
     return res.sendFile(path.join(PAYROLL_DIR, 'index.html'));
   }
 
   next();
 });
 
-// Explicit route for /payroll
+// Explicit route for /payroll when accessed on main domain
 app.get('/payroll', (req, res) => {
   res.sendFile(path.join(PAYROLL_DIR, 'index.html'));
 });
