@@ -89,16 +89,15 @@ p {
 .peach-glass {
   background: #FFFFFF !important;
   border: 1px solid var(--border-light) !important;
-  backdrop-filter: blur(20px);
   box-shadow: 0 10px 30px rgba(11, 25, 54, 0.06), 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   border-radius: 20px;
 }
 
 .peach-glass:hover {
-  transform: translateY(-6px) scale(1.01);
+  transform: none !important;
   border-color: var(--logo-orange) !important;
-  box-shadow: 0 20px 45px rgba(11, 25, 54, 0.12), 0 0 25px var(--logo-orange-glow);
+  box-shadow: 0 15px 35px rgba(11, 25, 54, 0.1), 0 0 20px var(--logo-orange-glow);
 }
 
 /* Buttons */
@@ -218,6 +217,11 @@ p {
 }
 
 /* Header & Section Common */
+section {
+  position: relative;
+  z-index: 2;
+}
+
 .section-header {
   margin-bottom: 56px;
 }
@@ -349,13 +353,14 @@ p {
 }
 
 .hero-canvas-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  opacity: 0.6;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
 }
 
 .hero-overlay {
@@ -364,8 +369,8 @@ p {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.4) 0%, rgba(248, 250, 252, 0.95) 85%);
-  z-index: 2;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.4) 0%, rgba(248, 250, 252, 0.92) 85%);
+  z-index: 1;
   pointer-events: none;
 }
 

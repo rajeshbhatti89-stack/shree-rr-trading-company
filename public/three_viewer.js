@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ==========================================
-   1. HERO BACKGROUND 3D PARTICLE MATRIX
+   1. HERO BACKGROUND 3D CAT EXCAVATOR ENGINE (SCROLL DRIVEN)
    ========================================== */
 function initHero3DMatrix() {
   const container = document.getElementById("hero-3d-canvas");
@@ -103,74 +103,98 @@ function initHero3DMatrix() {
 
   // Scene, Camera, Renderer
   ThreeEngine.heroScene = new THREE.Scene();
-  ThreeEngine.heroCamera = new THREE.PerspectiveCamera(60, width / height, 1, 1000);
-  ThreeEngine.heroCamera.position.set(0, 50, 120);
+  ThreeEngine.heroCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+  ThreeEngine.heroCamera.position.set(18, 12, 22);
 
   ThreeEngine.heroRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   ThreeEngine.heroRenderer.setSize(width, height);
   ThreeEngine.heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  ThreeEngine.heroRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  ThreeEngine.heroRenderer.toneMappingExposure = 1.25;
   container.appendChild(ThreeEngine.heroRenderer.domElement);
 
-  // 3D Particle Geometry with Strict Logo Palette Colors
-  const particleCount = 3500;
-  const positions = new Float32Array(particleCount * 3);
-  const colors = new Float32Array(particleCount * 3);
+  // Studio Lighting for Background CAT Model
+  const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+  ThreeEngine.heroScene.add(ambient);
 
-  const colorLogoOrange = new THREE.Color(0xFF6B00);
-  const colorLogoCyan = new THREE.Color(0x00D2FF);
-  const colorLogoNavy = new THREE.Color(0x1D2E54);
+  const sunLight = new THREE.DirectionalLight(0xFFF7ED, 2.5);
+  sunLight.position.set(25, 40, 25);
+  ThreeEngine.heroScene.add(sunLight);
 
-  for (let i = 0; i < particleCount; i++) {
-    const x = (Math.random() - 0.5) * 420;
-    const y = (Math.random() - 0.5) * 160;
-    const z = (Math.random() - 0.5) * 420;
+  const orangeRim = new THREE.DirectionalLight(0xFF6B00, 2.2);
+  orangeRim.position.set(-20, 20, -25);
+  ThreeEngine.heroScene.add(orangeRim);
 
-    positions[i * 3] = x;
-    positions[i * 3 + 1] = y;
-    positions[i * 3 + 2] = z;
+  // Build CAT Excavator 3D Model Group for Background
+  const catExcavatorGroup = new THREE.Group();
 
-    const rand = Math.random();
-    const mixColor = rand > 0.7 ? colorLogoOrange : (rand > 0.45 ? colorLogoCyan : colorLogoNavy);
-    colors[i * 3] = mixColor.r;
-    colors[i * 3 + 1] = mixColor.g;
-    colors[i * 3 + 2] = mixColor.b;
+  const logoOrangeMat = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.4, roughness: 0.3 });
+  const logoNavyMat = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.8, roughness: 0.2 });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.9, roughness: 0.1 });
+  const glassMat = new THREE.MeshStandardMaterial({ color: 0x00D2FF, opacity: 0.5, transparent: true, metalness: 0.9 });
+
+  // 1. Crawler Tracks
+  const trackL = new THREE.Mesh(new THREE.BoxGeometry(8, 1.5, 1.0), logoNavyMat);
+  trackL.position.set(0, 0.75, 2.4);
+  const trackR = trackL.clone();
+  trackR.position.z = -2.4;
+  catExcavatorGroup.add(trackL, trackR);
+
+  // 2. Main Chassis & Revolving House
+  const bodyMain = new THREE.Mesh(new THREE.BoxGeometry(5.6, 2.6, 4.0), logoNavyMat);
+  bodyMain.position.set(-0.2, 2.8, 0);
+
+  const counterWeight = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.6, 4.0), logoOrangeMat);
+  counterWeight.position.set(-3.2, 2.8, 0);
+
+  const cab = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.4, 1.8), glassMat);
+  cab.position.set(1.0, 3.2, 1.3);
+
+  catExcavatorGroup.add(bodyMain, counterWeight, cab);
+
+  // 3. Excavator Boom, Stick & Orange Bucket (CAT Model)
+  const boomGroup = new THREE.Group();
+
+  const boom = new THREE.Mesh(new THREE.BoxGeometry(7.0, 1.0, 0.9), logoNavyMat);
+  boom.position.set(3.2, 2.0, 0);
+  boom.rotation.z = 0.55;
+
+  const stick = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.8, 0.8), logoNavyMat);
+  stick.position.set(6.6, 3.2, 0);
+  stick.rotation.z = -0.75;
+
+  const bucket = new THREE.Mesh(new THREE.BoxGeometry(1.8, 2.0, 2.0), logoOrangeMat);
+  bucket.position.set(8.0, 0.5, 0);
+  bucket.rotation.z = Math.PI / 4;
+
+  for (let z = -0.8; z <= 0.8; z += 0.4) {
+    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.65, 4), steelMat);
+    tooth.rotation.z = -Math.PI / 2;
+    tooth.position.set(9.0, -0.3, z);
+    boomGroup.add(tooth);
   }
 
-  const particleGeometry = new THREE.BufferGeometry();
-  particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  boomGroup.add(boom, stick, bucket);
+  boomGroup.position.set(1.2, 3.2, 0);
+  catExcavatorGroup.add(boomGroup);
 
-  const particleMaterial = new THREE.PointsMaterial({
-    size: 2.4,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.85,
-    blending: THREE.AdditiveBlending
+  catExcavatorGroup.position.set(0, -1, 0);
+  ThreeEngine.heroScene.add(catExcavatorGroup);
+
+  // Scroll Rotation Driven Animation
+  let scrollY = 0;
+  window.addEventListener('scroll', () => {
+    scrollY = window.scrollY;
   });
 
-  ThreeEngine.heroParticles = new THREE.Points(particleGeometry, particleMaterial);
-  ThreeEngine.heroScene.add(ThreeEngine.heroParticles);
-
-  // Interactive Mouse Depth Parallax (PeachWeb Style)
-  let mouseX = 0, mouseY = 0;
-  window.addEventListener('mousemove', (e) => {
-    mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
-    mouseY = (e.clientY - window.innerHeight / 2) * 0.05;
-  });
-
-  // Animation Loop
   function animateHero() {
     requestAnimationFrame(animateHero);
     
-    if (ThreeEngine.heroParticles) {
-      ThreeEngine.heroParticles.rotation.y += 0.0015;
-      ThreeEngine.heroParticles.rotation.x += 0.0006;
-    }
-
-    ThreeEngine.heroCamera.position.x += (mouseX - ThreeEngine.heroCamera.position.x) * 0.04;
-    ThreeEngine.heroCamera.position.y += (-mouseY - ThreeEngine.heroCamera.position.y) * 0.04;
-    ThreeEngine.heroCamera.lookAt(ThreeEngine.heroScene.position);
-
+    // Smooth CAT Excavator Rotation on Scroll
+    const targetRotation = scrollY * 0.0025;
+    catExcavatorGroup.rotation.y += (targetRotation - catExcavatorGroup.rotation.y) * 0.05 + 0.003;
+    
+    ThreeEngine.heroCamera.lookAt(0, 2, 0);
     ThreeEngine.heroRenderer.render(ThreeEngine.heroScene, ThreeEngine.heroCamera);
   }
   animateHero();
