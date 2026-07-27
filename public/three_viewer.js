@@ -138,84 +138,168 @@ function initHero3DMatrix() {
   navyFillLight.position.set(20, -10, 20);
   ThreeEngine.heroScene.add(navyFillLight);
 
-  // Build Prominent 3D Logo-Colored CAT Excavator Group
+  // Build CAD-Precision Photorealistic 3D CAT Excavator Group
   const catExcavatorGroup = new THREE.Group();
 
-  // Strict Logo Materials: Logo Navy (#0B1936) & Excavator Orange (#FF6B00)
-  const logoOrangeMat = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.45, roughness: 0.28 });
-  const logoNavyMat = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.85, roughness: 0.2 });
-  const chromeSteelMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.98, roughness: 0.05 });
-  const glassMat = new THREE.MeshStandardMaterial({ color: 0x00D2FF, opacity: 0.5, transparent: true, metalness: 0.9, roughness: 0.1 });
+  // Photorealistic PBR Materials (Logo Palette + Industrial CAD Steel)
+  const catOrangePaint = new THREE.MeshStandardMaterial({ color: 0xFF6B00, metalness: 0.35, roughness: 0.18 });
+  const catNavyPaint = new THREE.MeshStandardMaterial({ color: 0x0B1936, metalness: 0.82, roughness: 0.22 });
+  const heavySteelMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.9, roughness: 0.35 });
+  const chromeRodMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.98, roughness: 0.04 });
+  const rubberTreadMat = new THREE.MeshStandardMaterial({ color: 0x0F172A, metalness: 0.2, roughness: 0.9 });
+  const cabGlassMat = new THREE.MeshStandardMaterial({ color: 0x00D2FF, opacity: 0.45, transparent: true, metalness: 0.95, roughness: 0.05 });
+  const lampGlowMat = new THREE.MeshStandardMaterial({ color: 0xFFFBEB, emissive: 0xFFD166, emissiveIntensity: 0.8 });
 
-  // 1. Heavy Crawler Tracks & Undercarriage (Logo Navy & Chrome Sprockets)
-  const trackSideL = new THREE.Mesh(new THREE.BoxGeometry(9.0, 1.6, 1.2), logoNavyMat);
-  trackSideL.position.set(0, 0.8, 2.6);
-  const trackSideR = trackSideL.clone();
-  trackSideR.position.z = -2.6;
-  catExcavatorGroup.add(trackSideL, trackSideR);
+  // 1. CRAWLER UNDERCARRIAGE (Realistic Track Shoes, Idlers, Sprockets & Roller Frames)
+  const trackGroup = new THREE.Group();
 
-  const sprocketGeo = new THREE.CylinderGeometry(0.8, 0.8, 1.25, 18);
-  [[-3.8, 0.8, 2.6], [3.8, 0.8, 2.6], [-3.8, 0.8, -2.6], [3.8, 0.8, -2.6]].forEach(p => {
-    const sp = new THREE.Mesh(sprocketGeo, chromeSteelMat);
-    sp.rotation.x = Math.PI / 2;
-    sp.position.set(...p);
-    catExcavatorGroup.add(sp);
+  [-2.6, 2.6].forEach(zPos => {
+    // Track Frame Side Members
+    const sideFrame = new THREE.Mesh(new THREE.BoxGeometry(9.6, 1.4, 1.0), catNavyPaint);
+    sideFrame.position.set(0, 0.8, zPos);
+    trackGroup.add(sideFrame);
+
+    // Drive Sprocket (Rear) & Front Idler (Front)
+    const rearSprocket = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 1.1, 20), heavySteelMat);
+    rearSprocket.rotation.x = Math.PI / 2;
+    rearSprocket.position.set(-4.2, 0.95, zPos);
+
+    const frontIdler = rearSprocket.clone();
+    frontIdler.position.set(4.2, 0.95, zPos);
+    trackGroup.add(rearSprocket, frontIdler);
+
+    // Bottom Rollers (5 rollers per track)
+    for (let r = -3.0; r <= 3.0; r += 1.5) {
+      const roller = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.05, 12), heavySteelMat);
+      roller.rotation.x = Math.PI / 2;
+      roller.position.set(r, 0.35, zPos);
+      trackGroup.add(roller);
+    }
+
+    // Individual Track Shoes (Looping tread loop)
+    const shoeGeo = new THREE.BoxGeometry(0.55, 0.12, 1.35);
+    for (let i = 0; i < 28; i++) {
+      const angle = (i / 28) * Math.PI * 2;
+      const x = Math.cos(angle) * 4.2;
+      const y = Math.sin(angle) * 0.95 + 0.95;
+      const shoe = new THREE.Mesh(shoeGeo, rubberTreadMat);
+      shoe.position.set(x, y, zPos);
+      shoe.rotation.z = angle + Math.PI / 2;
+      trackGroup.add(shoe);
+    }
   });
 
-  const xChassis = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.4, 0.9, 24), logoNavyMat);
-  xChassis.position.set(0, 1.6, 0);
-  catExcavatorGroup.add(xChassis);
+  // Center X-Chassis & Swing Bearing
+  const centerCarbody = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.6, 1.1, 28), catNavyPaint);
+  centerCarbody.position.set(0, 1.45, 0);
 
-  // 2. Revolving House & Cab (Logo Navy Main Body & Excavator Orange Counterweight)
-  const houseMain = new THREE.Mesh(new THREE.BoxGeometry(6.2, 2.8, 4.4), logoNavyMat);
-  houseMain.position.set(-0.4, 3.2, 0);
+  const swingBearing = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 1.8, 0.25, 32), heavySteelMat);
+  swingBearing.position.set(0, 2.05, 0);
 
-  const counterWeight = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.8, 4.4), logoOrangeMat);
-  counterWeight.position.set(-3.8, 3.2, 0);
+  trackGroup.add(centerCarbody, swingBearing);
+  catExcavatorGroup.add(trackGroup);
 
-  const cabBox = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.6, 2.0), glassMat);
-  cabBox.position.set(1.0, 3.6, 1.4);
+  // 2. REVOLVING HOUSE & CANOPY (Engine Hood, Counterweight, Exhaust & ROPS/FOPS Cab)
+  const houseGroup = new THREE.Group();
 
-  const fopsRoof = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.15, 2.2), logoNavyMat);
-  fopsRoof.position.set(1.0, 4.95, 1.4);
+  // Lower Main Platform Frame
+  const platformDeck = new THREE.Mesh(new THREE.BoxGeometry(6.6, 0.4, 4.8), heavySteelMat);
+  platformDeck.position.set(-0.3, 2.35, 0);
 
-  catExcavatorGroup.add(houseMain, counterWeight, cabBox, fopsRoof);
+  // Engine Enclosure Body (Cat Navy)
+  const engineBody = new THREE.Mesh(new THREE.BoxGeometry(5.8, 2.6, 4.4), catNavyPaint);
+  engineBody.position.set(-0.5, 3.85, -0.1);
 
-  // 3. Hydraulic Boom, Arm & Excavator Bucket (CAT Signature Logo Styling)
+  // Sloped Heavy Counterweight (Cat Orange with Logo Steel Accent)
+  const counterWeight = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.8, 4.5), catOrangePaint);
+  counterWeight.position.set(-4.0, 3.85, 0);
+
+  const logoBadgePlate = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 3.6), catNavyPaint);
+  logoBadgePlate.position.set(-5.15, 3.85, 0);
+
+  // Exhaust Stack & Air Cleaner
+  const exhaustPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 1.8, 16), heavySteelMat);
+  exhaustPipe.position.set(-2.8, 5.8, -1.5);
+
+  const exhaustCap = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.4, 12), heavySteelMat);
+  exhaustCap.position.set(-2.8, 6.7, -1.5);
+
+  const airFilter = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.8, 16), catNavyPaint);
+  airFilter.position.set(-1.8, 5.5, -1.5);
+
+  // Operator Cab (ROPS Steel Structure with Tinted Glass & Roof Spotlights)
+  const cabFrame = new THREE.Mesh(new THREE.BoxGeometry(3.0, 2.8, 2.2), catNavyPaint);
+  cabFrame.position.set(0.9, 4.05, 1.35);
+
+  const cabGlass = new THREE.Mesh(new THREE.BoxGeometry(2.85, 2.55, 2.05), cabGlassMat);
+  cabGlass.position.set(0.9, 4.05, 1.38);
+
+  const cabRoof = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 2.4), catOrangePaint);
+  cabRoof.position.set(0.9, 5.55, 1.35);
+
+  // Cab Work Lights
+  const lightL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.3), lampGlowMat);
+  lightL.position.set(2.4, 5.3, 2.1);
+  const lightR = lightL.clone();
+  lightR.position.z = 0.6;
+
+  houseGroup.add(platformDeck, engineBody, counterWeight, logoBadgePlate, exhaustPipe, exhaustCap, airFilter, cabFrame, cabGlass, cabRoof, lightL, lightR);
+  catExcavatorGroup.add(houseGroup);
+
+  // 3. HEAVY BOOM, STICK & HYDRAULIC DIGGING ASSEMBLY
   const boomGroup = new THREE.Group();
 
-  const boomMesh = new THREE.Mesh(new THREE.BoxGeometry(7.8, 1.1, 1.0), logoNavyMat);
-  boomMesh.position.set(3.6, 2.2, 0);
-  boomMesh.rotation.z = 0.52;
+  // Boom Main Pivot Bracket
+  const boomFoot = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 16), heavySteelMat);
+  boomFoot.rotation.x = Math.PI / 2;
+  boomFoot.position.set(1.8, 3.8, 0);
+  boomGroup.add(boomFoot);
 
-  const stickMesh = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.85, 0.85), logoNavyMat);
-  stickMesh.position.set(7.4, 3.6, 0);
-  stickMesh.rotation.z = -0.72;
+  // Main Box Boom Arm (Curved High-Strength Welded Steel)
+  const boomMesh = new THREE.Mesh(new THREE.BoxGeometry(8.4, 1.2, 1.1), catNavyPaint);
+  boomMesh.position.set(5.2, 5.4, 0);
+  boomMesh.rotation.z = 0.48;
 
-  // Hydraulic Cylinders (Chrome Steel)
-  const hydroCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 4.5), chromeSteelMat);
-  hydroCyl.position.set(4.0, 4.2, 0);
-  hydroCyl.rotation.z = -0.1;
-  boomGroup.add(hydroCyl);
+  // Stick Arm
+  const stickMesh = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.95, 0.9), catNavyPaint);
+  stickMesh.position.set(9.4, 6.2, 0);
+  stickMesh.rotation.z = -0.75;
 
-  // Excavator Bucket (Excavator Orange #FF6B00 with Chrome Teeth)
-  const bucketMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.2, 2.2), logoOrangeMat);
-  bucketMesh.position.set(9.0, 0.6, 0);
-  bucketMesh.rotation.z = Math.PI / 4;
+  // Hydraulic Cylinders (Dual Main Boom Cylinders + Stick Cylinder)
+  const boomCylinderL = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 4.8, 16), heavySteelMat);
+  boomCylinderL.position.set(3.4, 3.8, 0.65);
+  boomCylinderL.rotation.z = 0.82;
 
-  for (let z = -0.9; z <= 0.9; z += 0.45) {
-    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.7, 4), chromeSteelMat);
-    tooth.rotation.z = -Math.PI / 2;
-    tooth.position.set(10.1, -0.3, z);
-    boomGroup.add(tooth);
+  const boomRodL = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 4.2, 16), chromeRodMat);
+  boomRodL.position.set(5.0, 5.3, 0.65);
+  boomRodL.rotation.z = 0.82;
+
+  const boomCylinderR = boomCylinderL.clone();
+  boomCylinderR.position.z = -0.65;
+  const boomRodR = boomRodL.clone();
+  boomRodR.position.z = -0.65;
+
+  boomGroup.add(boomMesh, stickMesh, boomCylinderL, boomRodL, boomCylinderR, boomRodR);
+
+  // Heavy Excavator Bucket (Cat Orange #FF6B00 Shell with 5 Forged Teeth)
+  const bucketGroup = new THREE.Group();
+  const bucketShell = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.4, 2.4), catOrangePaint);
+  bucketShell.position.set(11.2, 3.0, 0);
+  bucketShell.rotation.z = Math.PI / 3.8;
+
+  for (let z = -0.95; z <= 0.95; z += 0.48) {
+    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.8, 4), heavySteelMat);
+    tooth.rotation.z = -Math.PI / 2.2;
+    tooth.position.set(12.4, 2.0, z);
+    bucketGroup.add(tooth);
   }
 
-  boomGroup.add(boomMesh, stickMesh, bucketMesh);
-  boomGroup.position.set(1.4, 3.6, 0);
+  bucketGroup.add(bucketShell);
+  boomGroup.add(bucketGroup);
   catExcavatorGroup.add(boomGroup);
 
   catExcavatorGroup.position.set(0, -1.2, 0);
-  catExcavatorGroup.scale.set(1.2, 1.2, 1.2);
+  catExcavatorGroup.scale.set(1.1, 1.1, 1.1);
   ThreeEngine.heroScene.add(catExcavatorGroup);
 
   // 4. Floating 3D Glowing Dust & Particle Field (PeachWeb 3D Style)
