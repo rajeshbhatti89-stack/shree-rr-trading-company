@@ -1,0 +1,185 @@
+{
+  "users": [
+    {
+      "id": "usr-admin-01",
+      "name": "Rajesh Bhatti",
+      "email": "rajeshbhatti89@gmail.com",
+      "password": "Admin@123",
+      "role": "Super Admin",
+      "designation": "Founder & Owner",
+      "department": "Executive Management",
+      "site": "Headquarters / All Sites",
+      "phone": "+91 98765 43210",
+      "baseSalary": 150000,
+      "bankAccount": "SBIN0001234 - 30123456789",
+      "panNumber": "ABCDE1234F",
+      "status": "Active",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "usr-emp-01",
+      "name": "Vikram Singh",
+      "email": "vikram.singh@shreerr.com",
+      "password": "Emp@123",
+      "role": "Site Supervisor",
+      "designation": "Senior Mining Supervisor",
+      "department": "Mining Operations",
+      "site": "Keonjhar Iron Ore Mine Site A",
+      "phone": "+91 98123 45678",
+      "baseSalary": 55000,
+      "bankAccount": "HDFC0004567 - 50129876543",
+      "panNumber": "BGTYP4512K",
+      "status": "Active",
+      "createdAt": "2026-02-15T00:00:00.000Z"
+    },
+    {
+      "id": "usr-emp-02",
+      "name": "Ramesh Kumar",
+      "email": "ramesh.k@shreerr.com",
+      "password": "Emp@123",
+      "role": "Heavy Fleet Operator",
+      "designation": "Excavator CAT 349 Operator",
+      "department": "Heavy Fleets",
+      "site": "Joda Quarry Block B",
+      "phone": "+91 97456 12389",
+      "baseSalary": 38000,
+      "bankAccount": "ICIC0008912 - 40987654321",
+      "panNumber": "LKJHG9876M",
+      "status": "Active",
+      "createdAt": "2026-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "usr-emp-03",
+      "name": "Ananya Sharma",
+      "email": "ananya.hr@shreerr.com",
+      "password": "Emp@123",
+      "role": "HR / Payroll Manager",
+      "designation": "HR Operations Lead",
+      "department": "Human Resources",
+      "site": "Headquarters",
+      "phone": "+91 99887 76655",
+      "baseSalary": 62000,
+      "bankAccount": "UTIB0002345 - 60123498765",
+      "panNumber": "POIUY6543N",
+      "status": "Active",
+      "createdAt": "2026-02-01T00:00:00.000Z"
+    }
+  ],
+  "attendance": [
+    {
+      "id": "att-001",
+      "userId": "usr-emp-01",
+      "userName": "Vikram Singh",
+      "date": "2026-07-27",
+      "clockIn": "08:00 AM",
+      "clockOut": "05:00 PM",
+      "status": "Present",
+      "site": "Keonjhar Iron Ore Mine Site A",
+      "notes": "Regular shift completed"
+    },
+    {
+      "id": "att-002",
+      "userId": "usr-emp-02",
+      "userName": "Ramesh Kumar",
+      "date": "2026-07-27",
+      "clockIn": "07:30 AM",
+      "clockOut": "04:30 PM",
+      "status": "Present",
+      "site": "Joda Quarry Block B",
+      "notes": "Excavator duty shift"
+    },
+    {
+      "id": "att-003",
+      "userId": "usr-emp-03",
+      "userName": "Ananya Sharma",
+      "date": "2026-07-27",
+      "clockIn": "09:00 AM",
+      "clockOut": "06:00 PM",
+      "status": "Present",
+      "site": "Headquarters",
+      "notes": "HQ office desk duty"
+    }
+  ],
+  "rosters": [
+    {
+      "id": "rst-001",
+      "userId": "usr-emp-02",
+      "userName": "Ramesh Kumar",
+      "designation": "Excavator CAT 349 Operator",
+      "date": "2026-07-28",
+      "shift": "Morning Shift (07:00 AM - 03:00 PM)",
+      "site": "Joda Quarry Block B",
+      "equipment": "CAT 349 Excavator #04",
+      "supervisor": "Vikram Singh"
+    },
+    {
+      "id": "rst-002",
+      "userId": "usr-emp-01",
+      "userName": "Vikram Singh",
+      "designation": "Senior Mining Supervisor",
+      "date": "2026-07-28",
+      "shift": "General Shift (08:00 AM - 05:00 PM)",
+      "site": "Keonjhar Iron Ore Mine Site A",
+      "equipment": "Command Unit #01",
+      "supervisor": "Rajesh Bhatti"
+    }
+  ],
+  "salarySlips": [
+    {
+      "id": "slp-202607-001",
+      "userId": "usr-emp-02",
+      "userName": "Ramesh Kumar",
+      "monthYear": "July 2026",
+      "designation": "Excavator CAT 349 Operator",
+      "department": "Heavy Fleets",
+      "bankAccount": "ICIC0008912 - 40987654321",
+      "panNumber": "LKJHG9876M",
+      "workedDays": 26,
+      "totalDays": 31,
+      "earnings": {
+        "basic": 25000,
+        "hra": 7500,
+        "fieldAllowance": 3500,
+        "overtime": 2000
+      },
+      "deductions": {
+        "pf": 1800,
+        "esi": 500,
+        "advance": 1000
+      },
+      "grossPay": 38000,
+      "totalDeductions": 3300,
+      "netPay": 34700,
+      "status": "Paid",
+      "paymentDate": "2026-07-25"
+    },
+    {
+      "id": "slp-202607-002",
+      "userId": "usr-emp-01",
+      "userName": "Vikram Singh",
+      "monthYear": "July 2026",
+      "designation": "Senior Mining Supervisor",
+      "department": "Mining Operations",
+      "bankAccount": "HDFC0004567 - 50129876543",
+      "panNumber": "BGTYP4512K",
+      "workedDays": 26,
+      "totalDays": 31,
+      "earnings": {
+        "basic": 35000,
+        "hra": 12000,
+        "fieldAllowance": 5000,
+        "overtime": 3000
+      },
+      "deductions": {
+        "pf": 2100,
+        "esi": 0,
+        "advance": 0
+      },
+      "grossPay": 55000,
+      "totalDeductions": 2100,
+      "netPay": 52900,
+      "status": "Paid",
+      "paymentDate": "2026-07-25"
+    }
+  ]
+}
