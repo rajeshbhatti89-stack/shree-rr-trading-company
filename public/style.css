@@ -253,11 +253,38 @@ p {
 }
 
 .client-logo-img {
-  height: 52px;
+  height: 64px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
+}
+
+.official-client-logo {
+  max-height: 52px;
+  max-width: 140px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06));
+  transition: transform 0.3s ease;
+}
+
+.official-client-logo:hover {
+  transform: scale(1.06);
+}
+
+.partner-card-logo-img {
+  max-height: 40px;
+  max-width: 130px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 12px;
+  background: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 8px;
 }
 
 .client-label {
