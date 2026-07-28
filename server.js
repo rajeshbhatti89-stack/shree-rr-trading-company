@@ -60,37 +60,38 @@ function writeDb(data) {
 
 // --- SUBDOMAIN & PATH ROUTING MIDDLEWARE ---
 app.use((req, res, next) => {
-  // Check both host and x-forwarded-host for proxy / Render / Cloudflare compatibility
   const rawHost = req.headers['x-forwarded-host'] || req.headers.host || '';
   const host = String(rawHost).toLowerCase();
   const isPayrollSubdomain = host.startsWith('payroll.');
 
   if (isPayrollSubdomain) {
-    // If request is for API endpoint, pass to API handlers below
     if (req.path.startsWith('/api/')) {
       return next();
     }
 
-    // Serve static files from PAYROLL_DIR if file exists
-    const requestedFile = path.join(PAYROLL_DIR, req.path);
-    if (fs.existsSync(requestedFile) && fs.statSync(requestedFile).isFile()) {
-      return res.sendFile(requestedFile);
+    // Strip leading /payroll if present
+    const relPath = req.path.replace(/^\/payroll/, '');
+    const targetFile = path.join(PAYROLL_DIR, relPath === '' ? 'index.html' : relPath);
+
+    if (fs.existsSync(targetFile) && fs.statSync(targetFile).isFile()) {
+      return res.sendFile(targetFile);
     }
 
-    // Fallback: serve payroll portal index.html
     return res.sendFile(path.join(PAYROLL_DIR, 'index.html'));
   }
 
   next();
 });
 
-// Explicit route for /payroll when accessed on main domain
-app.get('/payroll', (req, res) => {
+// Serve payroll portal static assets under /payroll
+app.use('/payroll', express.static(PAYROLL_DIR));
+
+// Explicit fallback route for /payroll and /payroll/* on main domain
+app.get('/payroll*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
   res.sendFile(path.join(PAYROLL_DIR, 'index.html'));
 });
 
-// Serve payroll portal static assets
-app.use('/payroll', express.static(PAYROLL_DIR));
 // Serve main website static assets
 app.use(express.static(PUBLIC_DIR));
 
