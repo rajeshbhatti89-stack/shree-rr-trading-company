@@ -9,6 +9,3 @@ services:
       - key: PORT
         value: 10000
     healthCheckPath: /health
-    domains:
-      - shreerrtradingcompany.com
-      - www.shreerrtradingcompany.com
