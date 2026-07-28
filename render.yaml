@@ -10,6 +10,5 @@ services:
         value: 10000
     healthCheckPath: /health
     domains:
-      - payroll.shreerrtradingcompany.com
       - shreerrtradingcompany.com
       - www.shreerrtradingcompany.com
