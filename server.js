@@ -62,16 +62,19 @@ function writeDb(data) {
 app.use((req, res, next) => {
   const rawHost = req.headers['x-forwarded-host'] || req.headers.host || '';
   const host = String(rawHost).toLowerCase();
-  const isPayrollSubdomain = host.startsWith('payroll.');
+  
+  // Match both payroll.domain.com and Render default URL shree-rr-trading-company-payroll.onrender.com
+  const isPayrollHost = host.startsWith('payroll.') || host.includes('payroll');
 
-  if (isPayrollSubdomain) {
+  if (isPayrollHost) {
     if (req.path.startsWith('/api/')) {
       return next();
     }
 
     // Strip leading /payroll if present
-    const relPath = req.path.replace(/^\/payroll/, '');
-    const targetFile = path.join(PAYROLL_DIR, relPath === '' ? 'index.html' : relPath);
+    const cleanPath = req.path.replace(/^\/payroll/, '');
+    const relPath = (cleanPath === '' || cleanPath === '/') ? 'index.html' : cleanPath.replace(/^\//, '');
+    const targetFile = path.join(PAYROLL_DIR, relPath);
 
     if (fs.existsSync(targetFile) && fs.statSync(targetFile).isFile()) {
       return res.sendFile(targetFile);
