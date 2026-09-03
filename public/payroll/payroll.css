@@ -245,6 +245,18 @@ html, body {
   border-radius: var(--radius-sm);
 }
 
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--logo-orange), var(--logo-orange-hover));
   color: #FFFFFF;
@@ -290,6 +302,44 @@ html, body {
   background: #059669;
   color: #FFFFFF;
   box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+}
+
+.btn-outline-primary {
+  background: rgba(255, 107, 0, 0.08);
+  border: 1px solid rgba(255, 107, 0, 0.4);
+  color: var(--logo-orange);
+  font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+  background: var(--logo-orange);
+  color: #FFFFFF;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+}
+
+.btn-outline-danger {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #DC2626;
+  font-weight: 600;
+}
+
+.btn-outline-danger:hover {
+  background: #DC2626;
+  color: #FFFFFF;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.btn-outline-navy {
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  color: var(--logo-navy);
+  font-weight: 600;
+}
+
+.btn-outline-navy:hover {
+  background: var(--logo-navy);
+  color: #FFFFFF;
 }
 
 .btn-glow {

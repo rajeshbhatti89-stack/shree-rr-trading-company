@@ -50,9 +50,9 @@ const DEFAULT_INITIAL_DB = {
       "permissions": {
         "*": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": false,
       "loginAllowed": true
     },
@@ -101,9 +101,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -152,9 +152,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
+      "totalLeaves": 10,
       "leavesTaken": 2,
-      "leaveBalance": 16,
+      "leaveBalance": 8,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -203,9 +203,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 5,
-      "leaveBalance": 13,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -254,9 +254,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -305,9 +305,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -356,9 +356,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 1,
-      "leaveBalance": 17,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -407,9 +407,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -458,9 +458,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -509,9 +509,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -560,9 +560,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 1,
+      "leaveBalance": 9,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -611,9 +611,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -662,9 +662,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -713,9 +713,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -764,9 +764,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -815,9 +815,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -866,9 +866,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -917,9 +917,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -968,9 +968,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1019,9 +1019,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1070,9 +1070,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1121,9 +1121,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1172,9 +1172,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1223,9 +1223,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1274,9 +1274,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1325,9 +1325,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1376,9 +1376,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 6,
-      "leaveBalance": 12,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1427,9 +1427,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1478,9 +1478,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 1,
-      "leaveBalance": 17,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1529,9 +1529,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1580,9 +1580,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 4,
-      "leaveBalance": 14,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     },
@@ -1631,9 +1631,9 @@ const DEFAULT_INITIAL_DB = {
         "expenses.field_claims.process": false,
         "payroll.slip.view_own": true
       },
-      "totalLeaves": 18,
-      "leavesTaken": 2,
-      "leaveBalance": 16,
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10,
       "mustChangePassword": true,
       "loginAllowed": false
     }
@@ -3952,19 +3952,40 @@ const DEFAULT_INITIAL_DB = {
 
 // Database Access Helpers
 const getDb = async (env) => {
+  let dbData = DEFAULT_INITIAL_DB
   if (!env || !env.PAYROLL_DB) {
-    return DEFAULT_INITIAL_DB
+    dbData = DEFAULT_INITIAL_DB
+  } else {
+    const raw = await env.PAYROLL_DB.get('db_v8')
+    if (!raw) {
+      await env.PAYROLL_DB.put('db_v8', JSON.stringify(DEFAULT_INITIAL_DB))
+      dbData = DEFAULT_INITIAL_DB
+    } else {
+      try {
+        dbData = JSON.parse(raw)
+      } catch (e) {
+        dbData = DEFAULT_INITIAL_DB
+      }
+    }
   }
-  const raw = await env.PAYROLL_DB.get('db_v8')
-  if (!raw) {
-    await env.PAYROLL_DB.put('db_v8', JSON.stringify(DEFAULT_INITIAL_DB))
-    return DEFAULT_INITIAL_DB
+
+  // Ensure all employees have 10 allocated leaves and accurate leave balance without affecting any other data
+  if (dbData && Array.isArray(dbData.users)) {
+    let changed = false
+    dbData.users.forEach((u) => {
+      if (u.totalLeaves !== 10) {
+        u.totalLeaves = 10
+        const taken = Number(u.leavesTaken) || 0
+        u.leaveBalance = Math.max(0, 10 - taken)
+        changed = true
+      }
+    })
+    if (changed && env && env.PAYROLL_DB) {
+      await env.PAYROLL_DB.put('db_v8', JSON.stringify(dbData))
+    }
   }
-  try {
-    return JSON.parse(raw)
-  } catch (e) {
-    return DEFAULT_INITIAL_DB
-  }
+
+  return dbData
 }
 
 const setDb = async (env, data) => {
@@ -4127,11 +4148,11 @@ app.post('/api/payroll/users', async (c) => {
     presentDays: Number(body.presentDays) || 26,
     weakOff: Number(body.weakOff) || 4,
     leave: Number(body.leave) || 0,
-    totalLeaves: 18,
-    leavesTaken: Number(body.leave) || 2,
-    leaveBalance: 16,
+    totalLeaves: 10,
+    leavesTaken: Number(body.leave) || 0,
+    leaveBalance: Math.max(0, 10 - (Number(body.leave) || 0)),
     payableDays: (Number(body.presentDays) || 26) + (Number(body.weakOff) || 4) + (Number(body.leave) || 0),
-    daysInMonth: Number(body.daysInMonth) || 31,
+    daysInMonth: Number(body.daysInMonth) || 30,
     status: 'Active',
     createdAt: new Date().toISOString()
   }
@@ -4591,11 +4612,50 @@ app.post('/api/payroll/leaves', async (c) => {
 
   if (user) {
     user.leavesTaken = (Number(user.leavesTaken) || 0) + numDays
-    user.leaveBalance = Math.max(0, (Number(user.totalLeaves) || 18) - user.leavesTaken)
+    user.leaveBalance = Math.max(0, (Number(user.totalLeaves) || 10) - user.leavesTaken)
   }
 
   await setDb(c.env, db)
   return c.json({ success: true, message: 'Leave recorded & balance updated', leave: newLeave })
+})
+
+app.post('/api/payroll/leaves/credit', async (c) => {
+  const body = await c.req.json()
+  const { userId, empId, creditDays, reason, notes } = body
+
+  const numCredit = Math.max(1, Number(creditDays) || 1)
+  const db = await getDb(c.env)
+  const user = db.users.find((u) => u.id === userId || u.empId === userId || u.empId === empId)
+
+  if (!user) {
+    return c.json({ success: false, message: 'Employee not found.' }, 404)
+  }
+
+  // Credit leaves: Increase totalLeaves and leaveBalance
+  user.totalLeaves = (Number(user.totalLeaves) || 10) + numCredit
+  user.leaveBalance = Math.max(0, user.totalLeaves - (Number(user.leavesTaken) || 0))
+
+  if (!db.leaveCredits) db.leaveCredits = []
+  const creditRecord = {
+    id: `crd-${Date.now()}`,
+    userId: user.id,
+    empId: user.empId,
+    userName: user.name,
+    creditDays: numCredit,
+    reason: reason || 'Manual Leave Credit Adjustment',
+    notes: notes || '',
+    date: new Date().toISOString().split('T')[0],
+    createdAt: new Date().toISOString()
+  }
+  db.leaveCredits.unshift(creditRecord)
+
+  await setDb(c.env, db)
+  return c.json({
+    success: true,
+    message: `⚡ Successfully credited ${numCredit} leave day(s) to ${user.name}. New Balance: ${user.leaveBalance} / ${user.totalLeaves} Days`,
+    user,
+    creditRecord
+  })
 })
 
 app.delete('/api/payroll/leaves/:id', async (c) => {
@@ -4604,17 +4664,30 @@ app.delete('/api/payroll/leaves/:id', async (c) => {
   if (!db.leaves) db.leaves = []
 
   const leave = db.leaves.find((l) => l.id === id)
-  if (leave) {
-    const user = db.users.find((u) => u.id === leave.userId || u.empId === leave.empId)
-    if (user) {
-      user.leavesTaken = Math.max(0, (Number(user.leavesTaken) || 0) - (Number(leave.days) || 1))
-      user.leaveBalance = Math.max(0, (Number(user.totalLeaves) || 18) - user.leavesTaken)
-    }
+  if (!leave) {
+    return c.json({ success: false, message: 'Leave record not found.' }, 404)
+  }
+
+  const user = db.users.find((u) => u.id === leave.userId || u.empId === leave.empId)
+  if (user) {
+    user.leavesTaken = Math.max(0, (Number(user.leavesTaken) || 0) - (Number(leave.days) || 1))
+    user.leaveBalance = Math.max(0, (Number(user.totalLeaves) || 10) - user.leavesTaken)
+  }
+
+  // Remove any automated leave attendance override for this period
+  if (Array.isArray(db.attendance)) {
+    db.attendance = db.attendance.filter(
+      (a) => !((a.userId === leave.userId || a.empId === leave.empId) && a.date >= leave.startDate && a.date <= leave.endDate && a.status === 'Leave')
+    )
   }
 
   db.leaves = db.leaves.filter((l) => l.id !== id)
   await setDb(c.env, db)
-  return c.json({ success: true, message: 'Leave record removed.' })
+  return c.json({
+    success: true,
+    message: `Leave record deleted successfully. ${user ? user.name + '\'s' : 'Employee'} balance restored to ${user ? user.leaveBalance : 'updated'}.`,
+    user
+  })
 })
 
 // 8. Salary Slip APIs
@@ -4627,7 +4700,7 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
   const body = await c.req.json()
   const { monthYear, month, year } = body
 
-  const mYear = monthYear || 'July 2026'
+  const mYear = monthYear || 'September 2026'
   const db = await getDb(c.env)
 
   const activeEmployees = db.users.filter((u) => u.role !== 'Super Admin' && u.status === 'Active')
@@ -4635,11 +4708,22 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
     return c.json({ success: false, message: 'No active employees found to generate salary slips' }, 400)
   }
 
+  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+  let defaultDim = 30
+  if (mYear) {
+    const parts = mYear.split(' ')
+    const mIdx = monthNames.indexOf(parts[0].toLowerCase())
+    const yr = parseInt(parts[1]) || 2026
+    if (mIdx !== -1) {
+      defaultDim = new Date(yr, mIdx + 1, 0).getDate()
+    }
+  }
+
   const newSlips = []
 
   for (const u of activeEmployees) {
-    const pdays = Number(u.payableDays) || Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0)
-    const dim = Number(u.daysInMonth) || 31
+    const dim = defaultDim
+    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0)))
     const ctc = Number(u.ctc)
     const bpd = Number(u.basicPerDay)
 

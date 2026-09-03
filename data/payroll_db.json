@@ -14,7 +14,10 @@
       "bankAccount": "SBIN0001234 - 30123456789",
       "panNumber": "ABCDE1234F",
       "status": "Active",
-      "createdAt": "2026-01-01T00:00:00.000Z"
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10
     },
     {
       "id": "usr-emp-01",
@@ -30,7 +33,10 @@
       "bankAccount": "HDFC0004567 - 50129876543",
       "panNumber": "BGTYP4512K",
       "status": "Active",
-      "createdAt": "2026-02-15T00:00:00.000Z"
+      "createdAt": "2026-02-15T00:00:00.000Z",
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10
     },
     {
       "id": "usr-emp-02",
@@ -46,7 +52,10 @@
       "bankAccount": "ICIC0008912 - 40987654321",
       "panNumber": "LKJHG9876M",
       "status": "Active",
-      "createdAt": "2026-03-01T00:00:00.000Z"
+      "createdAt": "2026-03-01T00:00:00.000Z",
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10
     },
     {
       "id": "usr-emp-03",
@@ -62,7 +71,10 @@
       "bankAccount": "UTIB0002345 - 60123498765",
       "panNumber": "POIUY6543N",
       "status": "Active",
-      "createdAt": "2026-02-01T00:00:00.000Z"
+      "createdAt": "2026-02-01T00:00:00.000Z",
+      "totalLeaves": 10,
+      "leavesTaken": 0,
+      "leaveBalance": 10
     }
   ],
   "attendance": [

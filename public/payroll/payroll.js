@@ -502,7 +502,7 @@ function renderUsersTable() {
         </td>
         <td>
           <span class="badge-pill" style="background: #FEF3C7; color: #B45309; border-color: #FDE68A;">
-            <strong>${u.leaveBalance !== undefined ? u.leaveBalance : 16}</strong> / ${u.totalLeaves || 18} Days
+            <strong>${u.leaveBalance !== undefined ? u.leaveBalance : 10}</strong> / ${u.totalLeaves || 10} Days
           </span>
         </td>
         <td>
@@ -1610,17 +1610,31 @@ async function saveTomorrowSchedule() {
   }
 }
 
-// 15. Attendance Glass View & Leave Balance Tracker
+// 15. Attendance Glass View & Leave Balance Tracker (Live Dynamic Sync with Muster Roll & Approved Leaves)
 function renderAttendanceGlassCards() {
   const container = document.getElementById('glass-employee-cards');
   if (!container) return;
 
   const search = (document.getElementById('glass-search-input')?.value || '').toLowerCase().trim();
-  const selectedMonth = document.getElementById('glass-month-select')?.value || 'July 2026';
+  const selectedMonth = document.getElementById('glass-month-select')?.value || 'September 2026';
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const [mName, yStr] = selectedMonth.split(' ');
+  const year = parseInt(yStr) || 2026;
+  let monthIndex = monthNames.findIndex((m) => m.toLowerCase() === (mName || '').toLowerCase());
+  if (monthIndex === -1) monthIndex = 8; // September default (0-indexed)
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate(); // 30 for September
+  const monthNumStr = String(monthIndex + 1).padStart(2, '0');
 
   const workers = allUsers.filter((u) => {
     if (u.role === 'Super Admin') return false;
-    return !search || (u.name && u.name.toLowerCase().includes(search)) || (u.empId && u.empId.toLowerCase().includes(search));
+    return (
+      !search ||
+      (u.name && u.name.toLowerCase().includes(search)) ||
+      (u.empId && u.empId.toLowerCase().includes(search)) ||
+      (u.designation && u.designation.toLowerCase().includes(search)) ||
+      (u.role && u.role.toLowerCase().includes(search))
+    );
   });
 
   if (workers.length === 0) {
@@ -1630,49 +1644,128 @@ function renderAttendanceGlassCards() {
 
   container.innerHTML = workers
     .map((u) => {
-      const pDays = Number(u.presentDays) || 26;
-      const woDays = Number(u.weakOff) || 4;
-      const lDays = Number(u.leavesTaken) || Number(u.leave) || 1;
-      const abDays = Math.max(0, 31 - (pDays + woDays + lDays));
-      const totalLeaves = Number(u.totalLeaves) || 18;
-      const leaveBal = Number(u.leaveBalance) !== undefined ? Number(u.leaveBalance) : Math.max(0, totalLeaves - lDays);
+      // Find all approved leaves for this employee
+      const userApprovedLeaves = (allLeaves || []).filter(
+        (lv) => (lv.userId === u.id || lv.empId === u.empId) && lv.status === 'Approved'
+      );
+
+      let markedPresentCount = 0;
+      let markedWOCount = 0;
+      let markedLeaveCount = 0;
+      let markedAbsentCount = 0;
+      let markedHalfDayCount = 0;
+      let hasAnyMusterRecords = false;
 
       let dayPills = '';
-      for (let day = 1; day <= 31; day++) {
-        let pClass = 'pill-p';
-        let pText = 'P';
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayStr = String(day).padStart(2, '0');
+        const dateStr = `${year}-${monthNumStr}-${dayStr}`;
+        const dateObj = new Date(year, monthIndex, day);
+        const isSunday = dateObj.getDay() === 0;
 
-        if (day % 7 === 0 || day % 7 === 1) {
-          pClass = 'pill-wo';
-          pText = 'WO';
-        } else if (day === 14 && lDays > 0) {
+        // Query live attendance record from Daily Muster Roll
+        const attRecord = (allAttendance || []).find(
+          (a) => (a.userId === u.id || a.empId === u.empId) && a.date === dateStr
+        );
+
+        // Query approved leave spanning this date
+        const leaveRecord = userApprovedLeaves.find(
+          (lv) => lv.startDate <= dateStr && lv.endDate >= dateStr
+        );
+
+        let pClass = 'pill-wo';
+        let pText = 'WO';
+        let tooltip = `Day ${day} (${dateStr})`;
+
+        if (attRecord) {
+          hasAnyMusterRecords = true;
+          const status = attRecord.status || 'Present';
+          const shift = attRecord.shift || 'G Shift';
+          const shiftCode = attRecord.shiftCode || (shift.includes('A') ? 'A' : (shift.includes('B') ? 'B' : (shift.includes('C') ? 'C' : 'G')));
+
+          if (status === 'Present' || status === 'Overtime') {
+            markedPresentCount++;
+            pClass = 'pill-p';
+            pText = shiftCode === 'WO' ? 'P' : shiftCode;
+            tooltip += `: Present [Shift ${shiftCode}] - ${shift}${attRecord.notes ? ' | ' + attRecord.notes : ''}`;
+          } else if (status === 'Half Day') {
+            markedHalfDayCount++;
+            markedPresentCount += 0.5;
+            pClass = 'pill-hd';
+            pText = 'HD';
+            tooltip += `: Half Day [Shift ${shiftCode}]`;
+          } else if (status === 'Weekly Off') {
+            markedWOCount++;
+            pClass = 'pill-wo';
+            pText = 'WO';
+            tooltip += `: Weekly Off (Muster Marked)`;
+          } else if (status === 'Leave') {
+            markedLeaveCount++;
+            pClass = 'pill-l';
+            pText = 'L';
+            tooltip += `: On Leave [${attRecord.notes || 'Approved Leave'}]`;
+          } else if (status === 'Absent') {
+            markedAbsentCount++;
+            pClass = 'pill-a';
+            pText = 'A';
+            tooltip += `: Absent (${attRecord.notes || 'Not Available'})`;
+          } else {
+            markedPresentCount++;
+            pClass = 'pill-p';
+            pText = 'P';
+            tooltip += `: ${status}`;
+          }
+        } else if (leaveRecord) {
+          markedLeaveCount++;
           pClass = 'pill-l';
           pText = 'L';
-        } else if (day === 28 && abDays > 0) {
-          pClass = 'pill-a';
-          pText = 'A';
+          tooltip += `: Approved Leave (${leaveRecord.leaveType || 'Leave'})`;
+        } else if (isSunday) {
+          markedWOCount++;
+          pClass = 'pill-wo';
+          pText = 'WO';
+          tooltip += `: Sunday Weekly Off`;
+        } else {
+          pClass = 'pill-p';
+          pText = 'P';
+          tooltip += `: Scheduled Working Day (G Shift)`;
         }
 
-        dayPills += `<div class="day-pill ${pClass}" title="Day ${day}: ${pText}">${day}</div>`;
+        dayPills += `<div class="day-pill ${pClass}" title="${escapeHtml(tooltip)}">${pText}</div>`;
       }
+
+      // Live metrics calculation
+      const totalLeaves = Number(u.totalLeaves) || 10;
+      const totalApprovedLeaveDays = userApprovedLeaves.reduce((acc, cur) => acc + (Number(cur.days) || 1), 0);
+      const leavesTakenTotal = Math.max(Number(u.leavesTaken) || 0, totalApprovedLeaveDays, markedLeaveCount);
+      const leaveBal = Number(u.leaveBalance) !== undefined ? Number(u.leaveBalance) : Math.max(0, totalLeaves - leavesTakenTotal);
+
+      // Gauge stats: Use marked live muster counts if available, otherwise display monthly scheduled defaults
+      const pDisplay = hasAnyMusterRecords
+        ? markedPresentCount
+        : (Number(u.presentDays) || (daysInMonth - (Number(u.weakOff) || 4)));
+      const woDisplay = hasAnyMusterRecords
+        ? markedWOCount
+        : (Number(u.weakOff) || 4);
+      const lDisplay = markedLeaveCount > 0 ? markedLeaveCount : (Number(u.leave) || 0);
 
       return `
       <div class="emp-glass-card peach-glass">
         <div class="card-head">
           <div class="card-emp-info">
             <h4>${escapeHtml(u.name)}</h4>
-            <span>ID: <strong>${u.empId}</strong> | ${escapeHtml(u.designation || 'Staff')} | ${escapeHtml(u.location || 'ACC Chanda')}</span>
+            <span>ID: <strong>${u.empId}</strong> | ${escapeHtml(u.designation || u.rank || 'Staff')} | ${escapeHtml(u.location || u.site || 'ACC Chanda')}</span>
           </div>
           <span class="role-badge ${u.role === 'Worker' ? 'role-worker' : (u.role === 'Supervisor' ? 'role-supervisor' : 'role-employee')}">${escapeHtml(u.role || 'Worker')}</span>
         </div>
 
         <div class="leave-gauge-box">
           <div class="gauge-item">
-            <span class="g-val text-success">${pDays}</span>
+            <span class="g-val text-success">${pDisplay}</span>
             <span class="g-lbl">Present (P)</span>
           </div>
           <div class="gauge-item">
-            <span class="g-val text-navy">${woDays}</span>
+            <span class="g-val text-navy">${woDisplay}</span>
             <span class="g-lbl">Weekly Off (WO)</span>
           </div>
           <div class="gauge-item">
@@ -1683,12 +1776,24 @@ function renderAttendanceGlassCards() {
 
         <div>
           <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 6px; color: var(--text-muted);">
-            <span>${selectedMonth} Matrix (Day 1 - 31)</span>
-            <span><span class="text-success">● P: ${pDays}</span> | <span class="text-navy">● WO: ${woDays}</span> | <span class="text-warning">● L: ${lDays}</span></span>
+            <span>${selectedMonth} Live Muster Matrix (Day 1 - ${daysInMonth})</span>
+            <span><span class="text-success">● P: ${pDisplay}</span> | <span class="text-navy">● WO: ${woDisplay}</span> | <span class="text-warning">● L: ${lDisplay}</span>${markedAbsentCount > 0 ? ` | <span class="text-danger">● A: ${markedAbsentCount}</span>` : ''}</span>
           </div>
           <div class="day-pill-trail">
             ${dayPills}
           </div>
+        </div>
+
+        <div style="margin-top: 10px; display: flex; gap: 6px; justify-content: flex-end; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 8px;">
+          <button class="btn btn-outline-success btn-xs" onclick="openCreditLeaveModalForEmp('${u.id || u.empId}')" title="Credit Extra Leave Days">
+            <i class="fa-solid fa-gift"></i> + Credit
+          </button>
+          <button class="btn btn-outline-primary btn-xs" onclick="openLeaveModalForEmp('${u.id || u.empId}')" title="Log / Request Leave">
+            <i class="fa-solid fa-calendar-plus"></i> + Leave
+          </button>
+          <button class="btn btn-outline-secondary btn-xs" onclick="openLeaveHistoryModal('${u.id || u.empId}')" title="View & Delete Leaves">
+            <i class="fa-solid fa-list-check"></i> Records
+          </button>
         </div>
       </div>
     `;
@@ -2349,9 +2454,14 @@ function initEventListeners() {
 
   // Muster Date Picker & Quick Actions
   const datePicker = document.getElementById('muster-date-picker');
-  if (datePicker && !datePicker.value) {
-    datePicker.value = new Date().toISOString().split('T')[0];
-    datePicker.addEventListener('change', renderMusterRollTable);
+  if (datePicker) {
+    if (!datePicker.value) {
+      datePicker.value = new Date().toISOString().split('T')[0];
+    }
+    datePicker.addEventListener('change', () => {
+      renderMusterRollTable();
+      renderAttendanceGlassCards();
+    });
   }
 
   document.getElementById('muster-search-input')?.addEventListener('input', renderMusterRollTable);
@@ -2406,6 +2516,7 @@ function initEventListeners() {
         if (data.success) {
           showToast(`⚡ Saved today's muster roll for ${date}! (${musterRecords.length} workers)`);
           await fetchAttendance();
+          renderAttendanceGlassCards();
           updateDashboardMetrics();
         }
       } catch (e) {
@@ -2463,10 +2574,24 @@ function initEventListeners() {
   document.getElementById('btn-open-add-vehicle-modal')?.addEventListener('click', openAddVehicleModal);
 
   document.getElementById('btn-open-leave-modal')?.addEventListener('click', () => {
+    populateUserDropdowns();
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('leave-start-date').value = today;
     document.getElementById('leave-end-date').value = today;
     openModal('modal-leave');
+  });
+
+  document.getElementById('btn-open-credit-leave-modal')?.addEventListener('click', () => {
+    populateUserDropdowns();
+    openModal('modal-leave-credit');
+  });
+
+  document.getElementById('btn-open-leave-history-modal')?.addEventListener('click', () => {
+    openLeaveHistoryModal();
+  });
+
+  document.getElementById('leave-history-search')?.addEventListener('input', () => {
+    renderLeaveHistoryTable();
   });
 
   document.getElementById('btn-bulk-import-emp')?.addEventListener('click', () => {
@@ -2696,27 +2821,200 @@ function initEventListeners() {
         });
         const data = await res.json();
         if (data.success) {
-          showToast(`Leave recorded! Leave balance updated.`);
+          showToast(`⚡ Leave recorded! Leave balance updated.`);
           closeModal('modal-leave');
           await fetchUsers();
           await fetchLeaves();
+          await fetchAttendance();
+          renderAttendanceGlassCards();
+          renderUsersTable();
+          renderLeaveHistoryTable();
+          populateUserDropdowns();
+        } else {
+          showToast(data.message || 'Leave recording failed', 'error');
         }
       } catch (e) {
         closeModal('modal-leave');
       }
     });
   }
+
+  // Form: Manual Leave Credit
+  const formLeaveCredit = document.getElementById('form-leave-credit');
+  if (formLeaveCredit) {
+    formLeaveCredit.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('credit-select-user').value;
+      const creditDays = Number(document.getElementById('credit-days-count').value) || 1;
+      const reason = document.getElementById('credit-reason-type').value;
+      const notes = document.getElementById('credit-notes').value.trim();
+
+      try {
+        const res = await fetch('/api/payroll/leaves/credit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, creditDays, reason, notes })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || `⚡ Successfully credited ${creditDays} leave days!`);
+          closeModal('modal-leave-credit');
+          await fetchUsers();
+          await fetchLeaves();
+          renderAttendanceGlassCards();
+          renderUsersTable();
+          populateUserDropdowns();
+        } else {
+          showToast(data.message || 'Credit failed', 'error');
+        }
+      } catch (err) {
+        showToast('Failed to credit leave days', 'error');
+        closeModal('modal-leave-credit');
+      }
+    });
+  }
 }
 
-// 22. Populate Dropdowns
+// 22. Leave Management Functions & Modal Helpers
+function openCreditLeaveModalForEmp(empIdentifier) {
+  populateUserDropdowns();
+  const select = document.getElementById('credit-select-user');
+  if (select && empIdentifier) {
+    const opt = Array.from(select.options).find(
+      (o) => o.value === empIdentifier || o.textContent.includes(`(${empIdentifier})`)
+    );
+    if (opt) select.value = opt.value;
+  }
+  openModal('modal-leave-credit');
+}
+
+function openLeaveModalForEmp(empIdentifier) {
+  populateUserDropdowns();
+  const select = document.getElementById('leave-select-user');
+  if (select && empIdentifier) {
+    const opt = Array.from(select.options).find(
+      (o) => o.value === empIdentifier || o.textContent.includes(`(${empIdentifier})`)
+    );
+    if (opt) select.value = opt.value;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  if (document.getElementById('leave-start-date')) document.getElementById('leave-start-date').value = today;
+  if (document.getElementById('leave-end-date')) document.getElementById('leave-end-date').value = today;
+  openModal('modal-leave');
+}
+
+function openLeaveHistoryModal(filterEmp) {
+  const searchInput = document.getElementById('leave-history-search');
+  if (searchInput) {
+    searchInput.value = filterEmp || '';
+  }
+  renderLeaveHistoryTable(filterEmp);
+  openModal('modal-leave-history');
+}
+
+function renderLeaveHistoryTable(presetFilter) {
+  const tbody = document.getElementById('leave-history-table-body');
+  if (!tbody) return;
+
+  const search = (
+    presetFilter !== undefined
+      ? presetFilter
+      : (document.getElementById('leave-history-search')?.value || '')
+  ).toLowerCase().trim();
+
+  const leaves = (allLeaves || []).filter((l) => {
+    if (!search) return true;
+    return (
+      (l.userName && l.userName.toLowerCase().includes(search)) ||
+      (l.empId && l.empId.toLowerCase().includes(search)) ||
+      (l.userId && l.userId.toLowerCase().includes(search)) ||
+      (l.leaveType && l.leaveType.toLowerCase().includes(search)) ||
+      (l.reason && l.reason.toLowerCase().includes(search)) ||
+      (l.startDate && l.startDate.includes(search)) ||
+      (l.endDate && l.endDate.includes(search))
+    );
+  });
+
+  if (leaves.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding: 28px; color: var(--text-dim);">No leave records found${search ? ' matching search query' : ''}.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = leaves
+    .map((l) => {
+      const typeBadge = (l.leaveType || '').includes('Sick')
+        ? '<span class="badge badge-danger">Sick Leave</span>'
+        : ((l.leaveType || '').includes('Casual')
+          ? '<span class="badge badge-warning">Casual Leave</span>'
+          : '<span class="badge badge-primary">' + escapeHtml(l.leaveType || 'Leave') + '</span>');
+
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(l.userName || 'Employee')}</strong>
+            <span class="emp-cell-sub">ID: ${escapeHtml(l.empId || l.userId || 'N/A')}</span>
+          </td>
+          <td>${typeBadge}</td>
+          <td>
+            <strong>${escapeHtml(l.startDate || '-')}</strong> ${l.endDate && l.endDate !== l.startDate ? ' → ' + escapeHtml(l.endDate) : ''}
+          </td>
+          <td><span class="badge badge-neutral">${l.days || 1} Day(s)</span></td>
+          <td><small style="color: var(--text-muted);">${escapeHtml(l.reason || 'Personal Leave')}</small></td>
+          <td><span class="badge badge-success"><i class="fa-solid fa-check"></i> Approved</span></td>
+          <td class="text-right">
+            <button class="btn btn-outline-danger btn-xs" onclick="deleteLeaveRecord('${l.id}')" title="Revoke & Delete Leave Record">
+              <i class="fa-solid fa-trash-can"></i> Delete
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join('');
+}
+
+async function deleteLeaveRecord(leaveId) {
+  if (!confirm('Are you sure you want to delete / revoke this leave record? The employee\'s leave quota will be automatically restored.')) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/payroll/leaves/${leaveId}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || 'Leave deleted & balance restored!');
+      await fetchUsers();
+      await fetchLeaves();
+      await fetchAttendance();
+      renderLeaveHistoryTable();
+      renderAttendanceGlassCards();
+      renderUsersTable();
+      populateUserDropdowns();
+    } else {
+      showToast(data.message || 'Failed to delete leave', 'error');
+    }
+  } catch (err) {
+    showToast('Error deleting leave record', 'error');
+  }
+}
+
+// 23. Populate Dropdowns
 function populateUserDropdowns() {
   const leaveSelect = document.getElementById('leave-select-user');
+  const creditSelect = document.getElementById('credit-select-user');
+
   const options = allUsers
     .filter((u) => u.role !== 'Super Admin')
-    .map((u) => `<option value="${u.id || u.empId}">${escapeHtml(u.name)} (${u.empId}) - ${escapeHtml(u.role || 'Worker')} [Bal: ${u.leaveBalance || 16} Days]</option>`)
+    .map((u) => {
+      const bal = u.leaveBalance !== undefined ? u.leaveBalance : 10;
+      const tot = u.totalLeaves || 10;
+      return `<option value="${u.id || u.empId}">${escapeHtml(u.name)} (${u.empId}) - ${escapeHtml(u.role || 'Worker')} [Bal: ${bal} / ${tot} Days]</option>`;
+    })
     .join('');
 
   if (leaveSelect) leaveSelect.innerHTML = options;
+  if (creditSelect) creditSelect.innerHTML = options;
 }
 
 // 23. Dashboard Metrics Calculation
@@ -2728,10 +3026,16 @@ function updateDashboardMetrics() {
   const totalVehiclesEl = document.getElementById('kpi-total-vehicles');
   if (totalVehiclesEl) totalVehiclesEl.textContent = allVehicles.length;
 
-  const presentEl = document.getElementById('kpi-present-today');
-  if (presentEl) presentEl.textContent = Math.min(activeWorkers.length, Math.round(activeWorkers.length * 0.94));
+  const todayStr = document.getElementById('muster-date-picker')?.value || new Date().toISOString().split('T')[0];
+  const todayMuster = (allAttendance || []).filter((a) => a.date === todayStr);
+  const presentCount = todayMuster.filter((a) => a.status === 'Present' || a.status === 'Overtime' || a.status === 'Half Day').length;
 
-  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'July 2026';
+  const presentEl = document.getElementById('kpi-present-today');
+  if (presentEl) {
+    presentEl.textContent = todayMuster.length > 0 ? presentCount : Math.min(activeWorkers.length, Math.round(activeWorkers.length * 0.94));
+  }
+
+  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'September 2026';
   const monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
   const totalNet = monthSlips.reduce((sum, s) => sum + (Number(s.netPay) || 0), 0);
 

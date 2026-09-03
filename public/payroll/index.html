@@ -609,15 +609,22 @@
                 <input type="text" id="glass-search-input" placeholder="Filter employee attendance matrix...">
               </div>
               <select id="glass-month-select" class="custom-select">
-                <option value="July 2026">July 2026</option>
+                <option value="September 2026" selected>September 2026</option>
                 <option value="August 2026">August 2026</option>
-                <option value="September 2026">September 2026</option>
+                <option value="July 2026">July 2026</option>
+                <option value="June 2026">June 2026</option>
               </select>
             </div>
 
             <div class="action-buttons-group">
+              <button class="btn btn-outline-primary btn-sm" id="btn-open-credit-leave-modal">
+                <i class="fa-solid fa-gift"></i> + Credit Leave Days
+              </button>
               <button class="btn btn-primary btn-sm" id="btn-open-leave-modal">
-                <i class="fa-solid fa-calendar-plus"></i> + Log / Request Leave
+                <i class="fa-solid fa-calendar-plus"></i> + Log Leave Entry
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-open-leave-history-modal">
+                <i class="fa-solid fa-list-check"></i> Manage / Delete Leaves
               </button>
             </div>
           </div>
@@ -638,9 +645,9 @@
                   placeholder="Search salary slips by employee name, ID, month...">
               </div>
               <select id="payroll-month-select" class="custom-select">
-                <option value="July 2026">July 2026</option>
+                <option value="September 2026" selected>September 2026</option>
                 <option value="August 2026">August 2026</option>
-                <option value="September 2026">September 2026</option>
+                <option value="July 2026">July 2026</option>
                 <option value="June 2026">June 2026</option>
               </select>
             </div>
@@ -1128,6 +1135,96 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: MANUAL LEAVE CREDIT ==================== -->
+  <div id="modal-leave-credit" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-gift text-success"></i> Manual Leave Credit</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-leave-credit')">&times;</button>
+      </div>
+      <form id="form-leave-credit">
+        <div class="modal-body">
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Credit additional leave days directly to an employee's quota (e.g. Overtime compensatory off, annual leave allocation adjustment, or performance incentive).
+          </p>
+          <div class="form-group">
+            <label>Select Employee / Worker *</label>
+            <select id="credit-select-user" class="custom-select" required>
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Days to Credit *</label>
+            <input type="number" id="credit-days-count" min="1" max="30" value="1" required>
+          </div>
+          <div class="form-group">
+            <label>Credit Type / Reason *</label>
+            <select id="credit-reason-type" class="custom-select" required>
+              <option value="Compensatory Overtime Credit">Compensatory Overtime Credit</option>
+              <option value="Annual Leave Quota Adjustment">Annual Leave Quota Adjustment</option>
+              <option value="Performance / Festival Bonus Credit">Performance / Festival Bonus Credit</option>
+              <option value="Management Approved Adjustment">Management Approved Adjustment</option>
+              <option value="Other">Other Adjustment</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Remarks / Notes</label>
+            <input type="text" id="credit-notes" placeholder="e.g. Approved for Sunday double-shift duty" value="Overtime compensatory credit">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-credit')">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fa-solid fa-plus-circle"></i> ⚡ Credit Leave Days
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: MANAGE & DELETE LEAVE RECORDS ==================== -->
+  <div id="modal-leave-history" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-lg peach-glass">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-list-check text-navy"></i> Leave Records & Revocation</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-leave-history')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+          <div class="search-input-wrap" style="flex: 1; min-width: 200px;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="leave-history-search" placeholder="Search leave entries by employee name, ID, type...">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="closeModal('modal-leave-history'); openModal('modal-leave');">
+            <i class="fa-solid fa-calendar-plus"></i> + New Leave Entry
+          </button>
+        </div>
+
+        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Leave Type</th>
+                <th>Duration & Dates</th>
+                <th>Days</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="leave-history-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-history')">Close</button>
+      </div>
     </div>
   </div>
 
