@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "description": "Shree RR Trading Company 3D Website - 40+ Yrs Mining O&M, Heavy Fleets & Infra",
   "license": "MIT",
-  "main": "server.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy",
     "build": "echo 'Build complete'",
-    "dev": "node server.js"
+    "dev": "wrangler dev"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
   }
 }

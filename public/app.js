@@ -316,7 +316,7 @@ function handleFormSubmit(event) {
   form.reset();
 
   const waMsg = encodeURIComponent(`Hello Shree RR Trading Company,\n\nName: ${nameInput}\nCompany: ${companyInput}\nPhone: ${phone}\nService Required: ${service}\nDetails: ${details}`);
-  window.open(`https://wa.me/917461008100?text=${waMsg}`, '_blank');
+  window.open(`https://wa.me/917416008100?text=${waMsg}`, '_blank');
 }
 
 /* ==========================================
@@ -393,40 +393,60 @@ function animateNumericCounters() {
 function setupMobileNav() {
   const toggleBtn = document.getElementById("mobile-toggle");
   const navMenu = document.getElementById("nav-menu");
+  const navBackdrop = document.getElementById("nav-backdrop");
 
-  if (toggleBtn && navMenu) {
-    toggleBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = navMenu.classList.contains("mobile-open");
-      if (isOpen) {
-        navMenu.classList.remove("mobile-open");
-        navMenu.style.display = "none";
-      } else {
-        navMenu.classList.add("mobile-open");
-        navMenu.style.display = "flex";
-        navMenu.style.flexDirection = "column";
-        navMenu.style.position = "absolute";
-        navMenu.style.top = "calc(100% + 8px)";
-        navMenu.style.left = "0";
-        navMenu.style.width = "100%";
-        navMenu.style.background = "rgba(255, 255, 255, 0.98)";
-        navMenu.style.padding = "20px";
-        navMenu.style.borderRadius = "16px";
-        navMenu.style.border = "1px solid #E2E8F0";
-        navMenu.style.boxShadow = "0 15px 35px rgba(11, 25, 54, 0.12)";
+  if (!toggleBtn || !navMenu) return;
+
+  function openNav() {
+    navMenu.classList.add("mobile-open");
+    if (navBackdrop) navBackdrop.classList.add("active");
+    toggleBtn.setAttribute("aria-expanded", "true");
+    toggleBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeNav() {
+    navMenu.classList.remove("mobile-open");
+    if (navBackdrop) navBackdrop.classList.remove("active");
+    toggleBtn.setAttribute("aria-expanded", "false");
+    toggleBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+    document.body.style.overflow = "";
+  }
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = navMenu.classList.contains("mobile-open");
+    if (isOpen) {
+      closeNav();
+    } else {
+      openNav();
+    }
+  });
+
+  if (navBackdrop) {
+    navBackdrop.addEventListener("click", closeNav);
+  }
+
+  const mobileNavLinks = navMenu.querySelectorAll(".nav-link");
+  mobileNavLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      if (window.innerWidth <= 900) {
+        closeNav();
       }
     });
+  });
 
-    const mobileNavLinks = navMenu.querySelectorAll(".nav-link");
-    mobileNavLinks.forEach(link => {
-      link.addEventListener("click", () => {
-        if (window.innerWidth <= 768) {
-          navMenu.classList.remove("mobile-open");
-          navMenu.style.display = "none";
-        }
-      });
-    });
-  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && navMenu.classList.contains("mobile-open")) {
+      closeNav();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 900 && navMenu.classList.contains("mobile-open")) {
+      closeNav();
+    }
+  });
 }
 
 /* ==========================================
@@ -461,7 +481,7 @@ function processChatbotQuery(query) {
   } else if (q.includes("road") || q.includes("govt") || q.includes("highway") || q.includes("pwd")) {
     reply = "We execute turnkey <strong>Government Highway Contracts for HP PWD</strong>, including asphalt paving, sub-base compaction, bridge approach earthworks, and heavy road roller fleets.";
   } else if (q.includes("contact") || q.includes("director") || q.includes("phone") || q.includes("whatsapp")) {
-    reply = "You can reach our Director of Operations directly at <strong>+91 7461008100</strong>, email <strong>Ishav.ratwan@shreerrtradingcompany.com</strong>, or click <a href='https://wa.me/917461008100' target='_blank'>Direct WhatsApp</a>.";
+    reply = "You can reach our Director of Operations directly at <strong>+91 7416008100</strong>, email <strong>Ishav.ratwan@shreerrtradingcompany.com</strong>, or click <a href='https://wa.me/917416008100' target='_blank'>Direct WhatsApp</a>.";
   } else {
     reply = "Thank you for contacting Shree RR Trading Company! We specialize in Mining O&M, Heavy HEMM Deployment, Garage Operations, Machine Rentals, and Govt Road Contracts. Click <button class='btn btn-primary btn-sm' onclick='openQuoteModal(); toggleChatbot();'>Request Proposal</button> for a formal quote.";
   }

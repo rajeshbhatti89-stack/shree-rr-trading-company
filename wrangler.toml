@@ -1,0 +1,18 @@
+name = "shree-rr-trading-company-3d-website"
+main = "src/index.js"
+compatibility_date = "2024-03-20"
+
+routes = [
+  { pattern = "shreerrtradingcompany.com", custom_domain = true },
+  { pattern = "www.shreerrtradingcompany.com", custom_domain = true },
+  { pattern = "payroll.shreerrtradingcompany.com/*", zone_name = "shreerrtradingcompany.com" }
+]
+
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "PAYROLL_DB"
+id = "40b9c1fda5fb45968e16578e61b243ca"

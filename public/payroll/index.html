@@ -1,70 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shree RR Trading Co. - Payroll & Employee Management Portal</title>
+  <title>Shree RR Trading Company - Operations, Payroll & Fleet Portal</title>
 
-  <!-- Google Fonts & Font Awesome / Lucide Icons -->
+  <!-- Google Fonts: Outfit & Space Grotesk (Matching shreerrtradingcompany.com) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <link rel="stylesheet" href="/payroll/payroll.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Font Awesome 6.5 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- SheetJS for Excel XLSX / CSV Export & Import -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Payroll Theme Stylesheet -->
+  <link rel="stylesheet" href="/payroll/payroll.css?v=2.3.0">
 </head>
-<body class="dark-mode">
+
+<body>
 
   <!-- ==================== LOGIN CONTAINER ==================== -->
   <div id="login-container" class="login-wrapper">
-    <div class="login-card glass-panel">
+    <div class="login-card peach-glass">
       <div class="brand-header">
-        <div class="brand-badge">SRIJANDEV PLATFORM</div>
-        <h1 class="company-title">Shree RR Trading Company</h1>
-        <p class="portal-subtitle">OPERATIONS & PAYROLL MANAGEMENT PORTAL</p>
+        <div class="logo-hero-badge">
+          <img src="/images/logo.png" alt="Shree RR Trading Company Logo" class="brand-logo-img">
+        </div>
+        <div class="badge-pill">
+          <i class="fa-solid fa-shield-halved"></i> SECURE ENTERPRISE PORTAL
+        </div>
+        <h1 class="company-title">SHREE RR TRADING COMPANY</h1>
+        <p class="portal-subtitle">MINING FLEET O&M • PAYROLL & MUSTER ROLL SYSTEM</p>
       </div>
 
       <form id="login-form" class="login-form">
         <div class="form-group">
-          <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
-          <input type="email" id="login-email" required placeholder="rajeshbhatti89@gmail.com" value="rajeshbhatti89@gmail.com">
+          <label for="login-email"><i class="fa-solid fa-envelope"></i> Email or Employee ID</label>
+          <input type="text" id="login-email" required placeholder="admin@srijandev.in or SRR001"
+            autocomplete="username">
         </div>
 
         <div class="form-group">
           <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
-          <input type="password" id="login-password" required placeholder="Enter password" value="Admin@123">
+          <input type="password" id="login-password" required placeholder="Enter password"
+            autocomplete="current-password">
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-block" id="login-btn">
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">
             <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
           </button>
         </div>
 
         <div class="login-help">
-          <p class="text-muted"><i class="fa-solid fa-shield-halved text-warning"></i> Super Admin / Owner Account pre-filled for quick evaluation.</p>
+          <p class="text-muted"><i class="fa-solid fa-lock text-orange"></i> Role-based login. Access permissions
+            managed by Super Admin.</p>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ==================== MAIN PORTAL APP ==================== -->
+  <!-- ==================== MAIN PORTAL APP ==================== -->
   <div id="app-container" class="app-layout hidden">
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="app-sidebar">
       <div class="sidebar-header">
-        <div class="logo-box">
-          <i class="fa-solid fa-helmet-safety logo-icon"></i>
-        </div>
+        <a href="/" class="sidebar-logo-link" title="Back to Main Website">
+          <img src="/images/logo.png" alt="Shree RR Trading Logo" class="sidebar-logo-img">
+        </a>
         <div class="logo-text">
-          <span class="brand">SrijanDev</span>
-          <span class="sub brand-sub">OPERATIONS & MANAGEMENT</span>
+          <span class="brand">SHREE RR</span>
+          <span class="sub brand-sub">TRADING COMPANY</span>
         </div>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close Menu">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
 
       <div class="entity-chip">
-        <i class="fa-solid fa-industry"></i>
-        <span>Shree RR Trading Co.</span>
+        <i class="fa-solid fa-mountain-city text-orange"></i>
+        <span>ACC Chanda & Mining Operations</span>
       </div>
 
       <nav class="sidebar-menu">
@@ -72,25 +97,34 @@
           <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
         </a>
         <a href="#users" class="nav-item" data-tab="users" id="nav-users">
-          <i class="fa-solid fa-users-gear"></i> <span>Employee Management</span>
+          <i class="fa-solid fa-users-gear"></i> <span>Workforce & Users</span>
         </a>
-        <a href="#attendance" class="nav-item" data-tab="attendance">
-          <i class="fa-solid fa-calendar-check"></i> <span>Attendance Portal</span>
+        <a href="#vehicles" class="nav-item" data-tab="vehicles" id="nav-vehicles">
+          <i class="fa-solid fa-truck-monster"></i> <span>Mining Vehicles & Fleets</span>
         </a>
-        <a href="#roster" class="nav-item" data-tab="roster">
-          <i class="fa-solid fa-clipboard-list"></i> <span>Duty Roster & Fleets</span>
+        <a href="#muster" class="nav-item" data-tab="muster" id="nav-muster">
+          <i class="fa-solid fa-calendar-days text-orange"></i> <span>Daily Muster Roll</span>
         </a>
-        <a href="#payroll" class="nav-item" data-tab="payroll">
-          <i class="fa-solid fa-file-invoice-dollar"></i> <span>Salary Slips & Payroll</span>
+        <a href="#tomorrow" class="nav-item" data-tab="tomorrow" id="nav-tomorrow">
+          <i class="fa-solid fa-truck-ramp-box text-orange"></i> <span>Tomorrow's Shift Schedule</span>
+        </a>
+        <a href="#attendance-glass" class="nav-item" data-tab="attendance-glass" id="nav-attendance-glass">
+          <i class="fa-solid fa-calendar-check"></i> <span>Attendance & Leaves</span>
+        </a>
+        <a href="#payroll" class="nav-item" data-tab="payroll" id="nav-payroll">
+          <i class="fa-solid fa-file-invoice-dollar"></i> <span>Salary Slips & Disbursal</span>
+        </a>
+        <a href="#reports" class="nav-item" data-tab="reports" id="nav-reports">
+          <i class="fa-solid fa-file-excel text-success"></i> <span>Reports & Disbursals</span>
         </a>
       </nav>
 
       <div class="sidebar-footer">
         <div class="user-profile-badge">
-          <div class="avatar-circle" id="user-avatar">RB</div>
+          <div class="avatar-circle" id="user-avatar">SA</div>
           <div class="user-info">
-            <span class="user-name" id="user-display-name">Rajesh Bhatti</span>
-            <span class="user-role" id="user-display-role">Super Admin</span>
+            <span class="user-name" id="user-display-name">Super Admin</span>
+            <span class="user-role" id="user-display-role">Administrator</span>
           </div>
         </div>
         <button class="btn-logout" id="logout-btn" title="Sign Out">
@@ -102,18 +136,27 @@
     <!-- Main Content Area -->
     <main class="main-content">
       <!-- Top Navbar -->
-      <header class="top-bar glass-panel">
-        <div class="page-title-area">
-          <h2 id="current-page-title">Dashboard Overview</h2>
-          <span class="domain-tag"><i class="fa-solid fa-globe"></i> payroll.shreerrtradingcompany.com</span>
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <button class="mobile-menu-btn" id="mobile-sidebar-toggle" aria-label="Open Navigation Menu" aria-expanded="false">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="page-title-area">
+            <h2 id="current-page-title">Operations Dashboard</h2>
+            <span class="domain-tag"><i class="fa-solid fa-shield-check text-orange"></i>
+              payroll.shreerrtradingcompany.com</span>
+          </div>
         </div>
 
         <div class="top-actions">
-          <button class="btn btn-outline btn-sm" id="btn-quick-punch">
-            <i class="fa-solid fa-fingerprint"></i> Clock In/Out
+          <button class="btn btn-secondary btn-sm" id="btn-quick-tomorrow">
+            <i class="fa-solid fa-clock-rotate-left text-orange"></i> <span>Tomorrow's Shifts</span>
           </button>
-          <button class="btn btn-primary btn-sm hidden" id="btn-add-employee-top">
-            <i class="fa-solid fa-user-plus"></i> Create User
+          <button class="btn btn-outline-success btn-sm" id="btn-quick-excel-reports">
+            <i class="fa-solid fa-file-excel"></i> <span>1-Click Reports</span>
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-add-employee-top">
+            <i class="fa-solid fa-user-plus"></i> <span>Add Employee</span>
           </button>
           <div class="live-clock" id="live-clock-display">00:00:00 AM</div>
         </div>
@@ -121,227 +164,609 @@
 
       <!-- Content Views -->
       <div class="content-body">
-        
-        <!-- Tab 1: Dashboard -->
+
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
         <section id="tab-dashboard" class="tab-pane active">
           <div class="kpi-grid">
-            <div class="kpi-card glass-panel">
-              <div class="kpi-icon icon-blue"><i class="fa-solid fa-users"></i></div>
+            <div class="kpi-card peach-glass">
+              <div class="kpi-icon icon-navy"><i class="fa-solid fa-users"></i></div>
               <div class="kpi-details">
-                <span class="kpi-title">Total Employees</span>
-                <h3 class="kpi-value" id="kpi-total-users">0</h3>
-                <span class="kpi-sub"><i class="fa-solid fa-check-circle text-success"></i> Active Field & Office Staff</span>
+                <span class="kpi-title">Total Active Workforce</span>
+                <h3 class="kpi-value" id="kpi-total-users">32</h3>
+                <span class="kpi-sub"><i class="fa-solid fa-check-circle text-success"></i> Real ACC Chanda Staff</span>
               </div>
             </div>
 
-            <div class="kpi-card glass-panel">
-              <div class="kpi-icon icon-green"><i class="fa-solid fa-user-check"></i></div>
-              <div class="kpi-details">
-                <span class="kpi-title">Present Today</span>
-                <h3 class="kpi-value" id="kpi-present-today">0</h3>
-                <span class="kpi-sub" id="kpi-present-rate">100% Attendance Rate</span>
-              </div>
-            </div>
-
-            <div class="kpi-card glass-panel">
+            <div class="kpi-card peach-glass">
               <div class="kpi-icon icon-orange"><i class="fa-solid fa-truck-monster"></i></div>
               <div class="kpi-details">
-                <span class="kpi-title">Active Duty Shifts</span>
-                <h3 class="kpi-value" id="kpi-active-roster">0</h3>
-                <span class="kpi-sub"><i class="fa-solid fa-location-dot"></i> Mining & Fleet Ops</span>
+                <span class="kpi-title">Heavy Fleet Machinery</span>
+                <h3 class="kpi-value" id="kpi-total-vehicles">8</h3>
+                <span class="kpi-sub">CAT Excavators, Tippers, JCBs</span>
               </div>
             </div>
 
-            <div class="kpi-card glass-panel">
-              <div class="kpi-icon icon-purple"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            <div class="kpi-card peach-glass">
+              <div class="kpi-icon icon-navy"><i class="fa-solid fa-calendar-check"></i></div>
               <div class="kpi-details">
-                <span class="kpi-title">Monthly Payroll Liability</span>
-                <h3 class="kpi-value" id="kpi-total-payroll">₹0</h3>
-                <span class="kpi-sub"><i class="fa-solid fa-receipt"></i> July 2026 Disbursed</span>
+                <span class="kpi-title">Today's Muster Present</span>
+                <h3 class="kpi-value" id="kpi-present-today">30</h3>
+                <span class="kpi-sub" id="kpi-present-rate">93.8% Mining Site Attendance</span>
+              </div>
+            </div>
+
+            <div class="kpi-card peach-glass">
+              <div class="kpi-icon icon-orange"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+              <div class="kpi-details">
+                <span class="kpi-title">Monthly Payroll Disbursal</span>
+                <h3 class="kpi-value" id="kpi-total-payroll">₹6,84,520</h3>
+                <span class="kpi-sub">PF, ESIC, PT & Allowances</span>
               </div>
             </div>
           </div>
 
-          <!-- Quick Punch & Recent Activity -->
-          <div class="dashboard-widgets-grid">
-            <div class="widget-card glass-panel">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-clock"></i> Quick Punch-In / Punch-Out</h3>
-                <span class="badge badge-success">Online</span>
+          <!-- Quick Actions & Stats -->
+          <div class="dashboard-split-grid">
+            <div class="panel-card peach-glass">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-bolt text-orange"></i> Quick Access Operations</h3>
               </div>
-              <div class="punch-widget-body">
-                <p class="text-muted">Record today's attendance for your assigned site location.</p>
-                <div class="punch-status-box">
-                  <span class="label">Current Status:</span>
-                  <span class="status-badge" id="my-punch-status">Not Punched In</span>
-                </div>
-                <div class="punch-actions">
-                  <button class="btn btn-success btn-lg" id="btn-punch-in"><i class="fa-solid fa-circle-play"></i> Clock In</button>
-                  <button class="btn btn-danger btn-lg" id="btn-punch-out"><i class="fa-solid fa-circle-stop"></i> Clock Out</button>
-                </div>
+              <div class="quick-action-btns">
+                <button class="action-tile" id="dash-btn-tomorrow">
+                  <i class="fa-solid fa-truck-ramp-box text-orange"></i>
+                  <span class="tile-title">Tomorrow's Schedule</span>
+                  <span class="tile-desc">Assign operators to machines for tomorrow</span>
+                </button>
+                <button class="action-tile" id="dash-btn-muster">
+                  <i class="fa-solid fa-calendar-days text-navy"></i>
+                  <span class="tile-title">Daily Muster Roll</span>
+                  <span class="tile-desc">Mark G (8:30a-5:30p), A, B, C shifts</span>
+                </button>
+                <button class="action-tile" id="dash-btn-reports">
+                  <i class="fa-solid fa-file-excel text-success"></i>
+                  <span class="tile-title">Excel Reports</span>
+                  <span class="tile-desc">1-Click Payroll, Bank NEFT & Shift reports</span>
+                </button>
+                <button class="action-tile" id="dash-btn-leaves">
+                  <i class="fa-solid fa-calendar-check text-orange"></i>
+                  <span class="tile-title">Attendance & Leaves</span>
+                  <span class="tile-desc">Glass calendar & leave balance tracker</span>
+                </button>
               </div>
             </div>
 
-            <div class="widget-card glass-panel">
-              <div class="widget-header">
-                <h3><i class="fa-solid fa-list-check"></i> Today's Attendance Logs</h3>
-                <button class="btn btn-sm btn-outline" id="btn-refresh-dashboard"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            <div class="panel-card peach-glass">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-layer-group text-orange"></i> Role & Fleet Breakdown</h3>
               </div>
-              <div class="table-responsive">
-                <table class="custom-table" id="dashboard-attendance-table">
-                  <thead>
-                    <tr>
-                      <th>Employee</th>
-                      <th>Site Location</th>
-                      <th>Time In</th>
-                      <th>Time Out</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Dynamic -->
-                  </tbody>
-                </table>
+              <div class="distribution-list">
+                <div class="dist-row">
+                  <span class="dist-label"><i class="fa-solid fa-helmet-safety text-orange"></i> Workers (Operators &
+                    Helpers)</span>
+                  <span class="dist-count" id="dist-workers">20</span>
+                </div>
+                <div class="dist-row">
+                  <span class="dist-label"><i class="fa-solid fa-wrench text-navy"></i> Employees (Mechanics,
+                    Welders)</span>
+                  <span class="dist-count" id="dist-employees">8</span>
+                </div>
+                <div class="dist-row">
+                  <span class="dist-label"><i class="fa-solid fa-user-shield text-orange"></i> Supervisors &
+                    In-charges</span>
+                  <span class="dist-count" id="dist-supervisors">2</span>
+                </div>
+                <div class="dist-row">
+                  <span class="dist-label"><i class="fa-solid fa-truck-monster text-navy"></i> Active Mining
+                    Vehicles</span>
+                  <span class="dist-count" id="dist-vehicles">8</span>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- Tab 2: User / Employee Management (Admin) -->
+        <!-- ==================== TAB 2: EMPLOYEE & WORKER DIRECTORY ==================== -->
         <section id="tab-users" class="tab-pane">
-          <div class="section-header">
-            <div>
-              <h3>Employee & User Directory</h3>
-              <p class="text-muted">Full administrative authority to create, edit, assign roles, and manage credentials.</p>
+          <div class="section-top-actions">
+            <div class="search-filter-box">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="user-search-input"
+                  placeholder="Search by name, ID (SRR001), mobile, designation, bank A/C...">
+              </div>
+              <select id="user-role-filter" class="custom-select">
+                <option value="ALL">All Roles</option>
+                <option value="Worker">Worker</option>
+                <option value="Employee">Employee</option>
+                <option value="Supervisor">Supervisor</option>
+                <option value="Manager">Manager</option>
+              </select>
+              <select id="user-category-filter" class="custom-select">
+                <option value="ALL">All Categories</option>
+                <option value="Skilled">Skilled</option>
+                <option value="Semi-Skilled">Semi-Skilled</option>
+                <option value="Unskilled">Unskilled</option>
+              </select>
             </div>
-            <button class="btn btn-primary" id="btn-create-user-modal">
-              <i class="fa-solid fa-user-plus"></i> Create New Employee
-            </button>
+
+            <div class="action-buttons-group">
+              <button class="btn btn-secondary btn-sm" id="btn-download-sample-csv"
+                title="Download Excel template for bulk import">
+                <i class="fa-solid fa-file-arrow-down text-orange"></i> Template
+              </button>
+              <button class="btn btn-outline-success btn-sm" id="btn-bulk-import-emp">
+                <i class="fa-solid fa-file-excel"></i> Bulk Import Excel/CSV
+              </button>
+              <button class="btn btn-primary btn-sm" id="btn-open-add-user-modal">
+                <i class="fa-solid fa-user-plus"></i> Add Employee / Worker
+              </button>
+            </div>
           </div>
 
-          <div class="table-card glass-panel">
-            <div class="table-responsive">
-              <table class="custom-table" id="users-table">
-                <thead>
-                  <tr>
-                    <th>Employee Name</th>
-                    <th>Email Address</th>
-                    <th>Role</th>
-                    <th>Designation & Dept</th>
-                    <th>Site Location</th>
-                    <th>Base Salary</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Dynamic -->
-                </tbody>
-              </table>
-            </div>
+          <div class="table-container peach-glass">
+            <table class="data-table" id="users-table">
+              <thead>
+                <tr>
+                  <th>Emp ID</th>
+                  <th>Name & Father Name</th>
+                  <th>Role</th>
+                  <th>Portal Access</th>
+                  <th>Designation / Trade</th>
+                  <th>Leave Balance</th>
+                  <th>Mobile / WhatsApp</th>
+                  <th>Bank & IFSC</th>
+                  <th>Rate / CTC</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
           </div>
         </section>
 
-        <!-- Tab 3: Attendance Portal -->
-        <section id="tab-attendance" class="tab-pane">
-          <div class="section-header">
-            <div>
-              <h3>Attendance Verification & Log System</h3>
-              <p class="text-muted">Daily clock-in/out records across Keonjhar, Joda, and Headquarters mine sites.</p>
+        <!-- ==================== TAB 3: MINING VEHICLES & FLEETS ==================== -->
+        <section id="tab-vehicles" class="tab-pane">
+          <div class="section-top-actions">
+            <div class="search-filter-box">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="vehicle-search-input"
+                  placeholder="Search by vehicle reg no, model, equipment type, operator...">
+              </div>
+              <select id="vehicle-type-filter" class="custom-select">
+                <option value="ALL">All Equipment Types</option>
+                <option value="Excavator">Excavator (CAT 349D)</option>
+                <option value="Tipper / Dumper">Tipper (Tata Signa 10x)</option>
+                <option value="JCB / Loader">JCB / Backhoe Loader</option>
+                <option value="Bobcat">Bobcat Skid Steer</option>
+                <option value="Water Tanker">Water Tanker</option>
+                <option value="Service Van">Service Van / Mobile Workshop</option>
+              </select>
             </div>
-            <button class="btn btn-outline" id="btn-mark-manual-att">
-              <i class="fa-solid fa-pen-to-square"></i> Mark Supervisor Attendance
-            </button>
+
+            <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-outline-success btn-sm" id="btn-bulk-import-vehicles">
+                <i class="fa-solid fa-file-excel"></i> Bulk Import Vehicles (Excel)
+              </button>
+              <button class="btn btn-primary btn-sm" id="btn-open-add-vehicle-modal">
+                <i class="fa-solid fa-truck-ramp-box"></i> Add Mining Vehicle
+              </button>
+              <button class="btn btn-outline btn-sm" id="btn-export-fleet-mttr-excel" title="Download Fleet Availability & MTTR Excel Report">
+                <i class="fa-solid fa-download text-orange"></i> 1-Click Availability & MTTR Report (Excel)
+              </button>
+              <button class="btn btn-outline-danger btn-sm" id="btn-delete-all-vehicles" title="Clear all vehicle fleet records">
+                <i class="fa-solid fa-trash-can"></i> Delete All Vehicles
+              </button>
+            </div>
           </div>
 
-          <div class="table-card glass-panel">
-            <div class="table-responsive">
-              <table class="custom-table" id="attendance-table">
+          <!-- Vehicle Fleet List -->
+          <div class="table-container peach-glass" style="margin-bottom: 28px;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-truck-monster text-orange"></i> Mining Machinery & Fleet Master
+              </h3>
+              <span class="badge-pill" id="fleet-count-badge">0 Active Vehicles</span>
+            </div>
+            <table class="data-table" id="vehicles-table">
+              <thead>
+                <tr>
+                  <th>Vehicle ID & Reg</th>
+                  <th>Equipment Name & Model</th>
+                  <th>Type</th>
+                  <th>Assigned Operator</th>
+                  <th>Mine Site Location</th>
+                  <th>Operational Status</th>
+                  <th>Hourly Rate</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vehicles-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Vehicle Availability & MTTR Reliability Analytics Section -->
+          <div class="peach-glass" style="padding: 24px; margin-bottom: 28px; border-radius: var(--radius-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+              <div>
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chart-line text-orange"></i> HEMM Equipment Availability & MTTR Reliability Metrics
+                </h3>
+                <p class="text-muted" style="margin-top: 4px;">
+                  Track scheduled hours, actual operating hours, breakdown downtime (B/D in hours), <strong>MTTR (Mean Time to Repair)</strong>, and <strong>MTBF (Mean Time Between Failures)</strong>.
+                </p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary btn-sm" id="btn-open-breakdown-modal">
+                  <i class="fa-solid fa-screwdriver-wrench"></i> + Log Breakdown (B/D) & Service Hours
+                </button>
+              </div>
+            </div>
+
+            <!-- Reliability KPI Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Scheduled Fleet Hours</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-navy); margin-top: 4px;" id="kpi-scheduled-hours">0 Hrs</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Total scheduled mine time</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Operating (Running) Hours</div>
+                <div style="font-size: 22px; font-weight: 800; color: #059669; margin-top: 4px;" id="kpi-operating-hours">0 Hrs</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Actual running hours in pit</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Breakdown (B/D) Hours</div>
+                <div style="font-size: 22px; font-weight: 800; color: #DC2626; margin-top: 4px;" id="kpi-breakdown-hours">0 Hrs</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Total downtime hours</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Fleet Availability %</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-orange); margin-top: 4px;" id="kpi-fleet-availability">100.0%</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">(Total - B/D) / Total * 100</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Mean Time to Repair (MTTR)</div>
+                <div style="font-size: 22px; font-weight: 800; color: #7C3AED; margin-top: 4px;" id="kpi-fleet-mttr">0.0 Hrs</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">B/D Hours / B/D Events (Lower is better)</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Mean Time Between Failures (MTBF)</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-navy); margin-top: 4px;" id="kpi-fleet-mtbf">0.0 Hrs</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Operating Hrs / B/D Events (Higher is better)</div>
+              </div>
+            </div>
+
+            <!-- Equipment Reliability Matrix Table -->
+            <h4 style="font-size: 14px; font-weight: 800; color: var(--logo-navy); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-table-list text-orange"></i> Equipment-Wise Availability & MTTR Performance Matrix
+            </h4>
+            <div class="table-container" style="margin-bottom: 24px; border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden;">
+              <table class="data-table" id="fleet-mttr-table">
+                <thead>
+                  <tr>
+                    <th>Vehicle Reg No</th>
+                    <th>Equipment Model & Name</th>
+                    <th>Type</th>
+                    <th>Scheduled Hrs</th>
+                    <th>Operating Hrs</th>
+                    <th>B/D (Downtime) Hrs</th>
+                    <th>B/D Events</th>
+                    <th>Availability (%)</th>
+                    <th>MTTR (Hours/Repair)</th>
+                    <th>MTBF (Hours)</th>
+                    <th>Reliability Status</th>
+                  </tr>
+                </thead>
+                <tbody id="fleet-mttr-table-body">
+                  <!-- Dynamically calculated -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Breakdown Incidents Log -->
+            <h4 style="font-size: 14px; font-weight: 800; color: var(--logo-navy); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-clock-rotate-left text-orange"></i> Breakdown (B/D) & Maintenance Log Records
+            </h4>
+            <div class="table-container" style="border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden;">
+              <table class="data-table" id="breakdown-logs-table">
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Employee Name</th>
-                    <th>Site Location</th>
-                    <th>Clock In</th>
-                    <th>Clock Out</th>
+                    <th>Vehicle Reg No</th>
+                    <th>Machinery Name</th>
+                    <th>B/D Hours</th>
+                    <th>Operating Hours</th>
+                    <th>Failure Type</th>
+                    <th>Breakdown Reason & Remarks</th>
+                    <th>Action Taken</th>
                     <th>Status</th>
-                    <th>Notes / Remarks</th>
+                    <th class="text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <!-- Dynamic -->
+                <tbody id="breakdown-logs-table-body">
+                  <!-- Dynamically populated -->
                 </tbody>
               </table>
             </div>
           </div>
         </section>
 
-        <!-- Tab 4: Duty Roster & Fleets -->
-        <section id="tab-roster" class="tab-pane">
-          <div class="section-header">
-            <div>
-              <h3>Duty Roster & Heavy Fleet Assignments</h3>
-              <p class="text-muted">Shift scheduling for mining equipment operators, dumpers, and site engineers.</p>
+        <!-- ==================== TAB 4: DAILY MUSTER ROLL (TODAY) ==================== -->
+        <section id="tab-muster" class="tab-pane">
+          <div class="section-top-actions">
+            <div class="search-filter-box">
+              <div class="search-input-wrap" style="max-width: 170px;">
+                <i class="fa-solid fa-calendar-day"></i>
+                <input type="date" id="muster-date-picker" class="custom-select">
+              </div>
+              <div class="search-input-wrap" style="max-width: 220px;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="muster-search-input" placeholder="Search worker or ID...">
+              </div>
+              <div class="shift-legend-bar">
+                <span class="legend-badge shift-g"><strong>G:</strong> General (8:30a-5:30p)</span>
+                <span class="legend-badge shift-a"><strong>A:</strong> Morning (6a-2p)</span>
+                <span class="legend-badge shift-b"><strong>B:</strong> Afternoon (2p-10p)</span>
+                <span class="legend-badge shift-c"><strong>C:</strong> Night (10p-6a)</span>
+                <span class="legend-badge shift-wo"><strong>WO:</strong> Off</span>
+                <span class="legend-badge shift-ab"><strong>AB:</strong> Absent</span>
+              </div>
             </div>
-            <button class="btn btn-primary" id="btn-create-roster-modal">
-              <i class="fa-solid fa-calendar-plus"></i> Assign Duty Shift
-            </button>
+
+            <div class="action-buttons-group">
+              <button class="btn btn-secondary btn-sm" id="btn-muster-mark-all-g">
+                <i class="fa-solid fa-check-double text-orange"></i> Fill All G Shift (8:30-5:30)
+              </button>
+              <button class="btn btn-outline-success btn-sm" id="btn-export-muster-excel">
+                <i class="fa-solid fa-file-excel"></i> 1-Click Excel Export
+              </button>
+              <button class="btn btn-primary btn-sm btn-glow" id="btn-save-daily-muster">
+                <i class="fa-solid fa-floppy-disk"></i> Save Today's Muster Roll
+              </button>
+            </div>
           </div>
 
-          <div class="table-card glass-panel">
-            <div class="table-responsive">
-              <table class="custom-table" id="roster-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Employee</th>
-                    <th>Designation</th>
-                    <th>Shift Timing</th>
-                    <th>Assigned Mine Site</th>
-                    <th>Assigned Fleet / Equipment</th>
-                    <th>Supervisor</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Dynamic -->
-                </tbody>
-              </table>
-            </div>
+          <div class="table-container peach-glass">
+            <table class="data-table muster-table" id="muster-table">
+              <thead>
+                <tr>
+                  <th>Sr.</th>
+                  <th>Emp ID</th>
+                  <th>Employee / Worker Name</th>
+                  <th>Role & Trade</th>
+                  <th>Shift Selection</th>
+                  <th>Status</th>
+                  <th>Clock In</th>
+                  <th>Clock Out</th>
+                  <th>Site Location</th>
+                  <th>Verification Notes</th>
+                </tr>
+              </thead>
+              <tbody id="muster-table-body">
+                <!-- Dynamically populated muster grid -->
+              </tbody>
+            </table>
           </div>
         </section>
 
-        <!-- Tab 5: Salary Slips & Payroll -->
+        <!-- ==================== TAB 5: TOMORROW'S SHIFT & MACHINE SCHEDULE ==================== -->
+        <section id="tab-tomorrow" class="tab-pane">
+          <div class="planning-notice-banner peach-glass">
+            <div class="notice-icon"><i class="fa-solid fa-calendar-plus text-orange"></i></div>
+            <div class="notice-body">
+              <h4>Tomorrow's Shift Schedule & Operator-to-Machine Assignment (<span id="tomorrow-date-display">-</span>)
+              </h4>
+              <p>Plan and assign operators to shifts (G, A, B, C, WO, Leave, Absent) and machinery (CAT Excavators, Tippers, JCBs, Bobcats) for tomorrow.
+                <strong>Today's attendance records remain intact and untouched.</strong></p>
+            </div>
+            <div class="notice-actions">
+              <button class="btn btn-outline-success btn-sm" id="btn-export-tomorrow-excel">
+                <i class="fa-solid fa-file-excel"></i> 1-Click Excel Export
+              </button>
+              <button class="btn btn-primary btn-sm btn-glow" id="btn-save-tomorrow-schedule">
+                <i class="fa-solid fa-floppy-disk"></i> Save Tomorrow's Schedule
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container peach-glass">
+            <table class="data-table" id="tomorrow-table">
+              <thead>
+                <tr>
+                  <th>Sr.</th>
+                  <th>Emp ID</th>
+                  <th>Operator / Worker Name</th>
+                  <th>Trade / Rank</th>
+                  <th>Assigned Shift (G/A/B/C/WO/Leave/Absent)</th>
+                  <th>Assigned Mining Machine / Vehicle</th>
+                  <th>Mine Site / Pit Location</th>
+                  <th>Shift Supervisor</th>
+                </tr>
+              </thead>
+              <tbody id="tomorrow-table-body">
+                <!-- Dynamically populated tomorrow schedule -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 6: ATTENDANCE GLASS & LEAVE TRACKER ==================== -->
+        <section id="tab-attendance-glass" class="tab-pane">
+          <div class="section-top-actions">
+            <div class="search-filter-box">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="glass-search-input" placeholder="Filter employee attendance matrix...">
+              </div>
+              <select id="glass-month-select" class="custom-select">
+                <option value="July 2026">July 2026</option>
+                <option value="August 2026">August 2026</option>
+                <option value="September 2026">September 2026</option>
+              </select>
+            </div>
+
+            <div class="action-buttons-group">
+              <button class="btn btn-primary btn-sm" id="btn-open-leave-modal">
+                <i class="fa-solid fa-calendar-plus"></i> + Log / Request Leave
+              </button>
+            </div>
+          </div>
+
+          <!-- Glass Cards Grid for Attendance Matrix & Leave Balances -->
+          <div class="attendance-glass-grid" id="glass-employee-cards">
+            <!-- Dynamically populated employee glass cards -->
+          </div>
+        </section>
+
+        <!-- ==================== TAB 7: SALARY SLIPS & PAYROLL ==================== -->
         <section id="tab-payroll" class="tab-pane">
-          <div class="section-header">
-            <div>
-              <h3>Salary Slips & Payroll Disbursal</h3>
-              <p class="text-muted">Generate, review, and print official salary slips for all staff members.</p>
+          <div class="section-top-actions">
+            <div class="search-filter-box">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="slip-search-input"
+                  placeholder="Search salary slips by employee name, ID, month...">
+              </div>
+              <select id="payroll-month-select" class="custom-select">
+                <option value="July 2026">July 2026</option>
+                <option value="August 2026">August 2026</option>
+                <option value="September 2026">September 2026</option>
+                <option value="June 2026">June 2026</option>
+              </select>
             </div>
-            <button class="btn btn-primary" id="btn-generate-slip-modal">
-              <i class="fa-solid fa-file-circle-plus"></i> Generate Salary Slip
-            </button>
+
+            <div class="action-buttons-group">
+              <button class="btn btn-primary btn-sm btn-glow" id="btn-bulk-generate-slips">
+                <i class="fa-solid fa-bolt"></i> 1-Click Generate All Slips
+              </button>
+              <button class="btn btn-outline-success btn-sm" id="btn-bulk-whatsapp-all"
+                title="Send salary statements via WhatsApp to all employees">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp Dispatch All
+              </button>
+            </div>
           </div>
 
-          <div class="table-card glass-panel">
-            <div class="table-responsive">
-              <table class="custom-table" id="salary-slips-table">
-                <thead>
-                  <tr>
-                    <th>Slip ID</th>
-                    <th>Employee Name</th>
-                    <th>Month / Year</th>
-                    <th>Gross Earnings</th>
-                    <th>Deductions</th>
-                    <th>Net Salary</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Dynamic -->
-                </tbody>
-              </table>
+          <div class="table-container peach-glass">
+            <table class="data-table" id="salary-table">
+              <thead>
+                <tr>
+                  <th>Slip ID</th>
+                  <th>Month</th>
+                  <th>Emp ID & Name</th>
+                  <th>Designation</th>
+                  <th>Payable Days</th>
+                  <th>Gross Earnings</th>
+                  <th>Deductions (PF+ESIC+PT)</th>
+                  <th>Net Disbursal</th>
+                  <th>Status</th>
+                  <th class="text-right">Official Slip & WhatsApp</th>
+                </tr>
+              </thead>
+              <tbody id="salary-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 8: REPORTS & 1-CLICK EXCEL EXPORTS ==================== -->
+        <section id="tab-reports" class="tab-pane">
+          <div class="reports-hero-banner peach-glass">
+            <div class="reports-hero-title">
+              <i class="fa-solid fa-file-excel text-success text-lg"></i>
+              <div>
+                <h3>Executive Disbursal & Operations Reports Center</h3>
+                <p>Generate and download verified Excel spreadsheets for payroll processing, bank salary NEFT deposits,
+                  and shift fleet scheduling.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="reports-cards-grid">
+            <!-- Report 1: Tomorrow Shift Schedule -->
+            <div class="report-box-card peach-glass">
+              <div class="report-box-header">
+                <div class="report-icon icon-orange"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                <div class="report-badge">OPERATIONS & FLEET</div>
+              </div>
+              <h4 class="report-card-title">Tomorrow's Shift & Machine Schedule</h4>
+              <p class="report-card-desc">Detailed roster of all heavy equipment operators assigned to CAT 349D
+                Excavators, Tata Signa Tippers, JCBs, and Bobcats for tomorrow's mining shifts (G: 8:30a-5:30p, A, B,
+                C).</p>
+              <ul class="report-features">
+                <li><i class="fa-solid fa-check text-success"></i> Operator Emp ID & Full Name</li>
+                <li><i class="fa-solid fa-check text-success"></i> Vehicle Reg No & Machinery Model</li>
+                <li><i class="fa-solid fa-check text-success"></i> Shift Code (G, A, B, C) & Pit Location</li>
+              </ul>
+              <button class="btn btn-primary btn-block" id="btn-rep-tomorrow-excel">
+                <i class="fa-solid fa-file-arrow-down"></i> 1-Click Download Tomorrow Schedule (Excel)
+              </button>
+            </div>
+
+            <!-- Report 2: Monthly Comprehensive Payroll -->
+            <div class="report-box-card peach-glass">
+              <div class="report-box-header">
+                <div class="report-icon icon-navy"><i class="fa-solid fa-calculator"></i></div>
+                <div class="report-badge">PAYROLL & COMPLIANCE</div>
+              </div>
+              <h4 class="report-card-title">Monthly Comprehensive Payroll Statement</h4>
+              <p class="report-card-desc">Complete company payroll sheet matching the official ACC Chanda master.
+                Includes Basic, DA, HRA, Special Allowance, PF (12%), ESIC, PT, and Net Take-Home Pay.</p>
+              <ul class="report-features">
+                <li><i class="fa-solid fa-check text-success"></i> 32 Employees Salary Breakdown</li>
+                <li><i class="fa-solid fa-check text-success"></i> Gross Pay, Deductions & Net Take Home</li>
+                <li><i class="fa-solid fa-check text-success"></i> UAN, PF & ESIC Account Numbers</li>
+              </ul>
+              <button class="btn btn-outline-success btn-block" id="btn-rep-payroll-excel">
+                <i class="fa-solid fa-file-excel"></i> 1-Click Download Monthly Payroll (Excel)
+              </button>
+            </div>
+
+            <!-- Report 3: Bank NEFT Deposit File -->
+            <div class="report-box-card peach-glass">
+              <div class="report-box-header">
+                <div class="report-icon icon-orange"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="report-badge">BANK DISBURSAL</div>
+              </div>
+              <h4 class="report-card-title">Bank Salary Disbursal & NEFT Sheet</h4>
+              <p class="report-card-desc">Direct corporate bank deposit upload sheet formatted for SBI / HDFC corporate
+                net banking bulk NEFT/RTGS salary credits with exact IFSC codes and account numbers.</p>
+              <ul class="report-features">
+                <li><i class="fa-solid fa-check text-success"></i> Beneficiary Name & Bank A/C No</li>
+                <li><i class="fa-solid fa-check text-success"></i> IFSC Code & Branch Verification</li>
+                <li><i class="fa-solid fa-check text-success"></i> Exact Net Take Home Salary Amount</li>
+              </ul>
+              <button class="btn btn-primary btn-block btn-glow" id="btn-rep-bank-excel">
+                <i class="fa-solid fa-vault"></i> 1-Click Download Bank Deposit Sheet (Excel)
+              </button>
+            </div>
+
+            <!-- Report 4: Fleet Availability & MTTR Reliability Master -->
+            <div class="report-box-card peach-glass">
+              <div class="report-box-header">
+                <div class="report-icon icon-navy"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="report-badge">PLANT & FLEET RELIABILITY</div>
+              </div>
+              <h4 class="report-card-title">HEMM Availability & MTTR Reliability Report</h4>
+              <p class="report-card-desc">Official heavy equipment availability and downtime analysis spreadsheet with automatically computed MTTR (Mean Time to Repair), MTBF, breakdown hours, and failure causes.</p>
+              <ul class="report-features">
+                <li><i class="fa-solid fa-check text-success"></i> Scheduled, Operating & B/D Hours</li>
+                <li><i class="fa-solid fa-check text-success"></i> Availability % & Utilization % per Vehicle</li>
+                <li><i class="fa-solid fa-check text-success"></i> MTTR (Hours/Repair) & MTBF Reliability</li>
+              </ul>
+              <button class="btn btn-outline btn-block" id="btn-rep-mttr-excel">
+                <i class="fa-solid fa-file-excel text-orange"></i> 1-Click Download MTTR & Availability (Excel)
+              </button>
             </div>
           </div>
         </section>
@@ -350,212 +775,665 @@
     </main>
   </div>
 
-  <!-- ==================== MODALS ==================== -->
-
-  <!-- Modal: Create New Employee / User -->
-  <div class="modal-backdrop hidden" id="modal-user">
-    <div class="modal-card glass-panel">
+  <!-- ==================== MODAL: BULK IMPORT VEHICLES ==================== -->
+  <div id="modal-bulk-vehicles" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-lg peach-glass">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-user-plus text-primary"></i> Create New Employee Account</h3>
-        <button class="btn-close modal-close">&times;</button>
+        <h3><i class="fa-solid fa-file-excel text-success"></i> Bulk Import Mining Vehicles & Fleet (Excel / CSV)</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-bulk-vehicles')">&times;</button>
       </div>
-      <form id="form-create-user">
-        <div class="modal-body form-grid">
+      <div class="modal-body">
+        <p class="modal-desc">Upload your fleet spreadsheet (e.g. CAT Excavators, Tata Signa Tippers, JCBs, Bobcats, Water Tankers). The system will automatically import and validate all equipment details.</p>
+
+        <div class="drop-zone" id="drop-zone-vehicles">
+          <i class="fa-solid fa-cloud-arrow-up drop-icon text-orange"></i>
+          <h4>Drag & Drop your vehicle <code>.xlsx</code> or <code>.csv</code> file here</h4>
+          <p>or click to browse files on your computer</p>
+          <input type="file" id="bulk-vehicles-file-input" accept=".xlsx, .xls, .csv" class="hidden">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('bulk-vehicles-file-input').click()">
+            <i class="fa-solid fa-folder-open"></i> Browse Excel File
+          </button>
+        </div>
+
+        <div class="template-box">
+          <span>Need the official vehicle fleet template?</span>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-download-vehicle-template">
+            <i class="fa-solid fa-download text-orange"></i> Download Vehicle Fleet Excel Template
+          </button>
+        </div>
+
+        <!-- Preview Table -->
+        <div id="bulk-vehicles-preview-area" class="bulk-preview-area hidden">
+          <h4><i class="fa-solid fa-list-check text-orange"></i> Parsed Preview (<span id="bulk-vehicles-preview-count">0</span> Vehicles Found)</h4>
+          <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>Vehicle Reg No</th>
+                  <th>Equipment Name</th>
+                  <th>Type</th>
+                  <th>Model</th>
+                  <th>Site Location</th>
+                  <th>Status</th>
+                  <th>Hourly Rate</th>
+                </tr>
+              </thead>
+              <tbody id="preview-vehicles-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-bulk-vehicles')">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-bulk-vehicles" disabled>
+          <i class="fa-solid fa-upload"></i> Import Vehicles to Fleet Database
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: LOG BREAKDOWN (B/D) & MAINTENANCE HOURS ==================== -->
+  <div id="modal-vehicle-breakdown" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-screwdriver-wrench text-orange"></i> Log Vehicle Breakdown (B/D) & Hours</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-vehicle-breakdown')">&times;</button>
+      </div>
+      <form id="form-vehicle-breakdown">
+        <div class="modal-body modal-grid-2">
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label><strong>Select Mining Vehicle / Equipment *</strong></label>
+            <select id="bd-vehicle-select" class="custom-select" required>
+              <!-- Dynamically populated from allVehicles -->
+            </select>
+          </div>
+
           <div class="form-group">
-            <label>Full Name *</label>
+            <label><strong>Log Date *</strong></label>
+            <input type="date" id="bd-log-date" required>
+          </div>
+
+          <div class="form-group">
+            <label><strong>Scheduled Hours (e.g. 24) *</strong></label>
+            <input type="number" step="0.5" id="bd-total-hours" value="24" required>
+          </div>
+
+          <div class="form-group">
+            <label><strong>Breakdown (B/D) Hours *</strong></label>
+            <input type="number" step="0.5" id="bd-breakdown-hours" placeholder="e.g. 3.5" value="0" required>
+          </div>
+
+          <div class="form-group">
+            <label><strong>Actual Operating Hours *</strong></label>
+            <input type="number" step="0.5" id="bd-operating-hours" placeholder="e.g. 20.5" value="24" required>
+          </div>
+
+          <div class="form-group">
+            <label><strong>Failure Type / Category *</strong></label>
+            <select id="bd-failure-type" class="custom-select" required>
+              <option value="Mechanical Fault">Mechanical Fault (Engine/Gearbox)</option>
+              <option value="Hydraulic System">Hydraulic System (Hose/Pump/Cylinder)</option>
+              <option value="Electrical Issue">Electrical & Sensor Issue</option>
+              <option value="Undercarriage & Track">Undercarriage & Track / Tire Puncture</option>
+              <option value="Scheduled Maintenance">Scheduled Preventive Maintenance (PM)</option>
+              <option value="Normal Operation">Normal Operation (No Breakdown)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><strong>Resolution Status *</strong></label>
+            <select id="bd-status" class="custom-select" required>
+              <option value="Resolved">Resolved (Machine Back in Pit)</option>
+              <option value="Under Repair">Under Repair in Maintenance Bay</option>
+              <option value="Waiting for Spares">Waiting for Spare Parts</option>
+              <option value="Operating Normal">Operating Normal</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Breakdown Reason / Problem Description</label>
+            <input type="text" id="bd-reason" placeholder="e.g. Hydraulic arm hose burst during excavation at Pit A" value="Scheduled Maintenance">
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Action Taken / Maintenance Remarks</label>
+            <input type="text" id="bd-action" placeholder="e.g. Hydraulic hose replaced and pressure test passed" value="Repaired and verified by Site Mechanical Lead">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-vehicle-breakdown')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-breakdown">
+            <i class="fa-solid fa-floppy-disk"></i> Save Breakdown & Hours Log
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD / EDIT VEHICLE & FLEET ==================== -->
+  <div id="modal-vehicle" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-lg peach-glass">
+      <div class="modal-header">
+        <h3 id="modal-vehicle-title"><i class="fa-solid fa-truck-ramp-box text-orange"></i> Add Mining Vehicle / Fleet
+        </h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-vehicle')">&times;</button>
+      </div>
+      <form id="form-vehicle">
+        <input type="hidden" id="vehicle-id">
+        <div class="modal-body modal-grid-2">
+          <div class="form-group">
+            <label>Vehicle / Registration Number *</label>
+            <input type="text" id="veh-number" required placeholder="e.g. HP-12-EX-3493">
+          </div>
+          <div class="form-group">
+            <label>Equipment Name & Description *</label>
+            <input type="text" id="veh-name" required placeholder="e.g. CAT 349D Heavy Mining Excavator #3">
+          </div>
+          <div class="form-group">
+            <label>Equipment Type *</label>
+            <select id="veh-type" class="custom-select" required>
+              <option value="Excavator">Excavator (CAT / Tata Hitachi)</option>
+              <option value="Tipper / Dumper">Tipper / Dumper (Tata Signa 10x)</option>
+              <option value="JCB / Loader">JCB / Backhoe Loader (3DX)</option>
+              <option value="Bobcat">Bobcat Skid Steer Loader</option>
+              <option value="Water Tanker">Water Tanker (Dust Suppression)</option>
+              <option value="Service Van">Service Van / Mobile Workshop</option>
+              <option value="Road Roller">Road Compactor / Roller</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Model & Capacity Details</label>
+            <input type="text" id="veh-model" placeholder="e.g. Caterpillar 349D (49 Ton)">
+          </div>
+          <div class="form-group">
+            <label>Assigned Operator / Driver</label>
+            <select id="veh-operator" class="custom-select">
+              <!-- Dynamically populated with operators -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mine Site Location</label>
+            <input type="text" id="veh-site" value="ACC Chanda Mine Pit" placeholder="e.g. ACC Chanda Mine Pit">
+          </div>
+          <div class="form-group">
+            <label>Operational Status *</label>
+            <select id="veh-status" class="custom-select" required>
+              <option value="Active (In Pit)">Active (In Pit)</option>
+              <option value="Standby / Idle">Standby / Idle</option>
+              <option value="Under Maintenance">Under Maintenance</option>
+              <option value="Decommissioned">Decommissioned</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Hourly Deployment Rate (₹)</label>
+            <input type="number" id="veh-rate" placeholder="e.g. 4500" value="4500">
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Operation & Maintenance Notes</label>
+            <input type="text" id="veh-notes" placeholder="e.g. Scheduled hydraulic oil check every 250 hours">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-vehicle')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-vehicle">
+            <i class="fa-solid fa-check"></i> Save Vehicle Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: USER ACCESS & PERMISSION MANAGEMENT ==================== -->
+  <div id="modal-user-access" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-shield text-orange"></i> User Access & Feature Permissions</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-user-access')">&times;</button>
+      </div>
+      <form id="form-user-access">
+        <input type="hidden" id="access-user-id">
+        <div class="modal-body">
+          <div class="user-access-hero-card">
+            <h4 id="access-user-name">Employee Name</h4>
+            <p id="access-user-sub">Emp ID: SRR001 | Trade: Operator</p>
+          </div>
+
+          <div class="form-group">
+            <label><strong>Assign System Role *</strong></label>
+            <select id="access-user-role" class="custom-select" style="font-weight: 600;">
+              <option value="Worker">Worker (Operator / Helper)</option>
+              <option value="Employee">Employee (Technician / Mechanic / Welder)</option>
+              <option value="Supervisor">Supervisor (Site Lead / Shift In-charge)</option>
+              <option value="Manager">Manager / Mining Engineer</option>
+              <option value="Super Admin">Super Admin (Full System Access)</option>
+            </select>
+          </div>
+
+          <div class="permission-toggle-box" style="background: rgba(255, 255, 255, 0.7); border: 1.5px solid var(--border-orange); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
+            <label class="switch-label" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="access-login-toggle" style="width: 22px; height: 22px; accent-color: var(--logo-orange); cursor: pointer;">
+              <strong style="font-size: 15px; color: var(--navy-dark);"><i class="fa-solid fa-lock-open text-orange"></i> Enable Portal Login Access</strong>
+            </label>
+            <p class="text-muted" style="margin: 6px 0 0 34px; font-size: 12px;">Allow this user to sign in to the portal using their ID/Email and password.</p>
+          </div>
+
+          <div class="form-group" id="access-password-group">
+            <label><strong>Login Password *</strong></label>
+            <div style="position: relative;">
+              <input type="text" id="access-user-password" placeholder="Enter custom password (e.g. SRR004@123)" style="padding-left: 36px; font-family: var(--font-mono); font-weight: 600;">
+              <i class="fa-solid fa-key" style="position: absolute; left: 12px; top: 13px; color: var(--logo-orange);"></i>
+            </div>
+            <small class="text-muted">Superadmin can set or reset the login password here anytime.</small>
+          </div>
+
+          <div class="permission-features-card" style="background: #FFF; border: 1px solid var(--border-orange); border-radius: var(--radius-md); padding: 14px; margin-top: 14px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--navy-dark);"><i class="fa-solid fa-sliders text-orange"></i> Granular Dynamic Permissions Matrix</h4>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+              <input type="checkbox" id="perm-manage-users" data-perm="hr.users.manage" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>Employee Directory & Roles:</strong> View, add, edit, and deactivate staff accounts</span>
+            </label>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+              <input type="checkbox" id="perm-mark-muster" data-perm="attendance.muster.mark" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>Daily Muster Roll & Shifts:</strong> Mark and save G (8:30a-5:30p), A, B, C shifts</span>
+            </label>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+              <input type="checkbox" id="perm-manage-fleets" data-perm="fleets.manage" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>Mining Fleets & Machinery:</strong> Add, edit, assign, and delete heavy vehicles</span>
+            </label>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+              <input type="checkbox" id="perm-view-salary" data-perm="payroll.salary_structure.view" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>View Salary Structures:</strong> Inspect CTC, base rates & allowance breakdowns</span>
+            </label>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+              <input type="checkbox" id="perm-manage-payroll" data-perm="payroll.manage_all" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>Bulk Payroll & Salary Slips:</strong> 1-Click generation & WhatsApp dispatch</span>
+            </label>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+              <input type="checkbox" id="perm-export-reports" data-perm="reports.bank_deposit.export" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>Master Reports & Bank NEFT:</strong> 1-Click Excel downloads & bank deposit files</span>
+            </label>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+              <input type="checkbox" id="perm-appointment-letters" data-perm="hr.appointment_letter.generate" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>Appointment Letters:</strong> Generate official employment statements</span>
+            </label>
+
+            <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 4px; cursor: pointer;">
+              <input type="checkbox" id="perm-field-expenses" data-perm="expenses.field_claims.process" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
+              <span><strong>Field Expenses & Claims:</strong> Fuel, maintenance & site petty cash claims</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding: 16px 20px; background: rgba(255, 245, 238, 0.95); display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border-orange);">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user-access')" style="padding: 10px 18px;">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-user-access" style="padding: 10px 22px; font-weight: 700; font-size: 14px; background: var(--logo-orange); border: none; box-shadow: 0 4px 12px rgba(230, 81, 0, 0.3);">
+            <i class="fa-solid fa-floppy-disk"></i> Save Access & Permissions
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: LOG / REQUEST LEAVE ==================== -->
+  <div id="modal-leave" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-calendar-plus text-orange"></i> Log Leave Entry</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-leave')">&times;</button>
+      </div>
+      <form id="form-leave">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Employee / Worker *</label>
+            <select id="leave-select-user" class="custom-select" required>
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Leave Type *</label>
+            <select id="leave-type-select" class="custom-select" required>
+              <option value="Casual Leave">Casual Leave (CL)</option>
+              <option value="Sick Leave">Sick Leave (SL)</option>
+              <option value="Earned Leave">Earned Leave (EL)</option>
+              <option value="Compensatory Off">Compensatory Off (CO)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Start Date *</label>
+            <input type="date" id="leave-start-date" required>
+          </div>
+          <div class="form-group">
+            <label>End Date *</label>
+            <input type="date" id="leave-end-date" required>
+          </div>
+          <div class="form-group">
+            <label>Total Number of Days</label>
+            <input type="number" id="leave-days-count" min="1" value="1" required>
+          </div>
+          <div class="form-group">
+            <label>Reason / Remarks</label>
+            <input type="text" id="leave-reason" placeholder="e.g. Personal family emergency" value="Personal Leave">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave')">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i> Save Leave Record
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: BULK IMPORT EMPLOYEES ==================== -->
+  <div id="modal-bulk-import" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-lg peach-glass">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-excel text-success"></i> Bulk Import Employees from Excel / CSV</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-bulk-import')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Upload your employee spreadsheet (matching the official
+          <code>ACC Chanda Salary.xlsx</code> format). The portal will automatically parse and validate all 42 fields
+          including ID, Name, Rank, Daily Wages, CTC, Father's Name, DOB, DOJ, UAN, PF, ESIC, Bank A/C, IFSC, Location,
+          Category, and Mobile Number.</p>
+
+        <div class="drop-zone" id="drop-zone">
+          <i class="fa-solid fa-cloud-arrow-up drop-icon text-orange"></i>
+          <h4>Drag & Drop your <code>.xlsx</code> or <code>.csv</code> file here</h4>
+          <p>or click to browse files on your computer</p>
+          <input type="file" id="bulk-file-input" accept=".xlsx, .xls, .csv" class="hidden">
+          <button type="button" class="btn btn-secondary btn-sm"
+            onclick="document.getElementById('bulk-file-input').click()">
+            <i class="fa-solid fa-folder-open"></i> Browse Excel File
+          </button>
+        </div>
+
+        <div class="template-box">
+          <span>Need the official template?</span>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-modal-download-template">
+            <i class="fa-solid fa-download text-orange"></i> Download Sample Excel Template
+          </button>
+        </div>
+
+        <!-- Preview Table -->
+        <div id="bulk-preview-area" class="bulk-preview-area hidden">
+          <h4><i class="fa-solid fa-list-check text-orange"></i> Parsed Preview (<span id="bulk-preview-count">0</span>
+            Employees Found)</h4>
+          <div class="table-scroll-container">
+            <table class="preview-table" id="preview-table">
+              <thead>
+                <tr>
+                  <th>Emp ID</th>
+                  <th>Name</th>
+                  <th>Rank / Designation</th>
+                  <th>Father Name</th>
+                  <th>Mobile</th>
+                  <th>Bank A/C</th>
+                  <th>IFSC</th>
+                  <th>Daily Wage / CTC</th>
+                </tr>
+              </thead>
+              <tbody id="preview-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-bulk-import')">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-bulk-import" disabled>
+          <i class="fa-solid fa-upload"></i> Import Employees to Database
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD / EDIT EMPLOYEE / WORKER ==================== -->
+  <div id="modal-user" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-lg peach-glass">
+      <div class="modal-header">
+        <h3 id="modal-user-title"><i class="fa-solid fa-user-gear text-orange"></i> Add New Employee / Worker</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-user')">&times;</button>
+      </div>
+      <form id="form-user">
+        <input type="hidden" id="user-id">
+        <div class="modal-body modal-grid-2">
+          <div class="form-group">
+            <label>Employee / Worker ID *</label>
+            <input type="text" id="user-empId" required placeholder="e.g. SRR037">
+          </div>
+          <div class="form-group">
+            <label>Full Employee / Worker Name *</label>
             <input type="text" id="user-name" required placeholder="e.g. Suresh Kumar">
           </div>
           <div class="form-group">
-            <label>Email Address *</label>
-            <input type="email" id="user-email" required placeholder="e.g. suresh@shreerr.com">
-          </div>
-          <div class="form-group">
-            <label>Login Password *</label>
-            <input type="password" id="user-password" required placeholder="Default password">
-          </div>
-          <div class="form-group">
-            <label>Role Authority *</label>
-            <select id="user-role" required>
-              <option value="Employee">Employee / Operator</option>
-              <option value="Site Supervisor">Site Supervisor</option>
-              <option value="HR / Payroll Manager">HR / Payroll Manager</option>
-              <option value="Super Admin">Super Admin (Rajesh Bhatti)</option>
+            <label>Assigned User Role *</label>
+            <select id="user-role" class="custom-select" required>
+              <option value="Worker">Worker (Operator / Helper / Field Staff)</option>
+              <option value="Employee">Employee (Mechanic / Welder / Electrician)</option>
+              <option value="Supervisor">Supervisor (Site In-charge / Shift Supervisor)</option>
+              <option value="Manager">Manager / Mining Engineer</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Designation</label>
-            <input type="text" id="user-designation" placeholder="e.g. Mining Dump Truck Operator">
+            <label>Father / Husband Name</label>
+            <input type="text" id="user-fatherName" placeholder="e.g. Late Shri Ram Lal">
           </div>
           <div class="form-group">
-            <label>Department</label>
-            <input type="text" id="user-department" placeholder="e.g. Heavy Fleet Operations">
+            <label>Mobile Number (For WhatsApp Slips) *</label>
+            <input type="text" id="user-mobile" required placeholder="10-digit mobile, e.g. 9822852945">
           </div>
           <div class="form-group">
-            <label>Site Location</label>
-            <input type="text" id="user-site" placeholder="e.g. Keonjhar Iron Ore Mine">
+            <label>Designation / Trade *</label>
+            <select id="user-designation" class="custom-select" required>
+              <option value="Operator">Operator (Excavator / HEMM)</option>
+              <option value="Mechanic">Mechanic</option>
+              <option value="Welder / Fitter">Welder / Fitter</option>
+              <option value="Auto Electrician">Auto Electrician</option>
+              <option value="Helper">Helper</option>
+              <option value="Engineer">Engineer</option>
+              <option value="Supervisor">Supervisor</option>
+              <option value="Management">Management</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>Phone Number</label>
-            <input type="text" id="user-phone" placeholder="+91 98765 00000">
+            <label>Skill Category *</label>
+            <select id="user-category" class="custom-select" required>
+              <option value="Skilled">Skilled</option>
+              <option value="Semi-Skilled">Semi-Skilled</option>
+              <option value="Unskilled">Unskilled</option>
+              <option value="Executive">Executive</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>Monthly Base Salary (₹)</label>
-            <input type="number" id="user-salary" placeholder="45000">
+            <label>Mine Site / Location</label>
+            <input type="text" id="user-location" placeholder="e.g. ACC Chanda" value="ACC Chanda">
           </div>
           <div class="form-group">
-            <label>Bank Account Info</label>
-            <input type="text" id="user-bank" placeholder="SBIN0001234 - Account No.">
+            <label>Monthly CTC (₹) [For Fixed Salary]</label>
+            <input type="number" id="user-ctc" placeholder="e.g. 35000">
           </div>
           <div class="form-group">
-            <label>PAN Number</label>
-            <input type="text" id="user-pan" placeholder="ABCDE1234F">
+            <label>Basic Per Day (₹) [For Daily Wage]</label>
+            <input type="number" step="0.01" id="user-basicPerDay" placeholder="e.g. 444.62">
+          </div>
+          <div class="form-group">
+            <label>Bank Account Number</label>
+            <input type="text" id="user-bankAccount" placeholder="e.g. 32049452658">
+          </div>
+          <div class="form-group">
+            <label>Bank IFSC Code</label>
+            <input type="text" id="user-ifsc" placeholder="e.g. SBIN0006872">
+          </div>
+          <div class="form-group">
+            <label>UAN Number</label>
+            <input type="text" id="user-uan" placeholder="e.g. 101306845435">
+          </div>
+          <div class="form-group">
+            <label>PF Account Number</label>
+            <input type="text" id="user-pfNo" placeholder="e.g. HPSML37703770000010029">
+          </div>
+          <div class="form-group">
+            <label>ESIC Number</label>
+            <input type="text" id="user-esicNo" placeholder="e.g. 2303010526">
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="text" id="user-dob" placeholder="DD/MM/YYYY">
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline modal-close">Cancel</button>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save & Create User</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-user">
+            <i class="fa-solid fa-check"></i> Save Record
+          </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Assign Duty Shift Roster -->
-  <div class="modal-backdrop hidden" id="modal-roster">
-    <div class="modal-card glass-panel">
-      <div class="modal-header">
-        <h3><i class="fa-solid fa-calendar-plus text-primary"></i> Assign Duty Shift</h3>
-        <button class="btn-close modal-close">&times;</button>
-      </div>
-      <form id="form-create-roster">
-        <div class="modal-body form-grid">
-          <div class="form-group">
-            <label>Select Employee *</label>
-            <select id="roster-user-id" required>
-              <!-- Dynamic -->
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Shift Date *</label>
-            <input type="date" id="roster-date" required>
-          </div>
-          <div class="form-group">
-            <label>Shift Timing *</label>
-            <select id="roster-shift" required>
-              <option value="Morning Shift (07:00 AM - 03:00 PM)">Morning Shift (07:00 AM - 03:00 PM)</option>
-              <option value="Evening Shift (03:00 PM - 11:00 PM)">Evening Shift (03:00 PM - 11:00 PM)</option>
-              <option value="Night Shift (11:00 PM - 07:00 AM)">Night Shift (11:00 PM - 07:00 AM)</option>
-              <option value="General Shift (08:30 AM - 05:30 PM)">General Shift (08:30 AM - 05:30 PM)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Assigned Mine Site</label>
-            <input type="text" id="roster-site" placeholder="Keonjhar Iron Ore Mine Site A">
-          </div>
-          <div class="form-group">
-            <label>Equipment / Vehicle Assigned</label>
-            <input type="text" id="roster-equipment" placeholder="e.g. CAT 349 Excavator #02">
-          </div>
-          <div class="form-group">
-            <label>Supervisor</label>
-            <input type="text" id="roster-supervisor" placeholder="e.g. Vikram Singh">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline modal-close">Cancel</button>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Assign Shift</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Generate Salary Slip -->
-  <div class="modal-backdrop hidden" id="modal-salary-slip">
-    <div class="modal-card glass-panel wide-modal">
-      <div class="modal-header">
-        <h3><i class="fa-solid fa-calculator text-primary"></i> Generate Employee Salary Slip</h3>
-        <button class="btn-close modal-close">&times;</button>
-      </div>
-      <form id="form-create-slip">
-        <div class="modal-body form-grid">
-          <div class="form-group">
-            <label>Select Employee *</label>
-            <select id="slip-user-id" required>
-              <!-- Dynamic -->
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Month & Year *</label>
-            <input type="text" id="slip-month" required placeholder="July 2026">
-          </div>
-          <div class="form-group">
-            <label>Days Worked</label>
-            <input type="number" id="slip-worked-days" value="26">
-          </div>
-          <div class="form-group">
-            <label>Total Month Days</label>
-            <input type="number" id="slip-total-days" value="31">
-          </div>
-
-          <div class="form-group">
-            <label>Basic Pay (₹)</label>
-            <input type="number" id="slip-basic" value="30000">
-          </div>
-          <div class="form-group">
-            <label>HRA Allowance (₹)</label>
-            <input type="number" id="slip-hra" value="9000">
-          </div>
-          <div class="form-group">
-            <label>Field Mining Allowance (₹)</label>
-            <input type="number" id="slip-field" value="4000">
-          </div>
-          <div class="form-group">
-            <label>Overtime Bonus (₹)</label>
-            <input type="number" id="slip-overtime" value="2000">
-          </div>
-
-          <div class="form-group">
-            <label>PF Deduction (₹)</label>
-            <input type="number" id="slip-pf" value="1800">
-          </div>
-          <div class="form-group">
-            <label>ESI Deduction (₹)</label>
-            <input type="number" id="slip-esi" value="500">
-          </div>
-          <div class="form-group">
-            <label>Salary Advance (₹)</label>
-            <input type="number" id="slip-advance" value="0">
-          </div>
-          <div class="form-group">
-            <label>Payment Date</label>
-            <input type="date" id="slip-payment-date">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline modal-close">Cancel</button>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-file-invoice"></i> Generate & Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal: Official Printable Pay Slip View -->
-  <div class="modal-backdrop hidden" id="modal-view-slip">
-    <div class="modal-card slip-modal-card">
+  <!-- ==================== MODAL: OFFICIAL SALARY SLIP (PRINT & WHATSAPP) ==================== -->
+  <div id="modal-salary-slip" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-lg peach-glass">
       <div class="modal-header no-print">
-        <h3><i class="fa-solid fa-file-pdf text-success"></i> Official Salary Slip Statement</h3>
-        <div>
-          <button class="btn btn-primary btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
-          <button class="btn-close modal-close">&times;</button>
+        <h3><i class="fa-solid fa-file-invoice-dollar text-orange"></i> Official Salary Slip Statement</h3>
+        <div class="slip-header-actions">
+          <button type="button" class="btn btn-outline-success btn-sm" id="slip-whatsapp-btn">
+            <i class="fa-brands fa-whatsapp"></i> Send on WhatsApp
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Print Slip (PDF)
+          </button>
+          <button class="btn-close-modal" onclick="closeModal('modal-salary-slip')">&times;</button>
         </div>
       </div>
-      
-      <!-- Printable Salary Document -->
-      <div class="printable-salary-slip" id="printable-slip-content">
-        <!-- Dynamic populated via JS -->
+
+      <div class="modal-body" id="printable-salary-slip-content">
+        <div class="official-salary-slip">
+          <div class="slip-top-brand">
+            <img src="/images/logo.png" alt="Shree RR Trading Company" class="slip-logo">
+            <div class="slip-company-info">
+              <h2>SHREE RR TRADING COMPANY</h2>
+              <p class="slip-sub">Mining O&M, Heavy Fleets & Earth Moving Machinery Contracts</p>
+              <p class="slip-site">ACC Chanda Mine Site & Darlaghat Operations</p>
+              <div class="slip-month-title" id="slip-display-month">PAY SLIP FOR JULY 2026</div>
+            </div>
+          </div>
+
+          <div class="slip-emp-details-grid">
+            <div class="slip-detail-col">
+              <div><strong>Employee ID:</strong> <span id="slip-val-empId">-</span></div>
+              <div><strong>Employee Name:</strong> <span id="slip-val-name">-</span></div>
+              <div><strong>Father/Husband Name:</strong> <span id="slip-val-father">-</span></div>
+              <div><strong>Designation:</strong> <span id="slip-val-designation">-</span></div>
+              <div><strong>Category:</strong> <span id="slip-val-category">-</span></div>
+              <div><strong>Location:</strong> <span id="slip-val-location">-</span></div>
+            </div>
+            <div class="slip-detail-col">
+              <div><strong>Date of Birth:</strong> <span id="slip-val-dob">-</span></div>
+              <div><strong>Date of Joining:</strong> <span id="slip-val-doj">-</span></div>
+              <div><strong>UAN Number:</strong> <span id="slip-val-uan">-</span></div>
+              <div><strong>PF Number:</strong> <span id="slip-val-pf">-</span></div>
+              <div><strong>ESIC Number:</strong> <span id="slip-val-esic">-</span></div>
+              <div><strong>Bank Account & IFSC:</strong> <span id="slip-val-bank">-</span></div>
+            </div>
+          </div>
+
+          <div class="slip-attendance-row">
+            <div><strong>Total Days in Month:</strong> <span id="slip-val-totalDays">31</span></div>
+            <div><strong>Payable Working Days:</strong> <span id="slip-val-workedDays">31</span></div>
+            <div><strong>Mobile Number:</strong> <span id="slip-val-mobile">-</span></div>
+          </div>
+
+          <!-- Earnings vs Deductions Table -->
+          <table class="slip-calc-table">
+            <thead>
+              <tr>
+                <th colspan="2" class="text-left bg-light">EARNINGS</th>
+                <th colspan="2" class="text-left bg-light">DEDUCTIONS</th>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <th class="text-right">Amount (₹)</th>
+                <th>Description</th>
+                <th class="text-right">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Basic Salary</td>
+                <td class="text-right" id="slip-earn-basic">₹0.00</td>
+                <td>Provident Fund (PF @ 12%)</td>
+                <td class="text-right" id="slip-ded-pf">₹0.00</td>
+              </tr>
+              <tr>
+                <td>Dearness Allowance (DA)</td>
+                <td class="text-right" id="slip-earn-da">₹0.00</td>
+                <td>ESIC Contribution</td>
+                <td class="text-right" id="slip-ded-esic">₹0.00</td>
+              </tr>
+              <tr>
+                <td>House Rent Allowance (HRA)</td>
+                <td class="text-right" id="slip-earn-hra">₹0.00</td>
+                <td>Professional Tax (PT)</td>
+                <td class="text-right" id="slip-ded-pt">₹200.00</td>
+              </tr>
+              <tr>
+                <td>Special Allowance / Field Pay</td>
+                <td class="text-right" id="slip-earn-special">₹0.00</td>
+                <td>LIC Premium / Other</td>
+                <td class="text-right" id="slip-ded-lic">₹0.00</td>
+              </tr>
+              <tr>
+                <td>Overtime (OT) Wages</td>
+                <td class="text-right" id="slip-earn-ot">₹0.00</td>
+                <td>Advance / Adjustments</td>
+                <td class="text-right" id="slip-ded-advance">₹0.00</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="slip-foot-gross">
+                <th>GROSS EARNINGS</th>
+                <th class="text-right" id="slip-calc-gross">₹0.00</th>
+                <th>TOTAL DEDUCTIONS</th>
+                <th class="text-right" id="slip-calc-deductions">₹0.00</th>
+              </tr>
+              <tr class="slip-foot-net">
+                <th colspan="2">NET TAKE HOME PAY</th>
+                <th colspan="2" class="text-right text-orange text-lg" id="slip-calc-net">₹0.00</th>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="slip-net-words-box">
+            <strong>Amount in Words:</strong> <span id="slip-val-networds">-</span>
+          </div>
+
+          <div class="slip-signature-row">
+            <div class="sig-box">
+              <p>Employee Signature / Thumb</p>
+            </div>
+            <div class="sig-box text-right">
+              <p><strong>For SHREE RR TRADING COMPANY</strong></p>
+              <div class="auth-stamp">Authorized Signatory / Managing Director</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="/payroll/payroll.js"></script>
+  <!-- Toast Notification System -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Application Logic JS -->
+  <script src="/payroll/payroll.js?v=2.3.0"></script>
 </body>
+
 </html>
