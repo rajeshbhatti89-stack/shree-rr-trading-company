@@ -2420,6 +2420,9 @@ function renderSalaryTable() {
         <td><span class="status-badge status-paid"><i class="fa-solid fa-circle-check"></i> ${s.status || 'Paid'}</span></td>
         <td class="text-right">
           <div style="display: inline-flex; gap: 6px; align-items: center;">
+            <button class="btn btn-outline-primary btn-sm" onclick="openSalaryCorrectionModal('${s.id}')" title="Edit / Correct Salary Structure">
+              <i class="fa-solid fa-pen-to-square"></i> Edit
+            </button>
             <button class="btn btn-outline btn-sm" onclick="viewSalarySlip('${s.id}')" title="View Official Slip">
               <i class="fa-solid fa-file-invoice"></i> View
             </button>
@@ -4317,6 +4320,476 @@ _Verification Portal: https://payroll.shreerrtradingcompany.com_`;
   });
 }
 
+// ==================== SALARY STRUCTURE CORRECTION ENGINE ====================
+function openSalaryCorrectionModal(slipIdOrUserId) {
+  const empSelect = document.getElementById('correction-select-emp');
+  const monthSelect = document.getElementById('correction-select-month');
+
+  // Populate employee dropdown
+  if (empSelect) {
+    const activeEmployees = allUsers.filter((u) => u.role !== 'Super Admin');
+    empSelect.innerHTML = activeEmployees
+      .map((u) => `<option value="${u.id || u.empId}">${escapeHtml(u.name)} (${u.empId}) - ${escapeHtml(u.designation || u.role || 'Staff')}</option>`)
+      .join('');
+  }
+
+  let targetSlip = null;
+  let targetUser = null;
+
+  if (slipIdOrUserId) {
+    targetSlip = allSalarySlips.find((s) => s.id === slipIdOrUserId || s.userId === slipIdOrUserId || s.empId === slipIdOrUserId);
+    if (targetSlip) {
+      targetUser = allUsers.find((u) => u.id === targetSlip.userId || u.empId === targetSlip.empId);
+    } else {
+      targetUser = allUsers.find((u) => u.id === slipIdOrUserId || u.empId === slipIdOrUserId);
+    }
+  }
+
+  if (!targetUser && allUsers.length > 0) {
+    targetUser = allUsers.find((u) => u.role !== 'Super Admin') || allUsers[0];
+  }
+
+  if (targetUser && empSelect) {
+    empSelect.value = targetUser.id || targetUser.empId;
+  }
+
+  if (targetSlip && monthSelect) {
+    monthSelect.value = targetSlip.monthYear || 'August 2026';
+  } else if (monthSelect) {
+    const tableMonth = document.getElementById('payroll-month-select')?.value;
+    monthSelect.value = tableMonth || 'August 2026';
+  }
+
+  loadCorrectionFormData(targetSlip, targetUser);
+  openModal('modal-salary-correction');
+}
+
+function handleCorrectionEmployeeChange() {
+  const empSelect = document.getElementById('correction-select-emp');
+  const monthSelect = document.getElementById('correction-select-month');
+  const selectedUserId = empSelect ? empSelect.value : '';
+  const selectedMonth = monthSelect ? monthSelect.value : 'August 2026';
+
+  const user = allUsers.find((u) => u.id === selectedUserId || u.empId === selectedUserId);
+  const existingSlip = allSalarySlips.find((s) => (s.userId === selectedUserId || s.empId === (user ? user.empId : selectedUserId)) && s.monthYear === selectedMonth);
+
+  loadCorrectionFormData(existingSlip, user);
+}
+
+function loadCorrectionFormData(slip, user) {
+  const monthSelect = document.getElementById('correction-select-month');
+  const selectedMonth = monthSelect ? monthSelect.value : 'August 2026';
+
+  if (!user && slip) {
+    user = allUsers.find((u) => u.id === slip.userId || u.empId === slip.empId);
+  }
+
+  // Update employee metadata quick card
+  if (user) {
+    const desigEl = document.getElementById('corr-meta-desig');
+    const catEl = document.getElementById('corr-meta-cat');
+    const siteEl = document.getElementById('corr-meta-site');
+    const ctcEl = document.getElementById('corr-meta-ctc');
+    const uanEl = document.getElementById('corr-meta-uan');
+    const pfEl = document.getElementById('corr-meta-pf');
+    const bankEl = document.getElementById('corr-meta-bank');
+
+    if (desigEl) desigEl.textContent = user.designation || user.role || '-';
+    if (catEl) catEl.textContent = user.category || 'Skilled';
+    if (siteEl) siteEl.textContent = user.location || user.site || 'ACC Chanda';
+    if (ctcEl) {
+      if (user.ctc) ctcEl.textContent = `₹${Number(user.ctc).toLocaleString('en-IN')} / Mo`;
+      else if (user.basicPerDay) ctcEl.textContent = `₹${Number(user.basicPerDay).toFixed(2)} / Day`;
+      else ctcEl.textContent = `₹${Number(user.baseSalary || 25000).toLocaleString('en-IN')} / Mo`;
+    }
+    if (uanEl) uanEl.textContent = user.uan || 'N/A';
+    if (pfEl) pfEl.textContent = user.pfNo || 'N/A';
+    if (bankEl) bankEl.textContent = `${user.bankAccount || 'N/A'} (${user.ifsc || 'N/A'})`;
+  }
+
+  // Determine Days in Month
+  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+  let dim = 31;
+  if (selectedMonth) {
+    const parts = selectedMonth.split(' ');
+    const mIdx = monthNames.indexOf(parts[0].toLowerCase());
+    const yr = parseInt(parts[1]) || 2026;
+    if (mIdx !== -1) {
+      dim = new Date(yr, mIdx + 1, 0).getDate();
+    }
+  }
+
+  const slipIdEl = document.getElementById('correction-slip-id');
+  if (slipIdEl) slipIdEl.value = slip ? slip.id : '';
+
+  const totalDaysEl = document.getElementById('correction-total-days');
+  if (totalDaysEl) totalDaysEl.value = slip ? (slip.totalDays || dim) : dim;
+
+  const workedDaysEl = document.getElementById('correction-worked-days');
+  if (workedDaysEl) {
+    workedDaysEl.value = slip ? (slip.workedDays !== undefined ? slip.workedDays : (user ? (user.payableDays || dim) : dim)) : (user ? (user.payableDays || dim) : dim);
+  }
+
+  const otHoursEl = document.getElementById('correction-ot-hours');
+  if (otHoursEl) otHoursEl.value = slip ? (slip.otHours || 0) : 0;
+
+  const otRateEl = document.getElementById('correction-ot-rate');
+  if (otRateEl) {
+    otRateEl.value = slip ? (slip.otHours && slip.otWage ? (slip.otWage / slip.otHours).toFixed(2) : 0) : 0;
+  }
+
+  if (slip) {
+    document.getElementById('correction-earn-basic').value = Number(slip.earnings?.basic || 0).toFixed(2);
+    document.getElementById('correction-earn-da').value = Number(slip.earnings?.da || 0).toFixed(2);
+    document.getElementById('correction-earn-hra').value = Number(slip.earnings?.hra || 0).toFixed(2);
+    document.getElementById('correction-earn-special').value = Number(slip.earnings?.specialAllowance || 0).toFixed(2);
+    document.getElementById('correction-earn-bonus').value = Number(slip.earnings?.bonus || 0).toFixed(2);
+    document.getElementById('correction-earn-ot').value = Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0)).toFixed(2);
+
+    document.getElementById('correction-ded-pf').value = Number(slip.deductions?.pf || 0).toFixed(2);
+    document.getElementById('correction-ded-esic').value = Number(slip.deductions?.esic || 0).toFixed(2);
+    document.getElementById('correction-ded-pt').value = Number(slip.deductions?.pt !== undefined ? slip.deductions.pt : 200).toFixed(2);
+    document.getElementById('correction-ded-advance').value = Number(slip.deductions?.advance || 0).toFixed(2);
+    document.getElementById('correction-ded-lic').value = Number(slip.deductions?.lic || 0).toFixed(2);
+    document.getElementById('correction-ded-tds').value = Number(slip.deductions?.tds || 0).toFixed(2);
+
+    document.getElementById('correction-payment-status').value = slip.status || 'Paid';
+    document.getElementById('correction-payment-date').value = slip.paymentDate || new Date().toISOString().split('T')[0];
+    document.getElementById('correction-bank-account').value = slip.bankAccount || (user ? user.bankAccount : '');
+    document.getElementById('correction-bank-ifsc').value = slip.ifsc || (user ? user.ifsc : '');
+    document.getElementById('correction-remarks').value = slip.remarks || '';
+  } else {
+    // Fresh computation using standard formula
+    recalculateCorrectionSlip(true);
+    document.getElementById('correction-payment-status').value = 'Paid';
+    document.getElementById('correction-payment-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('correction-bank-account').value = user ? (user.bankAccount || '') : '';
+    document.getElementById('correction-bank-ifsc').value = user ? (user.ifsc || '') : '';
+    document.getElementById('correction-remarks').value = `Generated default structure for ${selectedMonth}`;
+  }
+
+  recalculateCorrectionSlip(false);
+}
+
+function recalculateCorrectionSlip(useStandardFormula = false) {
+  const empSelect = document.getElementById('correction-select-emp');
+  const userId = empSelect ? empSelect.value : '';
+  const user = allUsers.find((u) => u.id === userId || u.empId === userId);
+
+  const dim = Math.max(1, Number(document.getElementById('correction-total-days')?.value) || 31);
+  const workedDays = Math.max(0, Number(document.getElementById('correction-worked-days')?.value) || 0);
+  const otHours = Math.max(0, Number(document.getElementById('correction-ot-hours')?.value) || 0);
+  const otRate = Math.max(0, Number(document.getElementById('correction-ot-rate')?.value) || 0);
+
+  if (useStandardFormula && user) {
+    const ctc = Number(user.ctc);
+    const bpd = Number(user.basicPerDay);
+
+    let calcBasic = 0, calcDa = 0, calcHra = 0, calcSpecial = 0, calcGross = 0;
+    let calcPf = 0, calcEsic = 0, calcPt = 200, calcOtWage = 0;
+
+    if (otHours > 0 && otRate > 0) {
+      calcOtWage = Math.round(otHours * otRate * 100) / 100;
+    }
+
+    if (ctc && ctc > 0) {
+      const basicPerDay = (ctc / 2) / dim;
+      calcBasic = Math.round(basicPerDay * workedDays * 100) / 100;
+      calcDa = 0;
+      calcHra = Math.round(0.40 * calcBasic * 100) / 100;
+      const pfEmployer = Math.round((calcBasic + calcDa) * 0.12 * 100) / 100;
+      const ctcWorking = Math.round((ctc / dim) * workedDays * 100) / 100;
+      calcGross = Math.round((ctcWorking - pfEmployer) * 100) / 100;
+      calcSpecial = Math.round(Math.max(0, calcGross - (calcBasic + calcDa + calcHra)) * 100) / 100;
+      calcPf = Math.round((calcBasic + calcDa) * 0.12 * 100) / 100;
+      calcPt = calcGross > 0 ? 200 : 0;
+      calcEsic = 0;
+    } else {
+      const bpdVal = bpd || 444.62;
+      calcBasic = Math.round(bpdVal * workedDays * 100) / 100;
+      calcDa = Math.round(289.38 * workedDays * 100) / 100;
+      calcHra = Math.round(62.70 * workedDays * 100) / 100;
+      calcSpecial = 0;
+      calcGross = Math.round((calcBasic + calcDa + calcHra) * 100) / 100;
+      calcPf = Math.round((calcBasic + calcDa) * 0.12 * 100) / 100;
+      calcEsic = Math.round(calcGross * 0.0075 * 100) / 100;
+      calcPt = calcGross > 0 ? 200 : 0;
+    }
+
+    document.getElementById('correction-earn-basic').value = calcBasic.toFixed(2);
+    document.getElementById('correction-earn-da').value = calcDa.toFixed(2);
+    document.getElementById('correction-earn-hra').value = calcHra.toFixed(2);
+    document.getElementById('correction-earn-special').value = calcSpecial.toFixed(2);
+    document.getElementById('correction-earn-bonus').value = '0.00';
+    document.getElementById('correction-earn-ot').value = calcOtWage.toFixed(2);
+
+    document.getElementById('correction-ded-pf').value = calcPf.toFixed(2);
+    document.getElementById('correction-ded-esic').value = calcEsic.toFixed(2);
+    document.getElementById('correction-ded-pt').value = calcPt.toFixed(2);
+    document.getElementById('correction-ded-advance').value = '0.00';
+    document.getElementById('correction-ded-lic').value = '0.00';
+    document.getElementById('correction-ded-tds').value = '0.00';
+
+    showToast(`⚡ Standard statutory salary formula calculated for ${user.name}!`);
+  }
+
+  // Auto calculate OT wages if OT rate & hours are keyed in
+  let currentOt = Number(document.getElementById('correction-earn-ot')?.value) || 0;
+  if (otHours > 0 && otRate > 0 && !useStandardFormula) {
+    currentOt = Math.round(otHours * otRate * 100) / 100;
+    const otInput = document.getElementById('correction-earn-ot');
+    if (otInput && document.activeElement !== otInput) {
+      otInput.value = currentOt.toFixed(2);
+    }
+  }
+
+  const basic = Number(document.getElementById('correction-earn-basic')?.value) || 0;
+  const da = Number(document.getElementById('correction-earn-da')?.value) || 0;
+  const hra = Number(document.getElementById('correction-earn-hra')?.value) || 0;
+  const special = Number(document.getElementById('correction-earn-special')?.value) || 0;
+  const bonus = Number(document.getElementById('correction-earn-bonus')?.value) || 0;
+  const ot = Number(document.getElementById('correction-earn-ot')?.value) || 0;
+
+  const gross = Math.round((basic + da + hra + special + bonus + ot) * 100) / 100;
+
+  const pf = Number(document.getElementById('correction-ded-pf')?.value) || 0;
+  const esic = Number(document.getElementById('correction-ded-esic')?.value) || 0;
+  const pt = Number(document.getElementById('correction-ded-pt')?.value) || 0;
+  const adv = Number(document.getElementById('correction-ded-advance')?.value) || 0;
+  const lic = Number(document.getElementById('correction-ded-lic')?.value) || 0;
+  const tds = Number(document.getElementById('correction-ded-tds')?.value) || 0;
+
+  const totalDeductions = Math.round((pf + esic + pt + adv + lic + tds) * 100) / 100;
+  const netPay = Math.round((gross - totalDeductions) * 100) / 100;
+
+  const grossDisp = document.getElementById('correction-gross-display');
+  const dedDisp = document.getElementById('correction-deductions-display');
+  const netDisp = document.getElementById('correction-net-display');
+  const wordsDisp = document.getElementById('correction-net-words');
+
+  if (grossDisp) grossDisp.textContent = `₹${gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+  if (dedDisp) dedDisp.textContent = `₹${totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+  if (netDisp) netDisp.textContent = `₹${netPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+  if (wordsDisp) wordsDisp.textContent = numberToWordsIndian(Math.max(0, Math.round(netPay))) + ' Rupees Only';
+}
+
+async function saveSalaryCorrection() {
+  const saveBtn = document.getElementById('btn-save-salary-correction');
+  const empSelect = document.getElementById('correction-select-emp');
+  const monthSelect = document.getElementById('correction-select-month');
+
+  const userId = empSelect ? empSelect.value : '';
+  const monthYear = monthSelect ? monthSelect.value : 'August 2026';
+  const user = allUsers.find((u) => u.id === userId || u.empId === userId);
+
+  if (!user) {
+    showToast('Please select a valid employee.', 'error');
+    return;
+  }
+
+  const slipId = document.getElementById('correction-slip-id')?.value;
+  const totalDays = Number(document.getElementById('correction-total-days')?.value) || 31;
+  const workedDays = Number(document.getElementById('correction-worked-days')?.value) || 31;
+  const otHours = Number(document.getElementById('correction-ot-hours')?.value) || 0;
+  const otWage = Number(document.getElementById('correction-earn-ot')?.value) || 0;
+
+  const basic = Number(document.getElementById('correction-earn-basic')?.value) || 0;
+  const da = Number(document.getElementById('correction-earn-da')?.value) || 0;
+  const hra = Number(document.getElementById('correction-earn-hra')?.value) || 0;
+  const specialAllowance = Number(document.getElementById('correction-earn-special')?.value) || 0;
+  const bonus = Number(document.getElementById('correction-earn-bonus')?.value) || 0;
+
+  const grossPay = Math.round((basic + da + hra + specialAllowance + bonus + otWage) * 100) / 100;
+
+  const pf = Number(document.getElementById('correction-ded-pf')?.value) || 0;
+  const esic = Number(document.getElementById('correction-ded-esic')?.value) || 0;
+  const pt = Number(document.getElementById('correction-ded-pt')?.value) || 0;
+  const advance = Number(document.getElementById('correction-ded-advance')?.value) || 0;
+  const lic = Number(document.getElementById('correction-ded-lic')?.value) || 0;
+  const tds = Number(document.getElementById('correction-ded-tds')?.value) || 0;
+
+  const totalDeductions = Math.round((pf + esic + pt + advance + lic + tds) * 100) / 100;
+  const netPay = Math.round((grossPay - totalDeductions) * 100) / 100;
+
+  const status = document.getElementById('correction-payment-status')?.value || 'Paid';
+  const paymentDate = document.getElementById('correction-payment-date')?.value || new Date().toISOString().split('T')[0];
+  const bankAccount = document.getElementById('correction-bank-account')?.value.trim();
+  const ifsc = document.getElementById('correction-bank-ifsc')?.value.trim();
+  const remarks = document.getElementById('correction-remarks')?.value.trim();
+  const updateMasterCtc = document.getElementById('correction-update-profile-ctc')?.checked || false;
+
+  const payload = {
+    id: slipId || undefined,
+    userId: user.id,
+    empId: user.empId,
+    userName: user.name,
+    monthYear,
+    month: monthYear.split(' ')[0],
+    year: monthYear.split(' ')[1] || '2026',
+    designation: user.designation || user.rank || 'Staff',
+    department: user.department || 'Plant Fleet & Garage O&M',
+    fatherName: user.fatherName || '',
+    dob: user.dob || '',
+    doj: user.doj || '',
+    uan: user.uan || '',
+    esicNo: user.esicNo || '',
+    pfNo: user.pfNo || '',
+    bankAccount: bankAccount || user.bankAccount || '',
+    ifsc: ifsc || user.ifsc || '',
+    location: user.location || user.site || 'ACC Chanda',
+    category: user.category || 'Skilled',
+    mobile: user.mobile || user.phone || '',
+    phone: user.phone || user.mobile || '',
+    workedDays,
+    totalDays,
+    otHours,
+    otWage,
+    earnings: { basic, da, hra, specialAllowance, bonus, otWage },
+    deductions: { pf, esic, pt, advance, lic, tds },
+    grossPay,
+    totalDeductions,
+    netPay,
+    status,
+    paymentDate,
+    remarks: remarks || `Salary structure corrected for ${monthYear}`,
+    updateUserBaseSalary: updateMasterCtc,
+    newCtc: updateMasterCtc ? grossPay : undefined
+  };
+
+  try {
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    }
+
+    const res = await fetch('/api/payroll/salary-slips/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || `Salary structure & payslip for ${user.name} saved successfully!`);
+
+      // Update in-memory state
+      if (Array.isArray(data.salarySlips) && data.salarySlips.length > 0) {
+        allSalarySlips = data.salarySlips;
+      } else if (data.slip) {
+        const idx = allSalarySlips.findIndex((s) => s.id === data.slip.id || (s.empId === data.slip.empId && s.monthYear === data.slip.monthYear));
+        if (idx >= 0) {
+          allSalarySlips[idx] = data.slip;
+        } else {
+          allSalarySlips.unshift(data.slip);
+        }
+      }
+
+      if (updateMasterCtc && user) {
+        user.ctc = grossPay;
+        user.baseSalary = grossPay;
+      }
+      if (bankAccount && user) user.bankAccount = bankAccount;
+      if (ifsc && user) user.ifsc = ifsc;
+
+      closeModal('modal-salary-correction');
+      renderSalaryTable();
+      updateDashboardMetrics();
+    } else {
+      showToast(data.message || 'Failed to save salary slip', 'error');
+    }
+  } catch (err) {
+    console.error('Error saving salary correction:', err);
+    // Offline local fallback
+    const localSlip = { ...payload, id: slipId || `slp-${user.empId.toLowerCase()}-${Date.now()}` };
+    const idx = allSalarySlips.findIndex((s) => s.id === localSlip.id || (s.empId === localSlip.empId && s.monthYear === localSlip.monthYear));
+    if (idx >= 0) allSalarySlips[idx] = localSlip;
+    else allSalarySlips.unshift(localSlip);
+
+    closeModal('modal-salary-correction');
+    renderSalaryTable();
+    showToast(`⚡ Salary structure updated locally for ${user.name}!`);
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save & Apply Corrections';
+    }
+  }
+}
+
+function previewCurrentCorrectionSlip() {
+  const empSelect = document.getElementById('correction-select-emp');
+  const monthSelect = document.getElementById('correction-select-month');
+  const userId = empSelect ? empSelect.value : '';
+  const monthYear = monthSelect ? monthSelect.value : 'August 2026';
+  const user = allUsers.find((u) => u.id === userId || u.empId === userId);
+
+  if (!user) {
+    showToast('Please select an employee first.', 'error');
+    return;
+  }
+
+  const totalDays = Number(document.getElementById('correction-total-days')?.value) || 31;
+  const workedDays = Number(document.getElementById('correction-worked-days')?.value) || 31;
+  const otHours = Number(document.getElementById('correction-ot-hours')?.value) || 0;
+  const otWage = Number(document.getElementById('correction-earn-ot')?.value) || 0;
+
+  const basic = Number(document.getElementById('correction-earn-basic')?.value) || 0;
+  const da = Number(document.getElementById('correction-earn-da')?.value) || 0;
+  const hra = Number(document.getElementById('correction-earn-hra')?.value) || 0;
+  const specialAllowance = Number(document.getElementById('correction-earn-special')?.value) || 0;
+  const bonus = Number(document.getElementById('correction-earn-bonus')?.value) || 0;
+
+  const grossPay = Math.round((basic + da + hra + specialAllowance + bonus + otWage) * 100) / 100;
+
+  const pf = Number(document.getElementById('correction-ded-pf')?.value) || 0;
+  const esic = Number(document.getElementById('correction-ded-esic')?.value) || 0;
+  const pt = Number(document.getElementById('correction-ded-pt')?.value) || 0;
+  const advance = Number(document.getElementById('correction-ded-advance')?.value) || 0;
+  const lic = Number(document.getElementById('correction-ded-lic')?.value) || 0;
+  const tds = Number(document.getElementById('correction-ded-tds')?.value) || 0;
+
+  const totalDeductions = Math.round((pf + esic + pt + advance + lic + tds) * 100) / 100;
+  const netPay = Math.round((grossPay - totalDeductions) * 100) / 100;
+
+  const tempSlip = {
+    id: `temp-${Date.now()}`,
+    userId: user.id,
+    empId: user.empId,
+    userName: user.name,
+    monthYear,
+    month: monthYear.split(' ')[0],
+    year: monthYear.split(' ')[1] || '2026',
+    designation: user.designation || user.rank || 'Staff',
+    department: user.department || 'Plant Fleet & Garage O&M',
+    fatherName: user.fatherName || '',
+    dob: user.dob || '',
+    doj: user.doj || '',
+    uan: user.uan || '',
+    esicNo: user.esicNo || '',
+    pfNo: user.pfNo || '',
+    bankAccount: document.getElementById('correction-bank-account')?.value || user.bankAccount || '',
+    ifsc: document.getElementById('correction-bank-ifsc')?.value || user.ifsc || '',
+    location: user.location || user.site || 'ACC Chanda',
+    category: user.category || 'Skilled',
+    mobile: user.mobile || user.phone || '',
+    phone: user.phone || user.mobile || '',
+    workedDays,
+    totalDays,
+    otHours,
+    otWage,
+    earnings: { basic, da, hra, specialAllowance, bonus, otWage },
+    deductions: { pf, esic, pt, advance, lic, tds },
+    grossPay,
+    totalDeductions,
+    netPay,
+    status: document.getElementById('correction-payment-status')?.value || 'Paid',
+    paymentDate: document.getElementById('correction-payment-date')?.value || new Date().toISOString().split('T')[0]
+  };
+
+  currentActiveSlip = tempSlip;
+  viewSalarySlip(tempSlip.id);
+}
+
 // Global Window Bindings for Inline HTML Callbacks
 window.openAppointmentLetterModal = openAppointmentLetterModal;
 window.handleLetterEmployeeChange = handleLetterEmployeeChange;
@@ -4328,5 +4801,13 @@ window.downloadSlipPdf = downloadSlipPdf;
 window.viewSalarySlip = viewSalarySlip;
 window.sendSlipWhatsApp = sendSlipWhatsApp;
 window.dispatchBulkWhatsApp = dispatchBulkWhatsApp;
+
+// Salary Structure Correction window bindings
+window.openSalaryCorrectionModal = openSalaryCorrectionModal;
+window.handleCorrectionEmployeeChange = handleCorrectionEmployeeChange;
+window.recalculateCorrectionSlip = recalculateCorrectionSlip;
+window.saveSalaryCorrection = saveSalaryCorrection;
+window.previewCurrentCorrectionSlip = previewCurrentCorrectionSlip;
+
 
 

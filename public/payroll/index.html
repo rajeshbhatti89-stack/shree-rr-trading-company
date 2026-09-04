@@ -692,6 +692,10 @@
             </div>
 
             <div class="action-buttons-group">
+              <button class="btn btn-outline-primary btn-sm" id="btn-open-salary-correction" onclick="openSalaryCorrectionModal()"
+                title="Manually adjust or correct salary components, worked days, OT, PF/ESIC deductions for any employee">
+                <i class="fa-solid fa-sliders"></i> Correct Salary Structure
+              </button>
               <button class="btn btn-primary btn-sm btn-glow" id="btn-bulk-generate-slips">
                 <i class="fa-solid fa-bolt"></i> 1-Click Generate All Slips
               </button>
@@ -1821,6 +1825,9 @@
       <div class="modal-header no-print">
         <h3><i class="fa-solid fa-file-invoice-dollar text-orange"></i> Official Salary Slip Statement</h3>
         <div class="slip-header-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline-warning btn-sm" id="slip-edit-btn" onclick="openSalaryCorrectionModal(currentActiveSlip ? currentActiveSlip.id : null)" title="Edit or Adjust this Salary Structure">
+            <i class="fa-solid fa-pen-to-square"></i> Edit Structure
+          </button>
           <button type="button" class="btn btn-outline-primary btn-sm" onclick="downloadSlipPdf()" title="Download Crisp PDF Document">
             <i class="fa-solid fa-file-pdf"></i> Download PDF Slip
           </button>
@@ -2173,6 +2180,286 @@
             </div>
 
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: SALARY STRUCTURE CORRECTION & CUSTOM ADJUSTMENT ==================== -->
+  <div id="modal-salary-correction" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-xl peach-glass" style="max-width: 1100px; width: 95vw; max-height: 94vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #FFF5EE, #FFE4D6); border-bottom: 2px solid var(--border-orange); padding: 14px 22px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(255,107,0,0.14); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--logo-orange);">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--logo-navy);">Salary Structure Correction & Payslip Adjustment</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Manually adjust days, basic salary, overtime, statutory PF/ESIC deductions, advances, and bank details with live net recalculation.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="recalculateCorrectionSlip(true)" title="Auto-recalculate standard Basic, DA, HRA, PF 12%, ESIC 0.75%, PT ₹200 from Employee CTC">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Calculate (Standard)
+          </button>
+          <button class="btn-close-modal" onclick="closeModal('modal-salary-correction')">&times;</button>
+        </div>
+      </div>
+
+      <div class="modal-body" style="padding: 18px 22px; overflow-y: auto; flex: 1;">
+        <form id="form-salary-correction" onsubmit="event.preventDefault(); saveSalaryCorrection();">
+          <input type="hidden" id="correction-slip-id">
+          
+          <!-- Top Row: Employee Selector & Month -->
+          <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 14px; align-items: end;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; color: var(--logo-navy);"><i class="fa-solid fa-user-gear text-orange"></i> 1. Select Employee / Worker *</label>
+                <select id="correction-select-emp" class="custom-select" style="font-weight: 600;" onchange="handleCorrectionEmployeeChange()">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; color: var(--logo-navy);"><i class="fa-solid fa-calendar-days text-orange"></i> 2. Target Month *</label>
+                <select id="correction-select-month" class="custom-select" style="font-weight: 700; color: var(--logo-navy);" onchange="handleCorrectionEmployeeChange()">
+                  <option value="August 2026" selected>August 2026</option>
+                  <option value="September 2026">September 2026</option>
+                  <option value="July 2026">July 2026</option>
+                  <option value="June 2026">June 2026</option>
+                  <option value="May 2026">May 2026</option>
+                  <option value="October 2026">October 2026</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; color: var(--logo-navy);"><i class="fa-solid fa-circle-check text-success"></i> Payment Status</label>
+                <select id="correction-payment-status" class="custom-select">
+                  <option value="Paid" selected>Paid (Disbursed)</option>
+                  <option value="Approved">Approved (Ready)</option>
+                  <option value="Pending">Pending / On Hold</option>
+                  <option value="Draft">Draft Revision</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; color: var(--logo-navy);"><i class="fa-solid fa-calendar-check text-orange"></i> Payment Date</label>
+                <input type="date" id="correction-payment-date">
+              </div>
+            </div>
+
+            <!-- Employee Meta Quick Card -->
+            <div id="correction-emp-meta-card" style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border-light); display: flex; flex-wrap: wrap; gap: 16px; font-size: 11.5px; color: var(--text-dark);">
+              <div><strong>Designation:</strong> <span id="corr-meta-desig">-</span></div>
+              <div><strong>Category:</strong> <span id="corr-meta-cat">-</span></div>
+              <div><strong>Site:</strong> <span id="corr-meta-site">ACC Chanda</span></div>
+              <div><strong>Profile Base CTC:</strong> <span id="corr-meta-ctc" class="text-orange" style="font-weight: 700;">-</span></div>
+              <div><strong>UAN:</strong> <span id="corr-meta-uan">-</span></div>
+              <div><strong>PF No:</strong> <span id="corr-meta-pf">-</span></div>
+              <div><strong>Bank A/C:</strong> <span id="corr-meta-bank">-</span></div>
+            </div>
+          </div>
+
+          <!-- Section 2: Days & Attendance Parameters -->
+          <div style="background: #FAF5F0; border: 1px solid var(--border-orange); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 16px;">
+            <h4 style="font-size: 13px; font-weight: 800; color: var(--logo-navy); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-calendar-week text-orange"></i> Attendance & Overtime Parameters
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11.5px; font-weight: 700;">Days in Month</label>
+                <input type="number" id="correction-total-days" value="31" min="1" max="31" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11.5px; font-weight: 700; color: var(--logo-orange);">Payable / Worked Days *</label>
+                <input type="number" step="0.5" id="correction-worked-days" value="31" min="0" max="31" oninput="recalculateCorrectionSlip()" style="font-weight: 800; color: var(--logo-orange);">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11.5px; font-weight: 700;">Overtime (OT) Hours</label>
+                <input type="number" step="0.5" id="correction-ot-hours" value="0" min="0" oninput="recalculateCorrectionSlip()" placeholder="e.g. 16">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11.5px; font-weight: 700;">OT Hourly Rate (₹)</label>
+                <input type="number" step="0.01" id="correction-ot-rate" value="0" min="0" oninput="recalculateCorrectionSlip()" placeholder="e.g. 120">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Dual Grid (Earnings vs Deductions) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            
+            <!-- Column 1: Earnings Components -->
+            <div style="background: #FFFFFF; border: 1.5px solid #BBF7D0; border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #DCFCE7; padding-bottom: 8px;">
+                <h4 style="font-size: 13.5px; font-weight: 800; color: #166534; margin: 0; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-money-bill-trend-up"></i> EARNINGS COMPONENTS (₹)
+                </h4>
+                <span class="badge" style="background: #DCFCE7; color: #166534; font-size: 10px; font-weight: 700;">CREDITS</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Basic Salary (₹) *</label>
+                  <input type="number" step="0.01" id="correction-earn-basic" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Dearness Allowance (DA) (₹)</label>
+                  <input type="number" step="0.01" id="correction-earn-da" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">House Rent Allowance (HRA) (₹)</label>
+                  <input type="number" step="0.01" id="correction-earn-hra" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Special / Field Allowance (₹)</label>
+                  <input type="number" step="0.01" id="correction-earn-special" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Bonus / Incentive / Arrears (₹)</label>
+                  <input type="number" step="0.01" id="correction-earn-bonus" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Overtime (OT) Wages (₹)</label>
+                  <input type="number" step="0.01" id="correction-earn-ot" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+              </div>
+
+              <!-- Gross Earnings Total Card -->
+              <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 11px; font-weight: 800; color: #166534; text-transform: uppercase;">TOTAL GROSS EARNINGS</div>
+                  <div style="font-size: 10px; color: #15803D;">Basic + DA + HRA + Special + Bonus + OT</div>
+                </div>
+                <div id="correction-gross-display" style="font-size: 18px; font-weight: 900; color: #166534;">₹0.00</div>
+              </div>
+            </div>
+
+            <!-- Column 2: Deductions Components -->
+            <div style="background: #FFFFFF; border: 1.5px solid #FECACA; border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #FEE2E2; padding-bottom: 8px;">
+                <h4 style="font-size: 13.5px; font-weight: 800; color: #991B1B; margin: 0; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-file-invoice-dollar"></i> DEDUCTIONS COMPONENTS (₹)
+                </h4>
+                <span class="badge" style="background: #FEE2E2; color: #991B1B; font-size: 10px; font-weight: 700;">DEBITS</span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Provident Fund (PF @ 12%) (₹)</label>
+                  <input type="number" step="0.01" id="correction-ded-pf" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">ESIC Contribution (0.75%) (₹)</label>
+                  <input type="number" step="0.01" id="correction-ded-esic" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Professional Tax (PT) (₹)</label>
+                  <input type="number" step="0.01" id="correction-ded-pt" value="200" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">Salary Advance Recovery (₹)</label>
+                  <input type="number" step="0.01" id="correction-ded-advance" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">LIC / Insurance / Other (₹)</label>
+                  <input type="number" step="0.01" id="correction-ded-lic" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 11px; font-weight: 700;">TDS / Income Tax (₹)</label>
+                  <input type="number" step="0.01" id="correction-ded-tds" value="0" oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+                </div>
+              </div>
+
+              <!-- Total Deductions Callout Card -->
+              <div style="background: #FEF2F2; border: 1.5px solid #FCA5A5; border-radius: var(--radius-sm); padding: 10px 14px; margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 11px; font-weight: 800; color: #991B1B; text-transform: uppercase;">TOTAL STATUTORY DEDUCTIONS</div>
+                  <div style="font-size: 10px; color: #B91C1C;">PF + ESIC + PT + Advance + LIC + TDS</div>
+                </div>
+                <div id="correction-deductions-display" style="font-size: 18px; font-weight: 900; color: #991B1B;">₹0.00</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Section 4: Net Disbursal Banner & Words Display -->
+          <div style="background: linear-gradient(135deg, #0B1936, #1E293B); border: 2px solid var(--border-orange); border-radius: var(--radius-md); padding: 16px 20px; color: #FFFFFF; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(11,25,54,0.18);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+              <div>
+                <div style="font-size: 11.5px; font-weight: 800; color: #FF8C38; text-transform: uppercase; letter-spacing: 0.5px;">
+                  <i class="fa-solid fa-hand-holding-dollar"></i> FINAL NET TAKE-HOME DISBURSAL (GROSS - DEDUCTIONS)
+                </div>
+                <div style="font-size: 13px; color: #E2E8F0; margin-top: 4px;">
+                  <strong>Amount in Words:</strong> <span id="correction-net-words" style="color: #FDE047; font-weight: 700;">-</span>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div id="correction-net-display" style="font-size: 28px; font-weight: 900; color: #22C55E; font-family: var(--font-mono); text-shadow: 0 2px 10px rgba(34,197,94,0.3);">
+                  ₹0.00
+                </div>
+                <div style="font-size: 10.5px; color: #94A3B8;">Verified Net Disbursal Amount</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Bank Particulars & Master CTC Sync Option -->
+          <div style="background: #FFFFFF; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 8px;">
+            <h4 style="font-size: 13px; font-weight: 800; color: var(--logo-navy); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-building-columns text-orange"></i> Bank Details & Audit Remarks
+            </h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; margin-bottom: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Bank Account Number</label>
+                <input type="text" id="correction-bank-account" placeholder="e.g. 32049452658" style="font-family: var(--font-mono); font-size: 12px;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Bank IFSC Code</label>
+                <input type="text" id="correction-bank-ifsc" placeholder="e.g. SBIN0006872" style="font-family: var(--font-mono); font-size: 12px; text-transform: uppercase;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Reason for Correction / Adjustment Remark</label>
+                <input type="text" id="correction-remarks" placeholder="e.g. Adjusted worked days and reconciled overtime & advance deduction." style="font-size: 12px;">
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 6px 10px; background: rgba(255,107,0,0.06); border-radius: 4px; font-size: 11.5px; color: var(--logo-navy);">
+              <input type="checkbox" id="correction-update-profile-ctc" style="width: 16px; height: 16px; accent-color: var(--logo-orange);">
+              <label for="correction-update-profile-ctc" style="cursor: pointer; margin-bottom: 0; font-weight: 600;">
+                Also permanently update base salary / CTC in Employee Master profile with this new gross calculation.
+              </label>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="modal-footer" style="padding: 14px 22px; background: #FFFFFF; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="recalculateCorrectionSlip(true)" title="Auto-recalculate standard formula">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Calculate Formula
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="previewCurrentCorrectionSlip()" title="Preview what the final official payslip looks like">
+            <i class="fa-solid fa-eye"></i> Preview Payslip
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-salary-correction')">Cancel</button>
+          <button type="button" class="btn btn-primary btn-glow" id="btn-save-salary-correction" onclick="saveSalaryCorrection()">
+            <i class="fa-solid fa-check"></i> Save & Apply Corrections
+          </button>
         </div>
       </div>
     </div>

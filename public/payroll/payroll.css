@@ -2552,4 +2552,43 @@ html, body {
   }
 }
 
+/* ==================== SALARY STRUCTURE CORRECTION MODAL ==================== */
+#modal-salary-correction .modal-dialog {
+  box-shadow: 0 25px 60px rgba(11, 25, 54, 0.35);
+  border: 1px solid var(--border-orange);
+}
+
+#modal-salary-correction input[type="number"],
+#modal-salary-correction input[type="text"],
+#modal-salary-correction input[type="date"] {
+  border: 1px solid #CBD5E1;
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  background: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+#modal-salary-correction input[type="number"]:focus,
+#modal-salary-correction input[type="text"]:focus,
+#modal-salary-correction input[type="date"]:focus {
+  border-color: var(--logo-orange);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.15);
+}
+
+@media (max-width: 900px) {
+  #modal-salary-correction .modal-dialog {
+    max-width: 98vw;
+    width: 98vw;
+    max-height: 98vh;
+  }
+  #modal-salary-correction [style*="grid-template-columns: 2fr 1fr 1fr 1fr"],
+  #modal-salary-correction [style*="grid-template-columns: repeat(4, 1fr)"],
+  #modal-salary-correction [style*="grid-template-columns: 1fr 1fr 2fr"],
+  #modal-salary-correction [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
 

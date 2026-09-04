@@ -5041,6 +5041,149 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
   })
 })
 
+app.post('/api/payroll/salary-slips/update', async (c) => {
+  const body = await c.req.json()
+  const {
+    id,
+    userId,
+    empId,
+    monthYear,
+    month,
+    year,
+    workedDays,
+    totalDays,
+    otHours,
+    otWage,
+    earnings,
+    deductions,
+    grossPay,
+    totalDeductions,
+    netPay,
+    status,
+    paymentDate,
+    remarks,
+    bankAccount,
+    ifsc,
+    updateUserBaseSalary,
+    newCtc,
+    newBasicPerDay
+  } = body
+
+  if ((!userId && !empId) || !monthYear) {
+    return c.json({ success: false, message: 'Employee ID and Month/Year are required' }, 400)
+  }
+
+  const db = await getDb(c.env)
+  if (!db.salarySlips) db.salarySlips = []
+
+  const user = db.users.find((u) => u.id === userId || u.empId === empId || u.empId === userId)
+  const finalUserId = user ? user.id : (userId || `usr-${(empId || 'srr').toLowerCase()}`)
+  const finalEmpId = user ? user.empId : (empId || 'SRR')
+  const finalUserName = user ? user.name : (body.userName || 'Employee')
+
+  const cleanNum = (val) => Math.round((Number(val) || 0) * 100) / 100
+
+  const safeBasic = cleanNum(earnings?.basic)
+  const safeDa = cleanNum(earnings?.da)
+  const safeHra = cleanNum(earnings?.hra)
+  const safeSpecial = cleanNum(earnings?.specialAllowance)
+  const safeBonus = cleanNum(earnings?.bonus)
+  const safeOtWage = cleanNum(otWage !== undefined ? otWage : earnings?.otWage)
+
+  const safeGross = cleanNum(grossPay !== undefined ? grossPay : (safeBasic + safeDa + safeHra + safeSpecial + safeBonus + safeOtWage))
+
+  const safePf = cleanNum(deductions?.pf)
+  const safeEsic = cleanNum(deductions?.esic)
+  const safePt = cleanNum(deductions?.pt)
+  const safeLic = cleanNum(deductions?.lic)
+  const safeAdvance = cleanNum(deductions?.advance)
+  const safeTds = cleanNum(deductions?.tds)
+
+  const safeDeductions = cleanNum(totalDeductions !== undefined ? totalDeductions : (safePf + safeEsic + safePt + safeLic + safeAdvance + safeTds))
+  const safeNet = cleanNum(netPay !== undefined ? netPay : (safeGross - safeDeductions))
+
+  // Find existing slip by id or by user+monthYear
+  let existingIndex = db.salarySlips.findIndex((s) => (id && s.id === id) || ((s.userId === finalUserId || s.empId === finalEmpId) && s.monthYear === monthYear))
+
+  const updatedSlip = {
+    id: id || (existingIndex >= 0 ? db.salarySlips[existingIndex].id : `slp-${finalEmpId.toLowerCase()}-${Date.now()}`),
+    userId: finalUserId,
+    empId: finalEmpId,
+    userName: finalUserName,
+    monthYear,
+    month: month || monthYear.split(' ')[0],
+    year: year || monthYear.split(' ')[1] || '2026',
+    designation: user ? (user.designation || user.rank) : (body.designation || 'Staff'),
+    department: user ? user.department : (body.department || 'Plant Fleet & Garage O&M'),
+    fatherName: user ? user.fatherName : (body.fatherName || ''),
+    dob: user ? user.dob : (body.dob || ''),
+    doj: user ? user.doj : (body.doj || ''),
+    uan: user ? user.uan : (body.uan || ''),
+    esicNo: user ? user.esicNo : (body.esicNo || ''),
+    pfNo: user ? user.pfNo : (body.pfNo || ''),
+    bankAccount: bankAccount || (user ? user.bankAccount : ''),
+    ifsc: ifsc || (user ? user.ifsc : ''),
+    location: user ? (user.location || user.site) : (body.location || 'ACC Chanda'),
+    category: user ? user.category : (body.category || 'Skilled'),
+    mobile: user ? (user.mobile || user.phone) : (body.mobile || ''),
+    phone: user ? (user.phone || user.mobile) : (body.phone || ''),
+    workedDays: Number(workedDays) || 31,
+    totalDays: Number(totalDays) || 31,
+    otHours: Number(otHours) || 0,
+    otWage: safeOtWage,
+    earnings: {
+      basic: safeBasic,
+      da: safeDa,
+      hra: safeHra,
+      specialAllowance: safeSpecial,
+      bonus: safeBonus,
+      otWage: safeOtWage
+    },
+    deductions: {
+      pf: safePf,
+      esic: safeEsic,
+      pt: safePt,
+      lic: safeLic,
+      advance: safeAdvance,
+      tds: safeTds
+    },
+    grossPay: safeGross,
+    totalDeductions: safeDeductions,
+    netPay: safeNet,
+    status: status || 'Paid',
+    paymentDate: paymentDate || new Date().toISOString().split('T')[0],
+    remarks: remarks || 'Salary structure adjusted/corrected by user',
+    updatedAt: new Date().toISOString()
+  }
+
+  if (existingIndex >= 0) {
+    db.salarySlips[existingIndex] = updatedSlip
+  } else {
+    db.salarySlips.unshift(updatedSlip)
+  }
+
+  if (user) {
+    if (bankAccount) user.bankAccount = bankAccount
+    if (ifsc) user.ifsc = ifsc
+    if (updateUserBaseSalary && newCtc) {
+      user.ctc = Number(newCtc)
+      user.baseSalary = Number(newCtc)
+    }
+    if (updateUserBaseSalary && newBasicPerDay) {
+      user.basicPerDay = Number(newBasicPerDay)
+    }
+  }
+
+  await setDb(c.env, db)
+
+  return c.json({
+    success: true,
+    message: `⚡ Salary structure & monthly slip for ${finalUserName} (${monthYear}) updated successfully!`,
+    slip: updatedSlip,
+    salarySlips: db.salarySlips
+  })
+})
+
 app.delete('/api/payroll/salary-slips/:id', async (c) => {
   const id = c.req.param('id')
   const db = await getDb(c.env)
@@ -5050,3 +5193,4 @@ app.delete('/api/payroll/salary-slips/:id', async (c) => {
 })
 
 export default app
+
