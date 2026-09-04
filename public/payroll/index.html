@@ -62,11 +62,19 @@
           <p class="text-muted"><i class="fa-solid fa-lock text-orange"></i> Role-based login. Access permissions
             managed by Super Admin.</p>
         </div>
+
+        <div class="login-branding" style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+          <a href="https://srijandev.in" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+            <img src="/images/srijandev_logo.png" alt="SrijanDev Logo" style="height: 28px; width: auto; object-fit: contain;">
+          </a>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">
+            Designed &amp; Developed by <strong><a href="https://srijandev.in" target="_blank" style="color: var(--logo-orange); text-decoration: none;">SrijanDev</a></strong> • Powered by <strong><a href="https://srijandev.in" target="_blank" style="color: #6366f1; text-decoration: none;">SrijanDev</a></strong>
+          </span>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- ==================== MAIN PORTAL APP ==================== -->
   <!-- ==================== MAIN PORTAL APP ==================== -->
   <div id="app-container" class="app-layout hidden">
     <!-- Mobile Sidebar Backdrop Overlay -->
@@ -102,6 +110,9 @@
         <a href="#vehicles" class="nav-item" data-tab="vehicles" id="nav-vehicles">
           <i class="fa-solid fa-truck-monster"></i> <span>Mining Vehicles & Fleets</span>
         </a>
+        <a href="#compliance" class="nav-item" id="nav-compliance" onclick="openVehicleComplianceModal(); return false;" title="Track Fitness, PUC, Insurance & Permits">
+          <i class="fa-solid fa-shield-halved text-warning"></i> <span>Vehicle Compliance</span>
+        </a>
         <a href="#muster" class="nav-item" data-tab="muster" id="nav-muster">
           <i class="fa-solid fa-calendar-days text-orange"></i> <span>Daily Muster Roll</span>
         </a>
@@ -130,6 +141,16 @@
         <button class="btn-logout" id="logout-btn" title="Sign Out">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>
         </button>
+      </div>
+
+      <div class="sidebar-branding" style="padding: 10px 14px; border-top: 1px solid var(--border-light); text-align: center; background: rgba(255, 245, 238, 0.7);">
+        <a href="https://srijandev.in" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-bottom: 2px;">
+          <img src="/images/srijandev_logo.png" alt="SrijanDev Logo" style="height: 20px; width: auto; object-fit: contain;">
+        </a>
+        <div style="font-size: 10px; color: var(--text-dim); line-height: 1.2;">
+          Designed &amp; Developed by <strong style="color: var(--logo-orange);">SrijanDev</strong><br>
+          Powered by <strong style="color: #6366f1;">SrijanDev</strong>
+        </div>
       </div>
     </aside>
 
@@ -326,7 +347,7 @@
           </div>
         </section>
 
-        <!-- ==================== TAB 3: MINING VEHICLES & FLEETS ==================== -->
+        <!-- ==================== TAB 2: MINING VEHICLES & FLEETS ==================== -->
         <section id="tab-vehicles" class="tab-pane">
           <div class="section-top-actions">
             <div class="search-filter-box">
@@ -347,14 +368,17 @@
             </div>
 
             <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-warning btn-sm" id="btn-open-vehicle-compliance" onclick="openVehicleComplianceModal()" style="font-weight: 700;">
+                <i class="fa-solid fa-shield-halved"></i> Statutory Compliance
+              </button>
               <button class="btn btn-outline-success btn-sm" id="btn-bulk-import-vehicles">
-                <i class="fa-solid fa-file-excel"></i> Bulk Import Vehicles (Excel)
+                <i class="fa-solid fa-file-excel"></i> Bulk Import (Excel)
               </button>
               <button class="btn btn-primary btn-sm" id="btn-open-add-vehicle-modal">
                 <i class="fa-solid fa-truck-ramp-box"></i> Add Mining Vehicle
               </button>
               <button class="btn btn-outline btn-sm" id="btn-export-fleet-mttr-excel" title="Download Fleet Availability & MTTR Excel Report">
-                <i class="fa-solid fa-download text-orange"></i> 1-Click Availability & MTTR Report (Excel)
+                <i class="fa-solid fa-download text-orange"></i> MTTR Report (Excel)
               </button>
               <button class="btn btn-outline-danger btn-sm" id="btn-delete-all-vehicles" title="Clear all vehicle fleet records">
                 <i class="fa-solid fa-trash-can"></i> Delete All Vehicles
@@ -368,7 +392,12 @@
               <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-truck-monster text-orange"></i> Mining Machinery & Fleet Master
               </h3>
-              <span class="badge-pill" id="fleet-count-badge">0 Active Vehicles</span>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn btn-outline-warning btn-xs" onclick="openVehicleComplianceModal()" title="View Compliance Matrix">
+                  <i class="fa-solid fa-shield-halved"></i> Compliance Matrix
+                </button>
+                <span class="badge-pill" id="fleet-count-badge">0 Active Vehicles</span>
+              </div>
             </div>
             <table class="data-table" id="vehicles-table">
               <thead>
@@ -379,6 +408,7 @@
                   <th>Assigned Operator</th>
                   <th>Mine Site Location</th>
                   <th>Operational Status</th>
+                  <th>Statutory Compliance</th>
                   <th>Hourly Rate</th>
                   <th class="text-right">Actions</th>
                 </tr>
@@ -1087,69 +1117,148 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL: LOG / REQUEST LEAVE ==================== -->
+  <!-- ==================== MODAL: LEAVE MANAGEMENT (APPLY / ADD / DEDUCT) ==================== -->
   <div id="modal-leave" class="modal-backdrop hidden">
-    <div class="modal-dialog peach-glass">
+    <div class="modal-dialog peach-glass" style="max-width: 580px;">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-calendar-plus text-orange"></i> Log Leave Entry</h3>
+        <h3 id="modal-leave-title"><i class="fa-solid fa-calendar-check text-orange"></i> Leave Management Hub</h3>
         <button class="btn-close-modal" onclick="closeModal('modal-leave')">&times;</button>
       </div>
       <form id="form-leave">
         <div class="modal-body">
+          <!-- Action Mode Selector: Apply Leave / Add Quota / Deduct Quota -->
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="font-weight: 700; color: var(--logo-navy);">Select Leave Action Type *</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px;">
+              <label class="leave-mode-btn" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 8px; border: 1.5px solid var(--border-light); border-radius: 8px; cursor: pointer; text-align: center; background: #FFF; transition: all 0.2s ease;">
+                <input type="radio" name="leave-action-mode" value="apply" checked style="accent-color: var(--logo-orange); margin-bottom: 4px;">
+                <span style="font-size: 12px; font-weight: 700; color: var(--logo-navy);"><i class="fa-solid fa-calendar-days text-orange"></i> Apply Leave</span>
+                <span style="font-size: 10px; color: var(--text-muted);">(Deducts days)</span>
+              </label>
+              <label class="leave-mode-btn" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 8px; border: 1.5px solid #86EFAC; border-radius: 8px; cursor: pointer; text-align: center; background: #F0FDF4; transition: all 0.2s ease;">
+                <input type="radio" name="leave-action-mode" value="credit" style="accent-color: #16A34A; margin-bottom: 4px;">
+                <span style="font-size: 12px; font-weight: 700; color: #15803D;"><i class="fa-solid fa-plus-circle text-success"></i> Add Quota (+)</span>
+                <span style="font-size: 10px; color: #166534;">(Credit extra)</span>
+              </label>
+              <label class="leave-mode-btn" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 8px; border: 1.5px solid #FCA5A5; border-radius: 8px; cursor: pointer; text-align: center; background: #FEF2F2; transition: all 0.2s ease;">
+                <input type="radio" name="leave-action-mode" value="deduct" style="accent-color: #DC2626; margin-bottom: 4px;">
+                <span style="font-size: 12px; font-weight: 700; color: #B91C1C;"><i class="fa-solid fa-minus-circle text-danger"></i> Deduct Quota (-)</span>
+                <span style="font-size: 10px; color: #991B1B;">(Subtract days)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Employee Selector -->
           <div class="form-group">
             <label>Select Employee / Worker *</label>
-            <select id="leave-select-user" class="custom-select" required>
+            <select id="leave-select-user" class="custom-select" required onchange="updateSelectedEmployeeLeaveInfo()">
               <!-- Dynamically populated -->
             </select>
           </div>
-          <div class="form-group">
-            <label>Leave Type *</label>
-            <select id="leave-type-select" class="custom-select" required>
-              <option value="Casual Leave">Casual Leave (CL)</option>
-              <option value="Sick Leave">Sick Leave (SL)</option>
-              <option value="Earned Leave">Earned Leave (EL)</option>
-              <option value="Compensatory Off">Compensatory Off (CO)</option>
-            </select>
+
+          <!-- Live Employee Balance Box -->
+          <div id="leave-emp-live-info" style="background: rgba(255, 245, 238, 0.9); border: 1px solid var(--border-orange); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Available Leave Quota</span>
+              <div style="font-size: 14px; font-weight: 800; color: var(--logo-navy);" id="leave-emp-name-badge">Select employee</div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 18px; font-weight: 900; color: var(--logo-orange);" id="leave-emp-balance-display">10 / 10 Days</span>
+              <div style="font-size: 10px; color: var(--text-muted);" id="leave-emp-taken-display">0 Taken</div>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Start Date *</label>
-            <input type="date" id="leave-start-date" required>
+
+          <!-- Mode-specific section 1: Apply Leave (Dates + Type) -->
+          <div id="leave-section-apply">
+            <div class="form-group">
+              <label>Leave Category / Type *</label>
+              <select id="leave-type-select" class="custom-select">
+                <option value="Casual Leave">Casual Leave (CL)</option>
+                <option value="Sick Leave">Sick Leave (SL)</option>
+                <option value="Earned Leave">Earned Leave (EL)</option>
+                <option value="Compensatory Off">Compensatory Off (CO)</option>
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label>Start Date *</label>
+                <input type="date" id="leave-start-date" onchange="autoCalculateLeaveDays()">
+              </div>
+              <div class="form-group">
+                <label>End Date *</label>
+                <input type="date" id="leave-end-date" onchange="autoCalculateLeaveDays()">
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label>End Date *</label>
-            <input type="date" id="leave-end-date" required>
+
+          <!-- Mode-specific section 2: Credit or Deduct Reason -->
+          <div id="leave-section-adjust-reason" class="hidden">
+            <div class="form-group">
+              <label id="leave-adjust-reason-label">Credit / Adjustment Category *</label>
+              <select id="leave-adjust-reason-select" class="custom-select">
+                <option value="Compensatory Overtime Quota">Compensatory Overtime Quota</option>
+                <option value="Annual Leave Quota Adjustment">Annual Leave Quota Adjustment</option>
+                <option value="Performance / Festival Incentive Quota">Performance / Festival Incentive Quota</option>
+                <option value="Unapproved Absence Deduction">Unapproved Absence Deduction (-)</option>
+                <option value="Administrative Leave Correction">Administrative Leave Correction</option>
+                <option value="Other">Other Adjustment</option>
+              </select>
+            </div>
           </div>
+
+          <!-- Days Count (Used across all modes) -->
           <div class="form-group">
-            <label>Total Number of Days</label>
-            <input type="number" id="leave-days-count" min="1" value="1" required>
+            <label id="leave-days-count-label">Total Number of Days *</label>
+            <input type="number" id="leave-days-count" min="1" max="60" value="1" required>
           </div>
+
+          <!-- Reason / Remarks -->
           <div class="form-group">
             <label>Reason / Remarks</label>
-            <input type="text" id="leave-reason" placeholder="e.g. Personal family emergency" value="Personal Leave">
+            <input type="text" id="leave-reason" placeholder="e.g. Personal emergency or approved overtime credit" value="Personal Leave">
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave')">Cancel</button>
-          <button type="submit" class="btn btn-primary">
-            <i class="fa-solid fa-check"></i> Save Leave Record
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="closeModal('modal-leave'); openLeaveHistoryModal();">
+            <i class="fa-solid fa-list-check"></i> View History
           </button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-submit-leave-form">
+              <i class="fa-solid fa-check"></i> Save Leave Action
+            </button>
+          </div>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ==================== MODAL: MANUAL LEAVE CREDIT ==================== -->
+  <!-- ==================== MODAL: MANUAL LEAVE CREDIT / DEDUCT ==================== -->
   <div id="modal-leave-credit" class="modal-backdrop hidden">
     <div class="modal-dialog peach-glass">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-gift text-success"></i> Manual Leave Credit</h3>
+        <h3><i class="fa-solid fa-sliders text-success"></i> Adjust Employee Leave Balance</h3>
         <button class="btn-close-modal" onclick="closeModal('modal-leave-credit')">&times;</button>
       </div>
       <form id="form-leave-credit">
         <div class="modal-body">
           <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-            Credit additional leave days directly to an employee's quota (e.g. Overtime compensatory off, annual leave allocation adjustment, or performance incentive).
+            Add (+) or subtract (-) leave quota directly to/from an employee's annual leave balance with immediate system synchronization.
           </p>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>Adjustment Type *</label>
+            <div style="display: flex; gap: 14px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #15803D; cursor: pointer;">
+                <input type="radio" name="quick-adjust-type" value="credit" checked style="accent-color: #16A34A;">
+                <span>+ Credit / Add Days</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: #DC2626; cursor: pointer;">
+                <input type="radio" name="quick-adjust-type" value="deduct" style="accent-color: #DC2626;">
+                <span>- Deduct / Subtract Days</span>
+              </label>
+            </div>
+          </div>
           <div class="form-group">
             <label>Select Employee / Worker *</label>
             <select id="credit-select-user" class="custom-select" required>
@@ -1157,28 +1266,29 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Days to Credit *</label>
+            <label>Number of Days *</label>
             <input type="number" id="credit-days-count" min="1" max="30" value="1" required>
           </div>
           <div class="form-group">
-            <label>Credit Type / Reason *</label>
+            <label>Adjustment Reason *</label>
             <select id="credit-reason-type" class="custom-select" required>
-              <option value="Compensatory Overtime Credit">Compensatory Overtime Credit</option>
+              <option value="Compensatory Overtime Credit">Compensatory Overtime Credit (+)</option>
               <option value="Annual Leave Quota Adjustment">Annual Leave Quota Adjustment</option>
-              <option value="Performance / Festival Bonus Credit">Performance / Festival Bonus Credit</option>
+              <option value="Performance / Festival Bonus Credit">Performance / Festival Bonus Credit (+)</option>
+              <option value="Unapproved Absence Quota Deduction">Unapproved Absence Quota Deduction (-)</option>
               <option value="Management Approved Adjustment">Management Approved Adjustment</option>
               <option value="Other">Other Adjustment</option>
             </select>
           </div>
           <div class="form-group">
             <label>Remarks / Notes</label>
-            <input type="text" id="credit-notes" placeholder="e.g. Approved for Sunday double-shift duty" value="Overtime compensatory credit">
+            <input type="text" id="credit-notes" placeholder="e.g. Approved Sunday double-shift duty" value="Leave quota adjustment">
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-credit')">Cancel</button>
-          <button type="submit" class="btn btn-success">
-            <i class="fa-solid fa-plus-circle"></i> ⚡ Credit Leave Days
+          <button type="submit" class="btn btn-success" id="btn-submit-quick-adjust">
+            <i class="fa-solid fa-floppy-disk"></i> ⚡ Apply Adjustment
           </button>
         </div>
       </form>
@@ -1224,6 +1334,302 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-history')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: VEHICLE COMPLIANCE TRACKING MATRIX ==================== -->
+  <div id="modal-vehicle-compliance" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-xl peach-glass" style="max-width: 1100px; width: 95vw;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #FFF5EE, #FFE4D6); border-bottom: 2px solid var(--border-orange);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(230,81,0,0.12); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--logo-orange);">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--logo-navy);">HEMM Fleet Statutory Compliance Tracking</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Real-time monitoring for Vehicle Fitness, PUC, Insurance, Goods Permit & Road Tax with priority alerts.</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeModal('modal-vehicle-compliance')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <!-- Top Priority Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <div class="compliance-kpi-card critical" onclick="filterCompliancePriority('CRITICAL')" style="cursor: pointer; background: #FEF2F2; border: 1.5px solid #FCA5A5; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #EF4444; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #991B1B; text-transform: uppercase;">Critical / Expired</div>
+              <div style="font-size: 24px; font-weight: 900; color: #DC2626;" id="compliance-count-critical">0</div>
+              <div style="font-size: 11px; color: #B91C1C;">Action: Immediate renewal</div>
+            </div>
+          </div>
+
+          <div class="compliance-kpi-card warning" onclick="filterCompliancePriority('WARNING')" style="cursor: pointer; background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #F59E0B; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #92400E; text-transform: uppercase;">Expiring Soon (&lt;30 Days)</div>
+              <div style="font-size: 24px; font-weight: 900; color: #D97706;" id="compliance-count-warning">0</div>
+              <div style="font-size: 11px; color: #B45309;">Renewal in progress</div>
+            </div>
+          </div>
+
+          <div class="compliance-kpi-card compliant" onclick="filterCompliancePriority('COMPLIANT')" style="cursor: pointer; background: #ECFDF5; border: 1.5px solid #6EE7B7; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: #10B981; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #065F46; text-transform: uppercase;">Fully Compliant</div>
+              <div style="font-size: 24px; font-weight: 900; color: #059669;" id="compliance-count-compliant">0</div>
+              <div style="font-size: 11px; color: #047857;">Permitted in mine pit</div>
+            </div>
+          </div>
+
+          <div class="compliance-kpi-card all" onclick="filterCompliancePriority('ALL')" style="cursor: pointer; background: #F8FAFC; border: 1.5px solid #CBD5E1; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: var(--logo-navy); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              <i class="fa-solid fa-truck-monster"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Monitored Fleets</div>
+              <div style="font-size: 24px; font-weight: 900; color: var(--logo-navy);" id="compliance-count-total">0</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Click to show all</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters & Search Toolbar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 10px; flex: 1; min-width: 280px; flex-wrap: wrap;">
+            <div class="search-input-wrap" style="flex: 1; min-width: 200px;">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="compliance-search-input" placeholder="Search vehicle reg no, equipment name, policy no, permit no...">
+            </div>
+            <select id="compliance-priority-filter" class="custom-select" style="min-width: 160px;">
+              <option value="ALL">All Notification Priorities</option>
+              <option value="CRITICAL">🚨 Critical / Expired Only</option>
+              <option value="WARNING">⚠️ Expiring Soon (&lt; 30 Days)</option>
+              <option value="COMPLIANT">🟢 Compliant / Valid Only</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline-success btn-sm" onclick="exportComplianceReportExcel()" title="Export Compliance Spreadsheet">
+              <i class="fa-solid fa-file-excel"></i> Export Excel
+            </button>
+            <button class="btn btn-whatsapp btn-sm" onclick="sendComplianceWhatsAppAlert()" title="Send WhatsApp Compliance Digest">
+              <i class="fa-brands fa-whatsapp"></i> WhatsApp Digest
+            </button>
+          </div>
+        </div>
+
+        <!-- Compliance Matrix Table -->
+        <div class="table-responsive" style="max-height: 480px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+          <table class="data-table" id="compliance-matrix-table">
+            <thead style="position: sticky; top: 0; background: #FFF5EE; z-index: 10;">
+              <tr>
+                <th>Vehicle & Model</th>
+                <th>Fitness Cert</th>
+                <th>PUC (Pollution)</th>
+                <th>Insurance Policy</th>
+                <th>Goods Permit</th>
+                <th>Road Tax</th>
+                <th>Priority Status</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="compliance-matrix-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 12px; color: var(--text-muted);">
+          <i class="fa-solid fa-circle-info text-orange"></i> Automatic compliance countdown based on statutory RTO & Mining regulations.
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-vehicle-compliance')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: EDIT VEHICLE COMPLIANCE ==================== -->
+  <div id="modal-edit-compliance" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="modal-edit-compliance-title"><i class="fa-solid fa-file-shield text-orange"></i> Update Statutory Compliance Records</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-edit-compliance')">&times;</button>
+      </div>
+      <form id="form-edit-compliance">
+        <input type="hidden" id="edit-comp-veh-id">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="font-weight: 700; color: var(--logo-navy);">Vehicle Registration Number</label>
+            <input type="text" id="edit-comp-veh-no" readonly style="background: rgba(0,0,0,0.04); font-weight: 800; color: var(--logo-orange);">
+          </div>
+
+          <div style="background: rgba(255,255,255,0.7); border: 1px solid var(--border-light); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--logo-navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-screwdriver-wrench text-orange"></i> 1. Vehicle Fitness Certificate
+            </h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label>Fitness Cert No</label>
+                <input type="text" id="edit-comp-fitness-no" placeholder="FIT-HP24-001">
+              </div>
+              <div class="form-group">
+                <label>Fitness Expiry Date *</label>
+                <input type="date" id="edit-comp-fitness-exp">
+              </div>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.7); border: 1px solid var(--border-light); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--logo-navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-smog text-orange"></i> 2. Pollution Under Control (PUC)
+            </h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label>PUC Cert No</label>
+                <input type="text" id="edit-comp-puc-no" placeholder="PUC-2026-908">
+              </div>
+              <div class="form-group">
+                <label>PUC Expiry Date *</label>
+                <input type="date" id="edit-comp-puc-exp">
+              </div>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.7); border: 1px solid var(--border-light); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--logo-navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-file-contract text-orange"></i> 3. Comprehensive Commercial Insurance
+            </h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+              <div class="form-group">
+                <label>Insurance Provider</label>
+                <input type="text" id="edit-comp-insurance-prov" placeholder="National Insurance / TATA AIG">
+              </div>
+              <div class="form-group">
+                <label>Policy Number</label>
+                <input type="text" id="edit-comp-insurance-pol" placeholder="POL-984028421">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Insurance Expiry Date *</label>
+              <input type="date" id="edit-comp-insurance-exp">
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.7); border: 1px solid var(--border-light); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--logo-navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-route text-orange"></i> 4. Mining & Goods Permit
+            </h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+              <div class="form-group">
+                <label>Permit Type</label>
+                <select id="edit-comp-permit-type" class="custom-select">
+                  <option value="National Permit">National Permit</option>
+                  <option value="State Goods Permit (HP)">State Goods Permit (HP)</option>
+                  <option value="Mining Commercial Permit">Mining Commercial Permit</option>
+                  <option value="Temporary Pit Permit">Temporary Pit Permit</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Permit Number</label>
+                <input type="text" id="edit-comp-permit-no" placeholder="PRM-HP-2026">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Permit Expiry Date *</label>
+              <input type="date" id="edit-comp-permit-exp">
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.7); border: 1px solid var(--border-light); border-radius: 8px; padding: 12px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--logo-navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-receipt text-orange"></i> 5. Road Tax / Green Tax
+            </h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label>Receipt / Tax Token No</label>
+                <input type="text" id="edit-comp-roadtax-no" placeholder="TAX-REC-8902">
+              </div>
+              <div class="form-group">
+                <label>Road Tax Expiry Date *</label>
+                <input type="date" id="edit-comp-roadtax-exp">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-compliance')">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i> Save Compliance Records
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: OPENING WELCOME POPUP ==================== -->
+  <div id="modal-opening-welcome" class="modal-backdrop hidden" style="z-index: 999999;">
+    <div class="modal-dialog peach-glass opening-popup-card" style="max-width: 580px; width: 92vw; text-align: center; padding: 0; overflow: hidden; border: 2px solid rgba(230,81,0,0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.35);">
+      <div style="background: linear-gradient(135deg, #FFF5EE 0%, #FFE4D6 50%, #FFD6BA 100%); padding: 28px 24px 20px; border-bottom: 1px solid var(--border-orange); position: relative;">
+        <button class="btn-close-modal" onclick="closeModal('modal-opening-welcome')" style="position: absolute; top: 14px; right: 16px; background: rgba(0,0,0,0.06); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">&times;</button>
+        
+        <div style="display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 16px; flex-wrap: wrap;">
+          <img src="/images/logo.png" alt="Shree RR Trading Company" style="height: 48px; max-width: 180px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));">
+          <div style="height: 32px; width: 1px; background: rgba(0,0,0,0.15);"></div>
+          <img src="/images/srijandev_logo.png" alt="SrijanDev Logo" style="height: 36px; max-width: 170px; object-fit: contain;">
+        </div>
+
+        <div class="badge-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; font-size: 11px; font-weight: 700; background: var(--logo-orange); color: #FFF; border-radius: 20px; margin-bottom: 10px;">
+          <i class="fa-solid fa-award"></i> 40+ YEARS MINING O&M & FLEET LEADERSHIP
+        </div>
+        
+        <h2 style="font-size: 20px; font-weight: 900; color: var(--logo-navy); margin: 0 0 6px; letter-spacing: -0.3px;">
+          SHREE RR TRADING COMPANY
+        </h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 0; font-weight: 500;">
+          Mining O&M Contract Partner for <strong>Ambuja Cement Darlaghat</strong> & HEMM Fleets
+        </p>
+      </div>
+
+      <div style="padding: 22px 24px; background: rgba(255,255,255,0.95);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: left;">
+          <div style="background: #FFF5EE; border: 1px solid var(--border-light); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--logo-orange);"><i class="fa-solid fa-shield-halved"></i> Statutory Compliance</div>
+            <div style="font-size: 12px; color: var(--logo-navy); font-weight: 600; margin-top: 2px;">Fitness, PUC, Insurance & Permits</div>
+          </div>
+          <div style="background: #FFF5EE; border: 1px solid var(--border-light); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #059669;"><i class="fa-solid fa-users-gear"></i> Smart Leave Management</div>
+            <div style="font-size: 12px; color: var(--logo-navy); font-weight: 600; margin-top: 2px;">Credit (+) & Deduct (-) Quota Instantly</div>
+          </div>
+          <div style="background: #FFF5EE; border: 1px solid var(--border-light); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #6366F1;"><i class="fa-solid fa-truck-monster"></i> 3D Machinery & Fleets</div>
+            <div style="font-size: 12px; color: var(--logo-navy); font-weight: 600; margin-top: 2px;">HEMM, Tippers, JCBs & Availability</div>
+          </div>
+          <div style="background: #FFF5EE; border: 1px solid var(--border-light); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #D97706;"><i class="fa-solid fa-mobile-screen"></i> Mobile App & PWA Ready</div>
+            <div style="font-size: 12px; color: var(--logo-navy); font-weight: 600; margin-top: 2px;">Optimized for Desktop & Mobile</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary btn-lg" onclick="closeModal('modal-opening-welcome')" style="flex: 1; min-width: 200px; padding: 12px 24px; font-size: 14px; font-weight: 700; background: var(--logo-orange); border: none; box-shadow: 0 4px 14px rgba(230,81,0,0.35);">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Continue to Operations Portal
+          </button>
+        </div>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+          <img src="/images/srijandev_logo.png" alt="SrijanDev" style="height: 24px; width: auto; object-fit: contain;">
+          <span style="font-size: 12px; color: var(--text-muted);">
+            Designed & Developed by <strong style="color: var(--logo-orange);">SrijanDev</strong> • Powered by <strong style="color: #6366f1;">SrijanDev</strong>
+          </span>
+        </div>
       </div>
     </div>
   </div>

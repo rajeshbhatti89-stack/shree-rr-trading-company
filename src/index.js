@@ -3969,14 +3969,20 @@ const getDb = async (env) => {
     }
   }
 
-  // Ensure all employees have 10 allocated leaves and accurate leave balance without affecting any other data
+  // Ensure all employees have allocated leaves and accurate leave balance without wiping out custom credits or deductions
   if (dbData && Array.isArray(dbData.users)) {
     let changed = false
     dbData.users.forEach((u) => {
-      if (u.totalLeaves !== 10) {
+      if (u.totalLeaves === undefined || u.totalLeaves === null) {
         u.totalLeaves = 10
-        const taken = Number(u.leavesTaken) || 0
-        u.leaveBalance = Math.max(0, 10 - taken)
+        changed = true
+      }
+      if (u.leavesTaken === undefined || u.leavesTaken === null) {
+        u.leavesTaken = 0
+        changed = true
+      }
+      if (u.leaveBalance === undefined || u.leaveBalance === null) {
+        u.leaveBalance = Math.max(0, (Number(u.totalLeaves) || 10) - (Number(u.leavesTaken) || 0))
         changed = true
       }
     })
@@ -4232,7 +4238,11 @@ app.get('/api/payroll/vehicles', async (c) => {
 
 app.post('/api/payroll/vehicles', async (c) => {
   const body = await c.req.json()
-  const { vehicleNo, name, type, model, site, operatorId, operatorName, status, fuelType, hourlyRate, notes } = body
+  const { 
+    vehicleNo, name, type, model, site, operatorId, operatorName, status, fuelType, hourlyRate, notes,
+    fitnessExpiry, fitnessCertNo, pucExpiry, pucCertNo, insuranceExpiry, insurancePolicyNo, insuranceProvider,
+    permitExpiry, permitNo, permitType, roadTaxExpiry, roadTaxReceipt, complianceNotes
+  } = body
 
   if (!vehicleNo || !name) {
     return c.json({ success: false, message: 'Vehicle number and name are required' }, 400)
@@ -4259,6 +4269,19 @@ app.post('/api/payroll/vehicles', async (c) => {
     fuelType: fuelType || 'Diesel',
     hourlyRate: Number(hourlyRate) || 0,
     notes: notes || '',
+    fitnessExpiry: fitnessExpiry || '',
+    fitnessCertNo: fitnessCertNo || '',
+    pucExpiry: pucExpiry || '',
+    pucCertNo: pucCertNo || '',
+    insuranceExpiry: insuranceExpiry || '',
+    insurancePolicyNo: insurancePolicyNo || '',
+    insuranceProvider: insuranceProvider || 'National Insurance / TATA AIG',
+    permitExpiry: permitExpiry || '',
+    permitNo: permitNo || '',
+    permitType: permitType || 'National / Mining Goods Permit',
+    roadTaxExpiry: roadTaxExpiry || '',
+    roadTaxReceipt: roadTaxReceipt || '',
+    complianceNotes: complianceNotes || '',
     createdAt: new Date().toISOString()
   }
 
@@ -4299,6 +4322,19 @@ app.post('/api/payroll/vehicles/bulk', async (c) => {
       fuelType: v.fuelType || 'Diesel',
       hourlyRate: Number(v.hourlyRate) || 0,
       notes: v.notes || 'Bulk Imported Fleet',
+      fitnessExpiry: v.fitnessExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].fitnessExpiry : '2027-03-31'),
+      fitnessCertNo: v.fitnessCertNo || (existingIndex !== -1 ? db.vehicles[existingIndex].fitnessCertNo : `FIT-${vNo.slice(-4)}`),
+      pucExpiry: v.pucExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].pucExpiry : '2026-11-30'),
+      pucCertNo: v.pucCertNo || (existingIndex !== -1 ? db.vehicles[existingIndex].pucCertNo : `PUC-${vNo.slice(-4)}`),
+      insuranceExpiry: v.insuranceExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].insuranceExpiry : '2026-12-31'),
+      insurancePolicyNo: v.insurancePolicyNo || (existingIndex !== -1 ? db.vehicles[existingIndex].insurancePolicyNo : `POL-${vNo.slice(-6)}`),
+      insuranceProvider: v.insuranceProvider || (existingIndex !== -1 ? db.vehicles[existingIndex].insuranceProvider : 'National Insurance / TATA AIG'),
+      permitExpiry: v.permitExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].permitExpiry : '2027-06-30'),
+      permitNo: v.permitNo || (existingIndex !== -1 ? db.vehicles[existingIndex].permitNo : `PRM-${vNo.slice(-5)}`),
+      permitType: v.permitType || (existingIndex !== -1 ? db.vehicles[existingIndex].permitType : 'National / Mining Goods Permit'),
+      roadTaxExpiry: v.roadTaxExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].roadTaxExpiry : '2027-03-31'),
+      roadTaxReceipt: v.roadTaxReceipt || '',
+      complianceNotes: v.complianceNotes || '',
       createdAt: new Date().toISOString()
     }
 
@@ -4337,6 +4373,44 @@ app.put('/api/payroll/vehicles/:id', async (c) => {
   await setDb(c.env, db)
 
   return c.json({ success: true, message: 'Vehicle updated successfully', vehicle: db.vehicles[index] })
+})
+
+// Single Vehicle Compliance Update Endpoint
+app.put('/api/payroll/vehicles/:id/compliance', async (c) => {
+  const id = c.req.param('id')
+  const complianceData = await c.req.json()
+  const db = await getDb(c.env)
+
+  if (!db.vehicles) db.vehicles = []
+  const index = db.vehicles.findIndex((v) => v.id === id || v.vehicleNo === id)
+  if (index === -1) {
+    return c.json({ success: false, message: 'Vehicle not found' }, 404)
+  }
+
+  db.vehicles[index] = {
+    ...db.vehicles[index],
+    fitnessExpiry: complianceData.fitnessExpiry !== undefined ? complianceData.fitnessExpiry : db.vehicles[index].fitnessExpiry,
+    fitnessCertNo: complianceData.fitnessCertNo !== undefined ? complianceData.fitnessCertNo : db.vehicles[index].fitnessCertNo,
+    pucExpiry: complianceData.pucExpiry !== undefined ? complianceData.pucExpiry : db.vehicles[index].pucExpiry,
+    pucCertNo: complianceData.pucCertNo !== undefined ? complianceData.pucCertNo : db.vehicles[index].pucCertNo,
+    insuranceExpiry: complianceData.insuranceExpiry !== undefined ? complianceData.insuranceExpiry : db.vehicles[index].insuranceExpiry,
+    insurancePolicyNo: complianceData.insurancePolicyNo !== undefined ? complianceData.insurancePolicyNo : db.vehicles[index].insurancePolicyNo,
+    insuranceProvider: complianceData.insuranceProvider !== undefined ? complianceData.insuranceProvider : db.vehicles[index].insuranceProvider,
+    permitExpiry: complianceData.permitExpiry !== undefined ? complianceData.permitExpiry : db.vehicles[index].permitExpiry,
+    permitNo: complianceData.permitNo !== undefined ? complianceData.permitNo : db.vehicles[index].permitNo,
+    permitType: complianceData.permitType !== undefined ? complianceData.permitType : db.vehicles[index].permitType,
+    roadTaxExpiry: complianceData.roadTaxExpiry !== undefined ? complianceData.roadTaxExpiry : db.vehicles[index].roadTaxExpiry,
+    roadTaxReceipt: complianceData.roadTaxReceipt !== undefined ? complianceData.roadTaxReceipt : db.vehicles[index].roadTaxReceipt,
+    complianceNotes: complianceData.complianceNotes !== undefined ? complianceData.complianceNotes : db.vehicles[index].complianceNotes,
+    lastComplianceUpdate: new Date().toISOString()
+  }
+
+  await setDb(c.env, db)
+  return c.json({
+    success: true,
+    message: `Compliance statutory records for ${db.vehicles[index].vehicleNo} updated successfully!`,
+    vehicle: db.vehicles[index]
+  })
 })
 
 app.delete('/api/payroll/vehicles/:id', async (c) => {
@@ -4655,6 +4729,45 @@ app.post('/api/payroll/leaves/credit', async (c) => {
     message: `⚡ Successfully credited ${numCredit} leave day(s) to ${user.name}. New Balance: ${user.leaveBalance} / ${user.totalLeaves} Days`,
     user,
     creditRecord
+  })
+})
+
+app.post('/api/payroll/leaves/deduct', async (c) => {
+  const body = await c.req.json()
+  const { userId, empId, deductDays, reason, notes } = body
+
+  const numDeduct = Math.max(1, Number(deductDays) || 1)
+  const db = await getDb(c.env)
+  const user = db.users.find((u) => u.id === userId || u.empId === userId || u.empId === empId)
+
+  if (!user) {
+    return c.json({ success: false, message: 'Employee not found.' }, 404)
+  }
+
+  // Deduct leaves from quota/balance safely
+  user.totalLeaves = Math.max(0, (Number(user.totalLeaves) || 10) - numDeduct)
+  user.leaveBalance = Math.max(0, user.totalLeaves - (Number(user.leavesTaken) || 0))
+
+  if (!db.leaveDeductions) db.leaveDeductions = []
+  const deductRecord = {
+    id: `ded-${Date.now()}`,
+    userId: user.id,
+    empId: user.empId,
+    userName: user.name,
+    deductDays: numDeduct,
+    reason: reason || 'Manual Leave Quota Deduction',
+    notes: notes || '',
+    date: new Date().toISOString().split('T')[0],
+    createdAt: new Date().toISOString()
+  }
+  db.leaveDeductions.unshift(deductRecord)
+
+  await setDb(c.env, db)
+  return c.json({
+    success: true,
+    message: `⚡ Successfully deducted ${numDeduct} leave day(s) from ${user.name}. New Balance: ${user.leaveBalance} / ${user.totalLeaves} Days`,
+    user,
+    deductRecord
   })
 })
 

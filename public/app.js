@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMobileNav();
   setupViewModeToggle();
   setupPeachWebTiltEffects();
+  initOpeningWelcomePopup();
 });
 
 /* ==========================================
@@ -506,3 +507,28 @@ function handleChatbotSubmit(e) {
   input.value = "";
   processChatbotQuery(val);
 }
+
+/* ==========================================
+   8. OPENING WELCOME POPUP (WEB & MOBILE)
+   ========================================== */
+function initOpeningWelcomePopup() {
+  const modal = document.getElementById("modal-opening-welcome");
+  if (!modal) return;
+
+  // Check if shown in this session
+  const alreadySeen = sessionStorage.getItem("srrtc_opening_seen");
+  if (!alreadySeen) {
+    setTimeout(() => {
+      modal.style.display = "flex";
+      sessionStorage.setItem("srrtc_opening_seen", "1");
+    }, 450);
+  }
+}
+
+function closeOpeningWelcomePopup() {
+  const modal = document.getElementById("modal-opening-welcome");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
