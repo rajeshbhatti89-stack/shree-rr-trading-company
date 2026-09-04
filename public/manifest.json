@@ -1,0 +1,79 @@
+{
+  "name": "Shree RR Trading Company",
+  "short_name": "Shree RR Trading",
+  "description": "Plant O&M, Heavy Earth Moving Machinery, Tippers, Fleet Garage Maintenance & Infrastructure Contracts (Ambuja Cement Darlaghat & ACC Chanda)",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "id": "shree-rr-trading-company-web-app",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#0B1936",
+  "theme_color": "#FF6B00",
+  "categories": ["business", "productivity", "utilities", "finance"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/images/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/pwa-icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/pwa-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "800x600",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Payroll & Operations Portal",
+      "short_name": "Payroll Portal",
+      "description": "Access employee payroll, muster roll, fleet logs & HR letters",
+      "url": "/payroll/?source=pwa_shortcut",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Fleet & Equipment Lease",
+      "short_name": "Equipment Lease",
+      "description": "View heavy equipment catalog and machinery lease details",
+      "url": "/#rentals",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Cost Estimator & Quote",
+      "short_name": "Cost Estimator",
+      "description": "Calculate plant fleet hiring and road project estimates",
+      "url": "/#calculator",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ambuja Darlaghat Contracts",
+      "short_name": "Contracts",
+      "description": "Explore 40+ years industrial heritage and client track record",
+      "url": "/#contracts",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

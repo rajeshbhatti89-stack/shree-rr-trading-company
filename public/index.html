@@ -10,6 +10,20 @@
   <meta name="keywords"
     content="Shree RR Trading Company, Plant O&M, Heavy Fleet Garage O&M, Ambuja Cement Darlaghat, HEMM, Tippers, Bobcat rental, JCB rental, Road Construction, Heavy Equipment Lease">
 
+  <!-- PWA & Mobile Capabilities -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FF6B00">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Shree RR Trading">
+  <meta name="application-name" content="Shree RR Trading Company">
+  <meta name="msapplication-TileColor" content="#0B1936">
+  <meta name="msapplication-TileImage" content="/images/pwa-icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/pwa-icon-192.png">
+
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,9 +61,15 @@
         <a href="#services" class="nav-link">Services & O&M</a>
         <a href="#rentals" class="nav-link">Equipment Lease</a>
         <a href="#calculator" class="nav-link">Cost Estimator</a>
+        <a href="javascript:void(0)" class="nav-link btn-install-pwa" onclick="triggerPwaInstall()" style="display: none; color: var(--primary-color);">
+          <i class="fa-solid fa-download"></i> Install App
+        </a>
       </nav>
 
       <div class="nav-actions">
+        <button class="btn btn-outline-primary nav-pwa-btn btn-install-pwa" onclick="triggerPwaInstall()" style="display: none;" title="Install Desktop / Mobile App">
+          <i class="fa-solid fa-laptop-mobile"></i> <span>Install App</span>
+        </button>
         <button class="btn btn-primary nav-cta-btn" onclick="openQuoteModal()">
           <i class="fa-solid fa-paper-plane"></i> <span>Get Quote</span>
         </button>
@@ -671,6 +691,7 @@
   <!-- Scripts -->
   <script src="three_viewer.js"></script>
   <script src="app.js"></script>
+  <script src="pwa.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,79 @@
+{
+  "name": "Shree RR Trading - Enterprise Operations & Payroll Suite",
+  "short_name": "SRR Payroll",
+  "description": "Enterprise Operations, Plant Fleet O&M, Daily Muster Roll, Vehicle MTTR & Monthly Salary Disbursal Suite",
+  "start_url": "/payroll/?source=pwa",
+  "scope": "/payroll/",
+  "id": "shree-rr-payroll-enterprise-app",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#0B1936",
+  "theme_color": "#FF6B00",
+  "categories": ["business", "productivity", "finance", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/images/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/pwa-icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/pwa-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "800x600",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Salary Slips & Disbursal",
+      "short_name": "Salary Slips",
+      "description": "Generate, customize, and WhatsApp employee salary slips",
+      "url": "/payroll/#tab-payroll",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Daily Muster Roll",
+      "short_name": "Muster Roll",
+      "description": "Mark and verify shift muster roll for all plant staff",
+      "url": "/payroll/#tab-muster",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Plant Fleet & Availability",
+      "short_name": "Fleet O&M",
+      "description": "Track vehicle breakdowns, MTTR reliability & maintenance logs",
+      "url": "/payroll/#tab-vehicles",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tomorrow Shift Schedule",
+      "short_name": "Tomorrow Roster",
+      "description": "Schedule heavy equipment operators for tomorrow's shifts",
+      "url": "/payroll/#tab-tomorrow",
+      "icons": [{ "src": "/images/pwa-icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

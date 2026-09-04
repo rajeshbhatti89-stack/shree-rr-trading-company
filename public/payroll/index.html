@@ -6,6 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shree RR Trading Company - Operations, Payroll & Fleet Portal</title>
 
+  <!-- PWA & Enterprise App Capabilities -->
+  <link rel="manifest" href="/payroll/manifest.json">
+  <meta name="theme-color" content="#FF6B00">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SRR Payroll">
+  <meta name="application-name" content="Shree RR Payroll">
+  <meta name="msapplication-TileColor" content="#0B1936">
+  <meta name="msapplication-TileImage" content="/images/pwa-icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/pwa-icon-192.png">
+
   <!-- Google Fonts: Outfit & Space Grotesk (Matching shreerrtradingcompany.com) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -134,6 +148,9 @@
         <a href="#reports" class="nav-item" data-tab="reports" id="nav-reports">
           <i class="fa-solid fa-file-excel text-success"></i> <span>Reports & Disbursals</span>
         </a>
+        <a href="javascript:void(0)" class="nav-item btn-install-pwa" onclick="triggerPwaInstall(); return false;" style="display: none;" title="Install App on PC / Laptop / Mobile">
+          <i class="fa-solid fa-laptop-mobile text-orange"></i> <span>Install Desktop/Mobile App</span>
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -176,6 +193,9 @@
         </div>
 
         <div class="top-actions">
+          <button class="btn btn-outline btn-sm btn-install-pwa" onclick="triggerPwaInstall()" style="display: none;" title="Install on Laptop, Desktop or Mobile">
+            <i class="fa-solid fa-laptop-mobile text-orange"></i> <span>Install App</span>
+          </button>
           <button class="btn btn-outline-primary btn-sm" onclick="openAppointmentLetterModal()" title="Generate Official Appointment / Offer Letter">
             <i class="fa-solid fa-file-signature text-orange"></i> <span>Generate HR Letter</span>
           </button>
@@ -2496,6 +2516,8 @@
 
   <!-- Application Logic JS -->
   <script src="/payroll/payroll.js?v=2.4.0"></script>
+  <!-- PWA Service Worker & Install Engine -->
+  <script src="/pwa.js"></script>
 </body>
 
 </html>
