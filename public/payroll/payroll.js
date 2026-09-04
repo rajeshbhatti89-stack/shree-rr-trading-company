@@ -2330,38 +2330,134 @@ function renderSalaryTable() {
     .join('');
 }
 
-// 19. WhatsApp Dispatch & PDF Generation
-function downloadSlipPdf(slipId) {
+// 19. WhatsApp Dispatch & Strict 1-Page PDF Engine
+async function dispatchWhatsAppWithPdfAttachment({ element, filename, mobile, textMessage, title, recipientName }) {
+  if (!element) {
+    showToast('Document element not found.', 'error');
+    return;
+  }
+
+  showToast(`Preparing 1-Page Official PDF for ${recipientName || 'Employee'}...`);
+
+  // Apply strict single-page constraints
+  element.classList.add('pdf-strict-single-page');
+
+  const opt = {
+    margin: [4, 6, 4, 6],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  let pdfBlob = null;
+  try {
+    if (typeof html2pdf !== 'undefined') {
+      pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+    }
+  } catch (err) {
+    console.warn('PDF blob generation error:', err);
+  } finally {
+    element.classList.remove('pdf-strict-single-page');
+  }
+
+  // Auto trigger download of the official 1-page PDF file to device
+  if (pdfBlob) {
+    try {
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = blobUrl;
+      downloadLink.download = filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 25000);
+    } catch (dErr) {
+      console.error('Download error:', dErr);
+    }
+  }
+
+  const cleanMobile = String(mobile || '').replace(/[^0-9]/g, '').slice(-10);
+  let targetPhone = cleanMobile;
+  if (!targetPhone || targetPhone.length < 10) {
+    const entered = prompt(`Enter 10-digit WhatsApp Mobile number for ${recipientName || 'Employee'}:`, '9822852945');
+    if (!entered) return;
+    targetPhone = entered.replace(/[^0-9]/g, '').slice(-10);
+  }
+
+  // Attempt 1: Native File WebShare (Android Chrome / iOS Safari / macOS / Mobile WhatsApp)
+  let sharedAsFile = false;
+  if (pdfBlob && navigator.canShare) {
+    try {
+      const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+      if (navigator.canShare({ files: [pdfFile] })) {
+        await navigator.share({
+          files: [pdfFile],
+          title: title || filename,
+          text: textMessage
+        });
+        sharedAsFile = true;
+        showToast(`✅ Official PDF Attached & Shared via WhatsApp to ${recipientName}!`);
+      }
+    } catch (shareErr) {
+      console.log('WebShare file share skipped or cancelled:', shareErr);
+    }
+  }
+
+  // Attempt 2: Desktop WhatsApp Web / Non-WebShare Fallback with Auto-Download & Pre-filled text
+  if (!sharedAsFile) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(textMessage);
+      }
+    } catch (cErr) {
+      console.warn('Clipboard write error:', cErr);
+    }
+
+    const waUrl = `https://api.whatsapp.com/send?phone=91${targetPhone}&text=${encodeURIComponent(textMessage)}`;
+    window.open(waUrl, '_blank');
+
+    showToast(`📄 1-Page PDF Downloaded! In WhatsApp, click 📎 Attach > Document to attach "${filename}"`, 'success', 8000);
+  }
+}
+
+async function downloadSlipPdf(slipId) {
   let slip = slipId ? allSalarySlips.find((s) => s.id === slipId) : currentActiveSlip;
   if (!slip && allSalarySlips.length > 0) slip = allSalarySlips[0];
   if (!slip) {
     showToast('No salary slip selected for PDF export.', 'error');
-    return Promise.reject(new Error('No slip'));
+    return;
   }
 
   // Populate printable modal
   viewSalarySlip(slip.id);
 
   const element = document.getElementById('printable-salary-slip-content');
-  if (!element) return Promise.reject(new Error('No printable element'));
+  if (!element) return;
+
+  element.classList.add('pdf-strict-single-page');
 
   const opt = {
-    margin: [6, 8, 6, 8],
+    margin: [4, 6, 4, 6],
     filename: `Shree_RR_SalarySlip_${slip.empId}_${slip.monthYear.replace(/\s+/g, '_')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
-  showToast(`Generating Official PDF Payslip for ${slip.userName}...`);
+  showToast(`Generating Strict 1-Page PDF Payslip for ${slip.userName}...`);
 
-  if (typeof html2pdf !== 'undefined') {
-    return html2pdf().set(opt).from(element).save().then(() => {
-      showToast(`Downloaded PDF: ${opt.filename}`);
-    });
-  } else {
-    window.print();
-    return Promise.resolve();
+  try {
+    if (typeof html2pdf !== 'undefined') {
+      await html2pdf().set(opt).from(element).save();
+      showToast(`Downloaded 1-Page PDF: ${opt.filename}`);
+    } else {
+      window.print();
+    }
+  } finally {
+    element.classList.remove('pdf-strict-single-page');
   }
 }
 
@@ -2401,33 +2497,31 @@ function createWhatsAppMessage(slip) {
 💰 *NET TAKE HOME SALARY:* *₹${netPay}*
 🏦 *Bank A/C:* ${slip.bankAccount || 'On Record'} (${slip.ifsc || ''})
 
-📄 _Your official PDF Payslip has been generated by Shree RR Trading Company Payroll System._
+📎 _Official 1-Page PDF Payslip attached._
 ━━━━━━━━━━━━━━━━━━━━
 _Portal: https://payroll.shreerrtradingcompany.com_`;
 
   return { mobile: cleanMobile, text: msg };
 }
 
-function sendSlipWhatsApp(slipId) {
+async function sendSlipWhatsApp(slipId) {
   const slip = allSalarySlips.find((s) => s.id === slipId);
   if (!slip) return;
 
-  // Auto trigger download of PDF document to device
-  try {
-    downloadSlipPdf(slip.id);
-  } catch (e) {
-    console.error('Payslip PDF error:', e);
-  }
+  viewSalarySlip(slip.id);
 
+  const element = document.getElementById('printable-salary-slip-content');
+  const filename = `Shree_RR_SalarySlip_${slip.empId}_${slip.monthYear.replace(/\s+/g, '_')}.pdf`;
   const { mobile, text } = createWhatsAppMessage(slip);
-  if (!mobile || mobile.length < 10) {
-    const manualMobile = prompt(`Enter 10-digit WhatsApp Mobile number for ${slip.userName}:`, '9822852945');
-    if (!manualMobile) return;
-    window.open(`https://api.whatsapp.com/send?phone=91${manualMobile.trim()}&text=${encodeURIComponent(text)}`, '_blank');
-  } else {
-    window.open(`https://api.whatsapp.com/send?phone=91${mobile}&text=${encodeURIComponent(text)}`, '_blank');
-  }
-  showToast(`Downloaded PDF & Opening WhatsApp for ${slip.userName}...`);
+
+  await dispatchWhatsAppWithPdfAttachment({
+    element,
+    filename,
+    mobile: mobile || slip.mobile,
+    textMessage: text,
+    title: `Salary Slip ${slip.monthYear} - ${slip.userName}`,
+    recipientName: slip.userName
+  });
 }
 
 function dispatchBulkWhatsApp() {
@@ -3841,51 +3935,51 @@ function updateLetterTemplate() {
   const netTakeHome = ctc - totalDed;
 
   const salaryTableHtml = `
-    <div style="margin: 14px 0;">
-      <div style="font-weight: 800; font-size: 11.5px; color: #0B1936; margin-bottom: 4px; text-transform: uppercase;">
+    <div style="margin: 6px 0;">
+      <div style="font-weight: 800; font-size: 10px; color: #0B1936; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.02em;">
         Annexure-A: Monthly Remuneration & Compensation Breakup
       </div>
-      <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px; border: 1px solid #CBD5E1;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; margin-bottom: 4px; border: 1px solid #CBD5E1;">
         <thead>
           <tr style="background: #FFF5EE; border-bottom: 1.5px solid #FF6B00; text-align: left;">
-            <th style="padding: 6px 10px; border-right: 1px solid #E2E8F0;">Component / Allowance</th>
-            <th style="padding: 6px 10px; border-right: 1px solid #E2E8F0; text-align: right;">Amount (₹ / Month)</th>
-            <th style="padding: 6px 10px; border-right: 1px solid #E2E8F0;">Statutory Deductions</th>
-            <th style="padding: 6px 10px; text-align: right;">Amount (₹ / Month)</th>
+            <th style="padding: 3px 6px; border-right: 1px solid #E2E8F0;">Component / Allowance</th>
+            <th style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Amount (₹ / Mo)</th>
+            <th style="padding: 3px 6px; border-right: 1px solid #E2E8F0;">Statutory Deductions</th>
+            <th style="padding: 3px 6px; text-align: right;">Amount (₹ / Mo)</th>
           </tr>
         </thead>
         <tbody>
           <tr style="border-bottom: 1px solid #E2E8F0;">
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Basic Salary</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${basic.toLocaleString('en-IN')}</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Provident Fund (PF @ 12%)</td>
-            <td style="padding: 5px 10px; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Basic Salary</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${basic.toLocaleString('en-IN')}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Provident Fund (PF @ 12%)</td>
+            <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
           </tr>
           <tr style="border-bottom: 1px solid #E2E8F0;">
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Dearness Allowance (DA)</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${da.toLocaleString('en-IN')}</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">ESIC Contribution (0.75%)</td>
-            <td style="padding: 5px 10px; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Dearness Allowance (DA)</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${da.toLocaleString('en-IN')}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">ESIC Contribution (0.75%)</td>
+            <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
           </tr>
           <tr style="border-bottom: 1px solid #E2E8F0;">
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">House Rent Allowance (HRA)</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${hra.toLocaleString('en-IN')}</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
-            <td style="padding: 5px 10px; text-align: right; color: #DC2626;">₹${pt}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">House Rent Allowance (HRA)</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${hra.toLocaleString('en-IN')}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
+            <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pt}</td>
           </tr>
           <tr style="border-bottom: 1px solid #CBD5E1;">
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Special Plant Allowance</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${special.toLocaleString('en-IN')}</td>
-            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; font-weight: 700;">Total Deductions</td>
-            <td style="padding: 5px 10px; text-align: right; font-weight: 700; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Special Plant Allowance</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${special.toLocaleString('en-IN')}</td>
+            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; font-weight: 700;">Total Deductions</td>
+            <td style="padding: 2.5px 6px; text-align: right; font-weight: 700; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
           </tr>
         </tbody>
         <tfoot>
           <tr style="background: #F8FAFC; font-weight: 800; border-top: 1.5px solid #0B1936;">
-            <td style="padding: 6px 10px; border-right: 1px solid #E2E8F0; color: #0B1936;">GROSS MONTHLY CTC</td>
-            <td style="padding: 6px 10px; border-right: 1px solid #E2E8F0; text-align: right; color: #FF6B00; font-size: 12px;">₹${ctc.toLocaleString('en-IN')}</td>
-            <td style="padding: 6px 10px; border-right: 1px solid #E2E8F0; color: #0B1936;">NET TAKE HOME PAY</td>
-            <td style="padding: 6px 10px; text-align: right; color: #059669; font-size: 12px;">₹${netTakeHome.toLocaleString('en-IN')}</td>
+            <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">GROSS MONTHLY CTC</td>
+            <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #FF6B00; font-size: 10px;">₹${ctc.toLocaleString('en-IN')}</td>
+            <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">NET TAKE HOME PAY</td>
+            <td style="padding: 3px 6px; text-align: right; color: #059669; font-size: 10px;">₹${netTakeHome.toLocaleString('en-IN')}</td>
           </tr>
         </tfoot>
       </table>
@@ -3896,67 +3990,62 @@ function updateLetterTemplate() {
     if (acceptanceBox) acceptanceBox.style.display = 'block';
     subjectEl.textContent = `SUBJECT: FORMAL LETTER OF APPOINTMENT AS ${designation.toUpperCase()} - PLANT OPERATIONS`;
     bodyEl.innerHTML = `
-      <p style="margin-bottom: 10px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
-      <p style="margin-bottom: 10px;">
-        With reference to your application, technical interview, and subsequent discussions, the management of <strong>Shree RR Trading Company</strong> is pleased to appoint you as <strong>${escapeHtml(designation)}</strong> in our Plant Fleet & Operations Division on the following terms and conditions:
+      <p style="margin-bottom: 5px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 5px;">
+        With reference to your application, technical interview, and subsequent discussions, the management of <strong>Shree RR Trading Company</strong> is pleased to appoint you as <strong>${escapeHtml(designation)}</strong> in our Plant Fleet & Operations Division on the following terms:
       </p>
 
-      <div style="margin-bottom: 8px;"><strong>1. Date of Joining & Deployment Site:</strong> Your appointment is effective from <strong>${escapeHtml(doj)}</strong>. You will be posted at <strong>${escapeHtml(site)}</strong>. The company reserves the right to transfer or assign you to any of its plant sites, quarry crushing units, or infrastructure projects across India as operational requirements dictate.</div>
+      <div style="margin-bottom: 3.5px;"><strong>1. Date of Joining & Site:</strong> Effective from <strong>${escapeHtml(doj)}</strong>. Posted at <strong>${escapeHtml(site)}</strong>. Transferable across company plant sites & crushing units as operational requirements dictate.</div>
 
-      <div style="margin-bottom: 8px;"><strong>2. Probation Period:</strong> You will be on probation for an initial period of <strong>${escapeHtml(probation)}</strong> from the date of joining. Upon satisfactory completion of the probation period, your employment will be confirmed in writing.</div>
+      <div style="margin-bottom: 3.5px;"><strong>2. Probation Period:</strong> Initial probation of <strong>${escapeHtml(probation)}</strong> from joining date. Confirmed in writing upon satisfactory performance.</div>
 
-      <div style="margin-bottom: 8px;"><strong>3. Remuneration & Benefits:</strong> Your total Gross Monthly Compensation (CTC) will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month). Statutory deductions including Employees' Provident Fund (EPF), ESIC, and Professional Tax will be deducted as applicable by law. Detailed salary component breakup is attached in <strong>Annexure-A</strong> below.</div>
+      <div style="margin-bottom: 3.5px;"><strong>3. Remuneration:</strong> Total Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees). EPF, ESIC, and PT deducted as applicable by statutory law. Breakdown attached in <strong>Annexure-A</strong>.</div>
 
       ${salaryTableHtml}
 
-      <div style="margin-bottom: 8px;"><strong>4. Plant Duty Shifts & Roster:</strong> You will work in accordance with the 24/7 plant shift roster (G Shift: 08:30 AM – 05:30 PM, A Shift: 06:00 AM – 02:00 PM, B Shift: 02:00 PM – 10:00 PM, C Shift: 10:00 PM – 06:00 AM) as scheduled by the Shift In-Charge and Site Plant Engineer.</div>
+      <div style="margin-bottom: 3.5px;"><strong>4. Plant Shifts:</strong> Roster covers 24/7 plant operations (G Shift: 08:30 AM – 05:30 PM, A Shift: 06:00 AM – 02:00 PM, B Shift: 02:00 PM – 10:00 PM, C Shift: 10:00 PM – 06:00 AM) as scheduled by Shift In-Charge.</div>
 
-      <div style="margin-bottom: 8px;"><strong>5. Plant Safety, PPE & Equipment Guidelines:</strong> You must strictly adhere to the safety, environmental, and statutory regulations of the plant premises. Wearing prescribed Personal Protective Equipment (Safety Helmet, Steel-Toe Shoes, High-Visibility Vest) is mandatory during working hours. Zero-tolerance policy applies to safety violations.</div>
+      <div style="margin-bottom: 3.5px;"><strong>5. Safety & PPE:</strong> Mandatory wearing of prescribed Personal Protective Equipment (Helmet, Steel-Toe Shoes, High-Vis Vest). Zero-tolerance policy applies to plant safety violations.</div>
 
-      <div style="margin-bottom: 8px;"><strong>6. Notice Period & Termination:</strong> During probation or thereafter, either party may terminate this employment contract by giving <strong>${escapeHtml(notice)}</strong> prior notice in writing or payment of gross salary in lieu of notice.</div>
+      <div style="margin-bottom: 3.5px;"><strong>6. Notice Period:</strong> Either party may terminate employment by giving <strong>${escapeHtml(notice)}</strong> prior notice in writing or payment in lieu thereof.</div>
 
-      <div style="margin-bottom: 8px;"><strong>7. Confidentiality & Code of Conduct:</strong> You shall keep confidential all operational data, equipment maintenance logs, production statistics, and business affairs of the company and client entities (Ambuja Cement / ACC Cement).</div>
+      <div style="margin-bottom: 3.5px;"><strong>7. Confidentiality:</strong> You shall strictly protect operational data, equipment logs, production statistics, and affairs of company and client entities (Ambuja / ACC).</div>
 
-      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 8px 12px; margin-top: 10px; color: #92400E;"><strong>Special Terms / Provisions:</strong> ${escapeHtml(customNote)}</div>` : ''}
+      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 4px 8px; margin-top: 4px; color: #92400E; font-size: 10px;"><strong>Special Terms:</strong> ${escapeHtml(customNote)}</div>` : ''}
 
-      <p style="margin-top: 12px; margin-bottom: 0;">
-        Please sign and return the duplicate copy of this letter as a token of your acceptance of these terms and conditions. We welcome you to Shree RR Trading Company and look forward to a long and mutually rewarding association.
+      <p style="margin-top: 6px; margin-bottom: 0;">
+        Please sign and return the duplicate acknowledgment copy below as acceptance of these terms. We welcome you to Shree RR Trading Company.
       </p>
     `;
   } else if (letterType === 'offer') {
     if (acceptanceBox) acceptanceBox.style.display = 'block';
     subjectEl.textContent = `SUBJECT: OFFER OF EMPLOYMENT FOR THE POSITION OF ${designation.toUpperCase()}`;
     bodyEl.innerHTML = `
-      <p style="margin-bottom: 10px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
-      <p style="margin-bottom: 10px;">
+      <p style="margin-bottom: 6px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 6px;">
         We are pleased to offer you employment with <strong>Shree RR Trading Company</strong> as <strong>${escapeHtml(designation)}</strong> based at our <strong>${escapeHtml(site)}</strong>.
       </p>
-      <p style="margin-bottom: 10px;">
-        We were impressed by your technical skill, operational background, and machine handling expertise, and we believe you will be a valuable addition to our plant fleet operations team.
-      </p>
 
-      <div style="margin-bottom: 8px;"><strong>• Proposed Designation:</strong> ${escapeHtml(designation)}</div>
-      <div style="margin-bottom: 8px;"><strong>• Plant Deployment Location:</strong> ${escapeHtml(site)}</div>
-      <div style="margin-bottom: 8px;"><strong>• Expected Joining Date:</strong> ${escapeHtml(doj)}</div>
-      <div style="margin-bottom: 8px;"><strong>• Monthly CTC Package:</strong> ₹${ctc.toLocaleString('en-IN')} / Month (Detailed Annexure-A attached below)</div>
-      <div style="margin-bottom: 8px;"><strong>• Probationary Period:</strong> ${escapeHtml(probation)}</div>
+      <div style="margin-bottom: 4px;"><strong>• Proposed Designation:</strong> ${escapeHtml(designation)}</div>
+      <div style="margin-bottom: 4px;"><strong>• Plant Deployment Location:</strong> ${escapeHtml(site)}</div>
+      <div style="margin-bottom: 4px;"><strong>• Expected Joining Date:</strong> ${escapeHtml(doj)}</div>
+      <div style="margin-bottom: 4px;"><strong>• Monthly CTC Package:</strong> ₹${ctc.toLocaleString('en-IN')} / Month (Detailed Annexure-A attached below)</div>
+      <div style="margin-bottom: 4px;"><strong>• Probationary Period:</strong> ${escapeHtml(probation)}</div>
 
       ${salaryTableHtml}
 
-      <div style="margin-bottom: 10px;">
-        <strong>Documents to Submit on Joining Day:</strong>
-        <ol style="margin-left: 20px; margin-top: 4px;">
+      <div style="margin-bottom: 6px;">
+        <strong>Documents Required on Joining Day:</strong>
+        <ol style="margin-left: 18px; margin-top: 2px; margin-bottom: 0; padding-left: 0;">
           <li>Original and self-attested copies of Aadhaar Card and PAN Card</li>
           <li>Bank Account Passbook / Cancelled Cheque (with IFSC)</li>
-          <li>4 Passport Size Color Photographs</li>
-          <li>Previous Experience Certificates and Relieving Letters (if applicable)</li>
-          <li>Valid Commercial Driving / Heavy Equipment Operator License (for Operators)</li>
+          <li>4 Passport Size Color Photographs & License (for Equipment Operators)</li>
         </ol>
       </div>
 
-      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 8px 12px; margin-top: 10px; color: #92400E;"><strong>Special Notes:</strong> ${escapeHtml(customNote)}</div>` : ''}
+      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 4px 8px; margin-top: 4px; color: #92400E; font-size: 10px;"><strong>Special Notes:</strong> ${escapeHtml(customNote)}</div>` : ''}
 
-      <p style="margin-top: 12px; margin-bottom: 0;">
+      <p style="margin-top: 6px; margin-bottom: 0;">
         Please confirm your acceptance of this offer by signing and returning the acknowledgment copy within 7 days.
       </p>
     `;
@@ -3964,21 +4053,21 @@ function updateLetterTemplate() {
     if (acceptanceBox) acceptanceBox.style.display = 'none';
     subjectEl.textContent = `TO WHOMSOEVER IT MAY CONCERN`;
     bodyEl.innerHTML = `
-      <p style="margin-bottom: 16px; font-size: 13.5px; line-height: 1.8;">
+      <p style="margin-bottom: 10px; font-size: 11.5px; line-height: 1.6;">
         This is to certify that <strong>Mr. ${escapeHtml(user.name)}</strong>, S/o <strong>${escapeHtml(user.fatherName || 'On Record')}</strong>, holding Employee ID <strong>${escapeHtml(user.empId)}</strong>, was employed with <strong>Shree RR Trading Company</strong> from <strong>${escapeHtml(doj)}</strong> to <strong>${formattedDate}</strong>.
       </p>
 
-      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.6;">
         During his tenure with our organization, he served as <strong>${escapeHtml(designation)}</strong> deployed at <strong>${escapeHtml(site)}</strong>. His primary responsibilities included operation, maintenance, and precision upkeep of heavy earth moving machinery, tippers, excavators, and plant fleet equipment.
       </p>
 
-      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.6;">
         He has consistently demonstrated strong technical proficiency, professional discipline, adherence to strict plant safety standards, and exemplary attendance records. His character and conduct during his employment were found to be excellent.
       </p>
 
-      ${customNote ? `<p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">${escapeHtml(customNote)}</p>` : ''}
+      ${customNote ? `<p style="margin-bottom: 8px; font-size: 11px; line-height: 1.6;">${escapeHtml(customNote)}</p>` : ''}
 
-      <p style="margin-top: 20px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-top: 14px; font-size: 11px; line-height: 1.6;">
         We appreciate his valuable contributions to our plant operations and wish him all the very best in all his future career endeavors.
       </p>
     `;
@@ -3986,22 +4075,22 @@ function updateLetterTemplate() {
     if (acceptanceBox) acceptanceBox.style.display = 'none';
     subjectEl.textContent = `SUBJECT: RELIEVING ORDER & NO DUES CLEARANCE CERTIFICATE`;
     bodyEl.innerHTML = `
-      <p style="margin-bottom: 14px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
-      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-bottom: 8px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.6;">
         With reference to your resignation letter dated <strong>${formattedDate}</strong>, we hereby confirm that you are formally relieved from your duties and responsibilities as <strong>${escapeHtml(designation)}</strong> with <strong>Shree RR Trading Company</strong> at <strong>${escapeHtml(site)}</strong>, effective from the close of working hours on <strong>${formattedDate}</strong>.
       </p>
 
-      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
-        We confirm that all company assets, machine logsheets, tools, PPE, and identification badges in your custody have been satisfactorily handed over to the site management. Your full and final salary settlement, accrued leave benefits, and statutory accounts have been processed as per company rules.
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.6;">
+        We confirm that all company assets, machine logsheets, tools, PPE, and identification badges in your custody have been satisfactorily handed over to site management. Your full and final salary settlement, accrued leave benefits, and statutory accounts have been processed as per company rules.
       </p>
 
-      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.6;">
         We place on record our sincere appreciation for your valuable service and dedication during your tenure with us.
       </p>
 
-      ${customNote ? `<p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">${escapeHtml(customNote)}</p>` : ''}
+      ${customNote ? `<p style="margin-bottom: 8px; font-size: 11px; line-height: 1.6;">${escapeHtml(customNote)}</p>` : ''}
 
-      <p style="margin-top: 18px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-top: 12px; font-size: 11px; line-height: 1.6;">
         We wish you the very best of success in all your future professional pursuits.
       </p>
     `;
@@ -4009,55 +4098,60 @@ function updateLetterTemplate() {
     if (acceptanceBox) acceptanceBox.style.display = 'block';
     subjectEl.textContent = `SUBJECT: ANNUAL PERFORMANCE APPRAISAL & SALARY REVISION LETTER`;
     bodyEl.innerHTML = `
-      <p style="margin-bottom: 12px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
-      <p style="margin-bottom: 12px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-bottom: 8px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.5;">
         In recognition of your exceptional performance, machine uptime, dedication, and valuable contributions to the plant fleet operations at <strong>${escapeHtml(site)}</strong>, the management of <strong>Shree RR Trading Company</strong> is pleased to revise your monthly compensation package.
       </p>
-      <p style="margin-bottom: 12px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.5;">
         Effective from <strong>${escapeHtml(doj)}</strong>, your revised Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month).
       </p>
 
       ${salaryTableHtml}
 
-      <p style="margin-bottom: 12px; font-size: 13px; line-height: 1.8;">
+      <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.5;">
         All other terms and conditions of your original appointment letter remain unchanged and in full effect. We look forward to your continued commitment, high standards of safety, and operational excellence in the coming year.
       </p>
 
-      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 8px 12px; margin-top: 10px; color: #92400E;"><strong>Special Commendation:</strong> ${escapeHtml(customNote)}</div>` : ''}
+      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 4px 8px; margin-top: 6px; color: #92400E; font-size: 10px;"><strong>Special Commendation:</strong> ${escapeHtml(customNote)}</div>` : ''}
 
-      <p style="margin-top: 14px; margin-bottom: 0;">
+      <p style="margin-top: 8px; margin-bottom: 0;">
         Congratulations on your well-deserved salary revision!
       </p>
     `;
   }
 }
 
-function downloadLetterPdf() {
+async function downloadLetterPdf() {
   const empSelect = document.getElementById('letter-select-emp');
   const userId = empSelect ? empSelect.value : '';
   const user = allUsers.find((u) => u.id === userId || u.empId === userId) || allUsers[0];
   const letterType = document.getElementById('letter-type-select')?.value || 'appointment';
 
   const element = document.getElementById('printable-appointment-letter');
-  if (!element) return Promise.reject(new Error('No printable letter element'));
+  if (!element) return;
+
+  element.classList.add('pdf-strict-single-page');
 
   const opt = {
-    margin: [6, 8, 6, 8],
+    margin: [4, 6, 4, 6],
     filename: `Shree_RR_${letterType.toUpperCase()}_Letter_${user ? user.empId : 'EMP'}_${user ? user.name.replace(/\s+/g, '_') : 'Letter'}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
-  showToast(`Generating ${letterType} letter PDF for ${user ? user.name : 'Employee'}...`);
+  showToast(`Generating Strict 1-Page ${letterType} letter PDF for ${user ? user.name : 'Employee'}...`);
 
-  if (typeof html2pdf !== 'undefined') {
-    return html2pdf().set(opt).from(element).save().then(() => {
-      showToast(`Downloaded Letter PDF: ${opt.filename}`);
-    });
-  } else {
-    window.print();
-    return Promise.resolve();
+  try {
+    if (typeof html2pdf !== 'undefined') {
+      await html2pdf().set(opt).from(element).save();
+      showToast(`Downloaded 1-Page Letter PDF: ${opt.filename}`);
+    } else {
+      window.print();
+    }
+  } finally {
+    element.classList.remove('pdf-strict-single-page');
   }
 }
 
@@ -4065,7 +4159,7 @@ function printAppointmentLetter() {
   window.print();
 }
 
-function sendLetterWhatsApp() {
+async function sendLetterWhatsApp() {
   const empSelect = document.getElementById('letter-select-emp');
   const userId = empSelect ? empSelect.value : '';
   const user = allUsers.find((u) => u.id === userId || u.empId === userId);
@@ -4089,14 +4183,8 @@ function sendLetterWhatsApp() {
   const ctc = Number(document.getElementById('letter-ctc-input')?.value || user.ctc || user.baseSalary || 35000);
   const doj = document.getElementById('letter-doj-input')?.value || user.doj || '01/01/2026';
 
-  // Trigger PDF download
-  try {
-    downloadLetterPdf();
-  } catch (e) {
-    console.error('PDF error', e);
-  }
-
-  const cleanMobile = (user.mobile || user.phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const element = document.getElementById('printable-appointment-letter');
+  const filename = `Shree_RR_${letterType.toUpperCase()}_Letter_${user.empId}_${user.name.replace(/\s+/g, '_')}.pdf`;
 
   const msg = `*SHREE RR TRADING COMPANY*
 *Official HR Letter - ${letterTypeTitle}*
@@ -4108,19 +4196,18 @@ function sendLetterWhatsApp() {
 📅 *Effective Date:* ${doj}
 💵 *Gross Monthly CTC:* ₹${ctc.toLocaleString('en-IN')}
 
-📄 _Your official signed HR Letter (${letterTypeTitle}) PDF has been generated by Shree RR Trading Company._
+📎 _Official 1-Page HR Letter (${letterTypeTitle}) PDF document attached._
 ━━━━━━━━━━━━━━━━━━━━
 _Verification Portal: https://payroll.shreerrtradingcompany.com_`;
 
-  if (!cleanMobile || cleanMobile.length < 10) {
-    const manualMobile = prompt(`Enter 10-digit WhatsApp Mobile number for ${user.name}:`, '9822852945');
-    if (!manualMobile) return;
-    window.open(`https://api.whatsapp.com/send?phone=91${manualMobile.trim()}&text=${encodeURIComponent(msg)}`, '_blank');
-  } else {
-    window.open(`https://api.whatsapp.com/send?phone=91${cleanMobile}&text=${encodeURIComponent(msg)}`, '_blank');
-  }
-
-  showToast(`Downloaded PDF & Opening WhatsApp for ${user.name}...`);
+  await dispatchWhatsAppWithPdfAttachment({
+    element,
+    filename,
+    mobile: user.mobile || user.phone,
+    textMessage: msg,
+    title: `HR Letter (${letterTypeTitle}) - ${user.name}`,
+    recipientName: user.name
+  });
 }
 
 // Global Window Bindings for Inline HTML Callbacks
@@ -4134,4 +4221,5 @@ window.downloadSlipPdf = downloadSlipPdf;
 window.viewSalarySlip = viewSalarySlip;
 window.sendSlipWhatsApp = sendSlipWhatsApp;
 window.dispatchBulkWhatsApp = dispatchBulkWhatsApp;
+
 
