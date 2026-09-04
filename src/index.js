@@ -3947,7 +3947,99 @@ const DEFAULT_INITIAL_DB = {
       "appliedDate": "2026-07-21"
     }
   ],
-  "vehicleLogs": []
+  "vehicleLogs": [],
+  "salarySlips": []
+}
+
+// Salary Slips Generator Utility
+function generateDefaultSalarySlips(users, mYear = 'August 2026') {
+  if (!Array.isArray(users)) return []
+  const activeEmployees = users.filter((u) => u.role !== 'Super Admin' && u.status === 'Active')
+  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+  let defaultDim = 31 // August has 31 days
+  if (mYear) {
+    const parts = mYear.split(' ')
+    const mIdx = monthNames.indexOf(parts[0].toLowerCase())
+    const yr = parseInt(parts[1]) || 2026
+    if (mIdx !== -1) {
+      defaultDim = new Date(yr, mIdx + 1, 0).getDate()
+    }
+  }
+
+  const slips = []
+  for (const u of activeEmployees) {
+    const dim = defaultDim
+    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0)))
+    const ctc = Number(u.ctc)
+    const bpd = Number(u.basicPerDay)
+
+    let basic = 0, da = 0, hra = 0, specialAllowance = 0, grossPay = 0
+    let pf = 0, esic = 0, pt = 0, totalDeductions = 0, netPay = 0
+
+    if (ctc && ctc > 0) {
+      const basicPerDay = (ctc / 2) / dim
+      basic = Math.round(basicPerDay * pdays * 100) / 100
+      da = 0
+      hra = Math.round(0.40 * basic * 100) / 100
+      const pfEmployer = Math.round((basic + da) * 0.12 * 100) / 100
+      const ctcWorking = Math.round((ctc / dim) * pdays * 100) / 100
+      grossPay = Math.round((ctcWorking - pfEmployer) * 100) / 100
+      specialAllowance = Math.round(Math.max(0, grossPay - (basic + da + hra)) * 100) / 100
+      pf = Math.round((basic + da) * 0.12 * 100) / 100
+      pt = grossPay > 0 ? 200 : 0
+      esic = 0
+      totalDeductions = Math.round((pf + pt + esic) * 100) / 100
+      netPay = Math.round((grossPay - totalDeductions) * 100) / 100
+    } else {
+      const bpdVal = bpd || 444.62
+      basic = Math.round(bpdVal * pdays * 100) / 100
+      da = Math.round(289.38 * pdays * 100) / 100
+      hra = Math.round(62.70 * pdays * 100) / 100
+      specialAllowance = 0
+      grossPay = Math.round((basic + da + hra) * 100) / 100
+      pf = Math.round((basic + da) * 0.12 * 100) / 100
+      esic = Math.round(grossPay * 0.0075 * 100) / 100
+      pt = grossPay > 0 ? 200 : 0
+      totalDeductions = Math.round((pf + esic + pt) * 100) / 100
+      netPay = Math.round((grossPay - totalDeductions) * 100) / 100
+    }
+
+    slips.push({
+      id: `slp-${(u.empId || 'srr').toLowerCase()}-${mYear.replace(/\s+/g, '-').toLowerCase()}`,
+      userId: u.id,
+      empId: u.empId,
+      userName: u.name,
+      monthYear: mYear,
+      month: mYear.split(' ')[0],
+      year: mYear.split(' ')[1] || '2026',
+      designation: u.designation || u.rank || 'Staff',
+      department: u.department || 'Plant Fleet & Garage O&M',
+      fatherName: u.fatherName || '',
+      dob: u.dob || '',
+      doj: u.doj || '',
+      uan: u.uan || '',
+      esicNo: u.esicNo || '',
+      pfNo: u.pfNo || '',
+      bankAccount: u.bankAccount || '',
+      ifsc: u.ifsc || '',
+      location: u.location || u.site || 'ACC Chanda',
+      category: u.category || 'Skilled',
+      mobile: u.mobile || '',
+      phone: u.phone || '',
+      workedDays: pdays,
+      totalDays: dim,
+      otHours: 0,
+      otWage: 0,
+      earnings: { basic, da, hra, specialAllowance, bonus: 0, otWage: 0 },
+      deductions: { pf, esic, pt, lic: 0, advance: 0 },
+      grossPay,
+      totalDeductions,
+      netPay,
+      status: 'Paid',
+      paymentDate: mYear.includes('August') ? '2026-08-31' : (mYear.includes('July') ? '2026-07-31' : '2026-09-30')
+    })
+  }
+  return slips
 }
 
 // Database Access Helpers
@@ -3969,26 +4061,55 @@ const getDb = async (env) => {
     }
   }
 
+  let dbNeedsSave = false
+
   // Ensure all employees have allocated leaves and accurate leave balance without wiping out custom credits or deductions
   if (dbData && Array.isArray(dbData.users)) {
-    let changed = false
     dbData.users.forEach((u) => {
       if (u.totalLeaves === undefined || u.totalLeaves === null) {
         u.totalLeaves = 10
-        changed = true
+        dbNeedsSave = true
       }
       if (u.leavesTaken === undefined || u.leavesTaken === null) {
         u.leavesTaken = 0
-        changed = true
+        dbNeedsSave = true
       }
       if (u.leaveBalance === undefined || u.leaveBalance === null) {
         u.leaveBalance = Math.max(0, (Number(u.totalLeaves) || 10) - (Number(u.leavesTaken) || 0))
-        changed = true
+        dbNeedsSave = true
       }
     })
-    if (changed && env && env.PAYROLL_DB) {
-      await env.PAYROLL_DB.put('db_v8', JSON.stringify(dbData))
+  }
+
+  // Ensure August 2026, July 2026, and September 2026 salary structures/slips exist
+  if (dbData && Array.isArray(dbData.users)) {
+    if (!dbData.salarySlips) dbData.salarySlips = []
+
+    const hasAugust = dbData.salarySlips.some((s) => s.monthYear === 'August 2026')
+    const hasJuly = dbData.salarySlips.some((s) => s.monthYear === 'July 2026')
+    const hasSeptember = dbData.salarySlips.some((s) => s.monthYear === 'September 2026')
+
+    if (!hasAugust || !hasJuly || !hasSeptember) {
+      if (!hasAugust) {
+        const augSlips = generateDefaultSalarySlips(dbData.users, 'August 2026')
+        dbData.salarySlips = [...augSlips, ...dbData.salarySlips]
+        dbNeedsSave = true
+      }
+      if (!hasJuly) {
+        const julSlips = generateDefaultSalarySlips(dbData.users, 'July 2026')
+        dbData.salarySlips = [...dbData.salarySlips, ...julSlips]
+        dbNeedsSave = true
+      }
+      if (!hasSeptember) {
+        const sepSlips = generateDefaultSalarySlips(dbData.users, 'September 2026')
+        dbData.salarySlips = [...dbData.salarySlips, ...sepSlips]
+        dbNeedsSave = true
+      }
     }
+  }
+
+  if (dbNeedsSave && env && env.PAYROLL_DB) {
+    await env.PAYROLL_DB.put('db_v8', JSON.stringify(dbData))
   }
 
   return dbData
