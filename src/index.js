@@ -3947,8 +3947,7 @@ const DEFAULT_INITIAL_DB = {
       "appliedDate": "2026-07-21"
     }
   ],
-  "vehicleLogs": [],
-  "salarySlips": []
+  "vehicleLogs": []
 }
 
 // Salary Slips Generator Utility
