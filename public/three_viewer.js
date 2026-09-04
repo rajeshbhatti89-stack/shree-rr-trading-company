@@ -24,25 +24,25 @@ const ThreeEngine = {
 // Machine Specifications Data Dictionary
 const MACHINERY_SPECS = {
   tipper: {
-    tag: "MINING DUMPER / FLEET",
+    tag: "PLANT DUMPER / FLEET",
     title: "Tata Signa 3525.K Heavy Tipper Truck (35T)",
     specs: [
       { name: "Payload Capacity", val: "35 Metric Tonnes" },
       { name: "Engine Output", val: "250 HP Cummins ISBe 6.7L" },
       { name: "Drive Configuration", val: "8x4 Heavy Axle Suspension" },
-      { name: "Mining Operations", val: "Ambuja Cement Darlaghat Overburden & Quarry" },
+      { name: "Plant Operations", val: "Ambuja Cement Darlaghat Overburden & Plant Site" },
       { name: "Telematics GPS", val: "Real-time Fuel & Load Sensors" },
       { name: "Garage O&M Interval", val: "Every 250 Engine Hours" }
     ]
   },
   excavator: {
     tag: "HEMM / EXCAVATOR",
-    title: "CAT 380 / Komatsu PC500 Mining Excavator",
+    title: "CAT 380 / Komatsu PC500 Plant Excavator",
     specs: [
       { name: "Operating Weight", val: "48 Metric Tonnes" },
       { name: "Bucket Capacity", val: "3.2 m³ Rock Excavation Bucket" },
       { name: "Breakout Force", val: "265 kN High Hydraulic" },
-      { name: "Contract Usage", val: "Ambuja Darlaghat Quarry Bench Digging" },
+      { name: "Contract Usage", val: "Ambuja Darlaghat Plant Quarry Digging" },
       { name: "Fuel Efficiency", val: "Eco-Mode Hydro Controls" },
       { name: "Garage Support", val: "Dedicated On-Site Overhaul Pit" }
     ]
@@ -56,7 +56,7 @@ const MACHINERY_SPECS = {
       { name: "Operating Weight", val: "2,400 kg" },
       { name: "Versatility Attachments", val: "Auger, Sweeper, Breaker, Bucket" },
       { name: "Rental Availability", val: "Daily / Monthly Lease with Operator" },
-      { name: "Application", val: "Mining Site Cleanup & Road Works" }
+      { name: "Application", val: "Plant Site Cleanup & Road Works" }
     ]
   },
   jcb: {
@@ -67,7 +67,7 @@ const MACHINERY_SPECS = {
       { name: "Engine Rating", val: "76 HP Turbocharged" },
       { name: "Loader Bucket", val: "1.1 m³ 6-in-1 Shovel" },
       { name: "Road Speed", val: "40 km/h Hydro-shift" },
-      { name: "Deployment", val: "Road Trenching & Mining Support" },
+      { name: "Deployment", val: "Road Trenching & Plant Support" },
       { name: "Maintenance", val: "Zero-Downtime Spares Stock" }
     ]
   },
@@ -435,7 +435,7 @@ function loadProcedural3DModel(type) {
     });
 
   } else if (type === 'excavator') {
-    // --- CAT 380 / KOMATSU PC500 MINING EXCAVATOR (Exact Match to Logo Excavator) ---
+    // --- CAT 380 / KOMATSU PC500 PLANT EXCAVATOR (Exact Match to Logo Excavator) ---
 
     const trackSideL = new THREE.BoxGeometry(7.5, 1.4, 0.9);
     const trackMeshL = new THREE.Mesh(trackSideL, logoNavySteel);

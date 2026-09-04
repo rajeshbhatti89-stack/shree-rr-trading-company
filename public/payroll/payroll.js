@@ -139,7 +139,7 @@ function switchTab(tabId) {
     const titles = {
       dashboard: 'Operations Dashboard',
       users: 'Workforce & Access Management',
-      vehicles: 'Mining Vehicles & Fleet Management',
+      vehicles: 'Plant Vehicles & Fleet Management',
       muster: 'Daily Muster Roll (Today)',
       tomorrow: "Tomorrow's Shift & Machine Schedule",
       'attendance-glass': 'Attendance Glass & Leave Tracker',
@@ -520,6 +520,9 @@ function renderUsersTable() {
         <td><strong>${rateText}</strong></td>
         <td class="text-right">
           <div style="display: inline-flex; gap: 6px;">
+            <button class="btn-icon-only text-orange" title="Generate Official Appointment / Offer Letter" onclick="openAppointmentLetterModal('${u.id || u.empId}')">
+              <i class="fa-solid fa-file-signature"></i>
+            </button>
             <button class="btn-icon-only text-navy" title="Edit Record" onclick="editUser('${u.id || u.empId}')">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
@@ -629,6 +632,18 @@ function renderVehiclesTable() {
   if (countBadge) countBadge.textContent = `${allVehicles.length} Active Vehicles`;
   if (!tbody) return;
 
+  // Dynamically populate vehicle-type-filter with distinct manual categories
+  const filterSelect = document.getElementById('vehicle-type-filter');
+  if (filterSelect) {
+    const currentVal = filterSelect.value || 'ALL';
+    const uniqueTypes = Array.from(new Set(allVehicles.map((v) => v.type).filter(Boolean))).sort();
+    let filterHtml = '<option value="ALL">All Equipment Categories</option>';
+    uniqueTypes.forEach((t) => {
+      filterHtml += `<option value="${escapeHtml(t)}" ${t === currentVal ? 'selected' : ''}>${escapeHtml(t)}</option>`;
+    });
+    filterSelect.innerHTML = filterHtml;
+  }
+
   const search = (document.getElementById('vehicle-search-input')?.value || '').toLowerCase().trim();
   const typeFilter = document.getElementById('vehicle-type-filter')?.value || 'ALL';
 
@@ -644,7 +659,7 @@ function renderVehiclesTable() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding: 35px; color: var(--text-dim);">No mining vehicles in fleet. Click "Bulk Import Vehicles" or "Add Mining Vehicle" above.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding: 35px; color: var(--text-dim);">No plant vehicles in fleet. Click "Bulk Import (Excel)" or "Add Plant Vehicle" above.</td></tr>`;
     return;
   }
 
@@ -653,15 +668,16 @@ function renderVehiclesTable() {
       const isPit = (v.status || '').includes('Active');
       const isMaint = (v.status || '').includes('Maintenance');
       const statusClass = isPit ? 'status-pit' : (isMaint ? 'status-maintenance' : 'status-idle');
-      const icon = v.type.includes('Excavator')
+      const vType = v.type || '';
+      const icon = vType.includes('Excavator')
         ? 'fa-truck-monster'
-        : v.type.includes('Tipper')
+        : vType.includes('Tipper')
         ? 'fa-truck-front'
-        : v.type.includes('JCB')
+        : vType.includes('JCB') || vType.includes('Loader')
         ? 'fa-tractor'
-        : v.type.includes('Bobcat')
+        : vType.includes('Bobcat')
         ? 'fa-truck-pickup'
-        : v.type.includes('Water')
+        : vType.includes('Water')
         ? 'fa-faucet-drip'
         : 'fa-truck-ramp-box';
 
@@ -674,14 +690,14 @@ function renderVehiclesTable() {
         </td>
         <td>
           <span class="emp-cell-name">${escapeHtml(v.name)}</span>
-          <span class="emp-cell-sub">Model: ${escapeHtml(v.model || 'HEMM')} | Fuel: ${escapeHtml(v.fuelType || 'Diesel')}</span>
+          <span class="emp-cell-sub">Model: ${escapeHtml(v.model || 'Plant Fleet')} | Fuel: ${escapeHtml(v.fuelType || 'Diesel')}</span>
         </td>
-        <td><span class="badge-pill">${escapeHtml(v.type || 'Machinery')}</span></td>
+        <td><span class="badge-pill">${escapeHtml(v.type || 'Plant Equipment')}</span></td>
         <td>
           <strong>${escapeHtml(v.operatorName || 'Unassigned')}</strong>
           <span class="emp-cell-sub">${v.operatorId ? `ID: ${escapeHtml(v.operatorId)}` : 'Spare Driver'}</span>
         </td>
-        <td>${escapeHtml(v.site || 'ACC Chanda Mine Pit')}</td>
+        <td>${escapeHtml(v.site || 'ACC Chanda Plant Site')}</td>
         <td><span class="badge-pill ${statusClass}">${escapeHtml(v.status || 'Active')}</span></td>
         <td>
           <button class="badge-compliance-btn ${comp.badgeClass}" onclick="openEditComplianceModal('${v.id || v.vehicleNo}')" title="${escapeHtml(comp.tooltip)} - Click to update">
@@ -709,9 +725,12 @@ function renderVehiclesTable() {
 }
 
 function openAddVehicleModal() {
-  document.getElementById('modal-vehicle-title').innerHTML = `<i class="fa-solid fa-truck-ramp-box text-orange"></i> Add Mining Vehicle / Fleet`;
+  document.getElementById('modal-vehicle-title').innerHTML = `<i class="fa-solid fa-truck-ramp-box text-orange"></i> Add Plant Vehicle / Fleet`;
   document.getElementById('form-vehicle').reset();
   document.getElementById('vehicle-id').value = '';
+  document.getElementById('veh-type').value = '';
+  document.getElementById('veh-site').value = 'ACC Chanda Plant Site';
+  document.getElementById('veh-status').value = 'Active (Plant Duty)';
   populateVehicleOperatorSelect();
   openModal('modal-vehicle');
 }
@@ -720,14 +739,14 @@ function editVehicle(vehId) {
   const veh = allVehicles.find((v) => v.id === vehId || v.vehicleNo === vehId);
   if (!veh) return;
 
-  document.getElementById('modal-vehicle-title').innerHTML = `<i class="fa-solid fa-truck-front text-orange"></i> Edit Vehicle (${veh.vehicleNo})`;
+  document.getElementById('modal-vehicle-title').innerHTML = `<i class="fa-solid fa-truck-front text-orange"></i> Edit Plant Vehicle (${veh.vehicleNo})`;
   document.getElementById('vehicle-id').value = veh.id || veh.vehicleNo;
   document.getElementById('veh-number').value = veh.vehicleNo || '';
   document.getElementById('veh-name').value = veh.name || '';
-  document.getElementById('veh-type').value = veh.type || 'Excavator';
+  document.getElementById('veh-type').value = veh.type || '';
   document.getElementById('veh-model').value = veh.model || '';
-  document.getElementById('veh-site').value = veh.site || 'ACC Chanda Mine Pit';
-  document.getElementById('veh-status').value = veh.status || 'Active (In Pit)';
+  document.getElementById('veh-site').value = veh.site || 'ACC Chanda Plant Site';
+  document.getElementById('veh-status').value = veh.status || 'Active (Plant Duty)';
   document.getElementById('veh-rate').value = veh.hourlyRate || '';
   document.getElementById('veh-notes').value = veh.notes || '';
 
@@ -896,12 +915,12 @@ function handleVehicleFileSelect(file) {
       parsedBulkVehicles = jsonRows
         .filter((r) => r['Vehicle No'] || r['Vehicle Reg No'] || r['Vehicle Number'] || r['Reg No'] || r['vehicleNo'])
         .map((r, idx) => {
-          const vehicleNo = String(r['Vehicle No'] || r['Vehicle Reg No'] || r['Vehicle Number'] || r['Reg No'] || r['vehicleNo'] || `HEMM-0${idx + 1}`).trim().toUpperCase();
-          const name = String(r['Equipment Name'] || r['Name'] || r['Machinery Name'] || r['name'] || 'CAT Heavy Mining Excavator').trim();
-          const type = String(r['Type'] || r['Equipment Type'] || r['type'] || 'Excavator').trim();
+          const vehicleNo = String(r['Vehicle No'] || r['Vehicle Reg No'] || r['Vehicle Number'] || r['Reg No'] || r['vehicleNo'] || `PLANT-0${idx + 1}`).trim().toUpperCase();
+          const name = String(r['Equipment Name'] || r['Name'] || r['Machinery Name'] || r['name'] || 'CAT Heavy Plant Excavator').trim();
+          const type = String(r['Category'] || r['Type'] || r['Equipment Type'] || r['Equipment Category'] || r['type'] || 'Excavator').trim();
           const model = String(r['Model'] || r['Equipment Model'] || r['model'] || 'CAT 349D').trim();
-          const site = String(r['Site'] || r['Location'] || r['site'] || 'ACC Chanda Mine Pit').trim();
-          const status = String(r['Status'] || r['Operational Status'] || r['status'] || 'Active (In Pit)').trim();
+          const site = String(r['Site'] || r['Location'] || r['site'] || 'ACC Chanda Plant Site').trim();
+          const status = String(r['Status'] || r['Operational Status'] || r['status'] || 'Active (Plant Duty)').trim();
           const hourlyRate = Number(r['Hourly Rate'] || r['Rate'] || r['hourlyRate']) || 3500;
           const fuelType = String(r['Fuel Type'] || r['Fuel'] || 'Diesel').trim();
 
@@ -940,18 +959,18 @@ function handleVehicleFileSelect(file) {
 }
 
 function generateAndDownloadVehicleTemplate() {
-  const headers = ['Sr. No', 'Vehicle Reg No', 'Equipment Name', 'Equipment Type', 'Model', 'Site Location', 'Fuel Type', 'Hourly Rate (₹)', 'Operational Status'];
+  const headers = ['Sr. No', 'Vehicle Reg No', 'Equipment Name', 'Category', 'Model', 'Site Location', 'Fuel Type', 'Hourly Rate (₹)', 'Operational Status'];
   const sampleRows = [
-    [1, 'HP-12-EX-3491', 'CAT 349D Heavy Mining Excavator', 'Excavator', 'Caterpillar 349D', 'ACC Chanda Mine Pit', 'Diesel', 4500, 'Active (In Pit)'],
-    [2, 'HP-12-TP-5011', 'Tata Signa 2823 10-Wheeler Tipper', 'Tipper / Dumper', 'Signa 2823.K', 'ACC Chanda Mine Pit', 'Diesel', 2200, 'Active (In Pit)'],
-    [3, 'HP-12-JC-4012', 'JCB 3DX Super Backhoe Loader', 'JCB / Loader', '3DX Super', 'ACC Chanda Mine Pit', 'Diesel', 1800, 'Active (In Pit)'],
-    [4, 'HP-12-BC-1102', 'Bobcat S450 Skid Steer Loader', 'Bobcat', 'S450 Skid Steer', 'ACC Chanda Mine Pit', 'Diesel', 1600, 'Active (In Pit)']
+    [1, 'HP-12-EX-3491', 'CAT 349D Heavy Plant Excavator', 'Excavator', 'Caterpillar 349D', 'ACC Chanda Plant Site', 'Diesel', 4500, 'Active (Plant Duty)'],
+    [2, 'HP-12-TP-5011', 'Tata Signa 2823 10-Wheeler Tipper', 'Tipper / Dumper', 'Signa 2823.K', 'ACC Chanda Plant Site', 'Diesel', 2200, 'Active (Plant Duty)'],
+    [3, 'HP-12-JC-4012', 'JCB 3DX Super Backhoe Loader', 'JCB / Loader', '3DX Super', 'ACC Chanda Plant Site', 'Diesel', 1800, 'Active (Plant Duty)'],
+    [4, 'HP-12-BC-1102', 'Bobcat S450 Skid Steer Loader', 'Bobcat', 'S450 Skid Steer', 'ACC Chanda Plant Site', 'Diesel', 1600, 'Active (Plant Duty)']
   ];
 
   const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleRows]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vehicles');
-  XLSX.writeFile(wb, 'Shree_RR_Mining_Vehicles_Template.xlsx');
+  XLSX.writeFile(wb, 'Shree_RR_Plant_Vehicles_Template.xlsx');
   showToast('Downloaded official vehicle fleet import template.');
 }
 
@@ -961,7 +980,7 @@ function renderFleetMTTRMatrix() {
   if (!tbody) return;
 
   if (allVehicles.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="11" class="text-center" style="padding: 30px; color: var(--text-dim);">No mining vehicles in fleet to calculate MTTR.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center" style="padding: 30px; color: var(--text-dim);">No plant vehicles in fleet to calculate MTTR.</td></tr>`;
     document.getElementById('kpi-scheduled-hours').textContent = '0 Hrs';
     document.getElementById('kpi-operating-hours').textContent = '0 Hrs';
     document.getElementById('kpi-breakdown-hours').textContent = '0 Hrs';
@@ -1096,17 +1115,17 @@ function exportFleetMTTRExcel() {
 
   // Sheet 1: MTTR Performance Matrix
   const mttrData = [
-    ['SHREE RR TRADING COMPANY - HEAVY EARTH MOVING MACHINERY (HEMM) FLEET RELIABILITY'],
+    ['SHREE RR TRADING COMPANY - HEAVY PLANT MACHINERY FLEET RELIABILITY'],
     [`EQUIPMENT AVAILABILITY & MTTR RELIABILITY REPORT (${today.toUpperCase()})`],
-    ['Site: ACC Chanda Mine Site & Darlaghat Mining Operations | Portal: https://payroll.shreerrtradingcompany.com'],
+    ['Site: ACC Chanda Plant Site & Operations | Portal: https://payroll.shreerrtradingcompany.com'],
     [],
     [
       'Sr. No',
       'Vehicle Reg No',
       'Equipment Name',
       'Equipment Model',
-      'Type',
-      'Mine Site Location',
+      'Category',
+      'Plant Site Location',
       'Scheduled Hours',
       'Actual Operating Hours',
       'Breakdown (B/D) Hours',
@@ -1384,9 +1403,9 @@ function exportDailyMusterExcel() {
   const rows = document.querySelectorAll('#muster-table-body tr');
 
   const excelData = [
-    ['SHREE RR TRADING COMPANY - MINING OPERATIONS & LIVE WORKFORCE MUSTER ROLL'],
+    ['SHREE RR TRADING COMPANY - PLANT OPERATIONS & LIVE WORKFORCE MUSTER ROLL'],
     [`DAILY LIVE MUSTER ROLL ATTENDANCE STATEMENT (${selectedDate})`],
-    ['Site: ACC Chanda Mine Site & Operations | Portal: https://payroll.shreerrtradingcompany.com'],
+    ['Site: ACC Chanda Plant Site & Operations | Portal: https://payroll.shreerrtradingcompany.com'],
     [],
     ['Sr. No', 'Employee ID', 'Employee / Worker Name', 'Role', 'Designation', 'Duty Shift', 'Attendance Status', 'Clock In', 'Clock Out', 'Site Location', 'Verification Notes']
   ];
@@ -1501,8 +1520,8 @@ function renderTomorrowScheduleTable() {
           )
         )
       );
-      const defaultSite = existingRoster ? existingRoster.site : (u.location || 'ACC Chanda Mine Pit');
-      const defaultSupervisor = existingRoster ? existingRoster.supervisor : 'Shift In-Charge (Mining Operations)';
+      const defaultSite = existingRoster ? existingRoster.site : (u.location || 'ACC Chanda Plant Site');
+      const defaultSupervisor = existingRoster ? existingRoster.supervisor : 'Shift In-Charge (Plant Operations)';
 
       const vehicleOptions = [
         `<option value="General Plant Duty" ${selectedEquip === 'General Plant Duty' ? 'selected' : ''}>General Plant Duty</option>`,
@@ -1588,8 +1607,8 @@ async function saveTomorrowSchedule() {
     else if (shift.toLowerCase().includes('absent') || shift === 'AB') shiftCode = 'Absent';
 
     const equipment = r.querySelector('.tom-vehicle-select')?.value || 'General Plant Duty';
-    const site = r.querySelector('.tom-site-input')?.value || 'ACC Chanda Mine Pit';
-    const supervisor = r.querySelector('.tom-supervisor-input')?.value || 'Shift In-Charge (Mining Operations)';
+    const site = r.querySelector('.tom-site-input')?.value || 'ACC Chanda Plant Site';
+    const supervisor = r.querySelector('.tom-supervisor-input')?.value || 'Shift In-Charge (Plant Operations)';
 
     scheduleRecords.push({ userId, empId, userName, designation, shift, shiftCode, equipment, site, supervisor });
   });
@@ -1818,11 +1837,11 @@ function exportTomorrowScheduleExcel() {
   const tomorrowStr = getTomorrowDateString();
   const rows = document.querySelectorAll('#tomorrow-table-body tr');
   const excelData = [
-    ['SHREE RR TRADING COMPANY - MINING OPERATIONS & FLEET MANAGEMENT'],
+    ['SHREE RR TRADING COMPANY - PLANT OPERATIONS & FLEET MANAGEMENT'],
     [`TOMORROW'S DUTY SHIFT & MACHINERY SCHEDULE (${tomorrowStr.toUpperCase()})`],
     ['Generated from Operations Portal: https://payroll.shreerrtradingcompany.com'],
     [],
-    ['Sr. No', 'Employee ID', 'Operator / Worker Name', 'Role / Designation', 'Duty Shift (G/A/B/C)', 'Shift Timings', 'Assigned Machinery / Vehicle', 'Mine Site / Location', 'Shift In-Charge / Supervisor']
+    ['Sr. No', 'Employee ID', 'Operator / Worker Name', 'Role / Designation', 'Duty Shift (G/A/B/C)', 'Shift Timings', 'Assigned Machinery / Vehicle', 'Plant Site / Location', 'Shift In-Charge / Supervisor']
   ];
 
   rows.forEach((r, idx) => {
@@ -1831,8 +1850,8 @@ function exportTomorrowScheduleExcel() {
     const designation = r.getAttribute('data-designation') || 'Operator';
     const shift = r.querySelector('.tom-shift-select')?.value || 'G Shift (08:30 AM - 05:30 PM)';
     const equipment = r.querySelector('.tom-vehicle-select')?.value || 'General Plant Duty';
-    const site = r.querySelector('.tom-site-input')?.value || 'ACC Chanda Mine Pit';
-    const supervisor = r.querySelector('.tom-supervisor-input')?.value || 'Shift In-Charge (Mining Operations)';
+    const site = r.querySelector('.tom-site-input')?.value || 'ACC Chanda Plant Site';
+    const supervisor = r.querySelector('.tom-supervisor-input')?.value || 'Shift In-Charge (Plant Operations)';
 
     let shiftCode = 'G Shift';
     let timings = '08:30 AM - 05:30 PM';
@@ -1880,9 +1899,9 @@ function exportMonthlyPayrollExcel() {
   }
 
   const excelData = [
-    ['SHREE RR TRADING COMPANY - MINING O&M & HEAVY FLEETS CONTRACTS'],
+    ['SHREE RR TRADING COMPANY - PLANT O&M & HEAVY FLEETS CONTRACTS'],
     [`COMPREHENSIVE MONTHLY SALARY STATEMENT FOR ${selectedMonth.toUpperCase()}`],
-    ['Site: ACC Chanda Mine Site & Darlaghat Operations | Portal: https://payroll.shreerrtradingcompany.com'],
+    ['Site: ACC Chanda Plant Site & Operations | Portal: https://payroll.shreerrtradingcompany.com'],
     [],
     [
       'Sr. No',
@@ -2293,11 +2312,14 @@ function renderSalaryTable() {
         <td><strong class="text-orange text-lg">${netStr}</strong></td>
         <td><span class="status-badge status-paid"><i class="fa-solid fa-circle-check"></i> ${s.status || 'Paid'}</span></td>
         <td class="text-right">
-          <div style="display: inline-flex; gap: 6px;">
-            <button class="btn btn-outline btn-sm" onclick="viewSalarySlip('${s.id}')" title="View & Print Official Slip">
+          <div style="display: inline-flex; gap: 6px; align-items: center;">
+            <button class="btn btn-outline btn-sm" onclick="viewSalarySlip('${s.id}')" title="View Official Slip">
               <i class="fa-solid fa-file-invoice"></i> View
             </button>
-            <button class="btn btn-outline-success btn-sm" onclick="sendSlipWhatsApp('${s.id}')" title="Send Salary Slip via WhatsApp">
+            <button class="btn btn-outline-primary btn-sm" onclick="downloadSlipPdf('${s.id}')" title="Download Official PDF Salary Slip">
+              <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
+            <button class="btn btn-outline-success btn-sm" onclick="sendSlipWhatsApp('${s.id}')" title="Download PDF & Send on WhatsApp">
               <i class="fa-brands fa-whatsapp"></i> WhatsApp
             </button>
           </div>
@@ -2308,7 +2330,41 @@ function renderSalaryTable() {
     .join('');
 }
 
-// 19. WhatsApp Dispatch
+// 19. WhatsApp Dispatch & PDF Generation
+function downloadSlipPdf(slipId) {
+  let slip = slipId ? allSalarySlips.find((s) => s.id === slipId) : currentActiveSlip;
+  if (!slip && allSalarySlips.length > 0) slip = allSalarySlips[0];
+  if (!slip) {
+    showToast('No salary slip selected for PDF export.', 'error');
+    return Promise.reject(new Error('No slip'));
+  }
+
+  // Populate printable modal
+  viewSalarySlip(slip.id);
+
+  const element = document.getElementById('printable-salary-slip-content');
+  if (!element) return Promise.reject(new Error('No printable element'));
+
+  const opt = {
+    margin: [6, 8, 6, 8],
+    filename: `Shree_RR_SalarySlip_${slip.empId}_${slip.monthYear.replace(/\s+/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  showToast(`Generating Official PDF Payslip for ${slip.userName}...`);
+
+  if (typeof html2pdf !== 'undefined') {
+    return html2pdf().set(opt).from(element).save().then(() => {
+      showToast(`Downloaded PDF: ${opt.filename}`);
+    });
+  } else {
+    window.print();
+    return Promise.resolve();
+  }
+}
+
 function createWhatsAppMessage(slip) {
   const cleanMobile = String(slip.mobile || slip.phone || '').replace(/[^0-9]/g, '').slice(-10);
   const basic = Number(slip.earnings?.basic || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
@@ -2328,25 +2384,25 @@ function createWhatsAppMessage(slip) {
 ━━━━━━━━━━━━━━━━━━━━
 👤 *Employee:* ${slip.userName} (${slip.empId})
 🛠 *Designation:* ${slip.designation}
-📍 *Site Location:* ${slip.location || 'ACC Chanda'}
+📍 *Site Location:* ${slip.location || 'ACC Chanda Plant Site'}
 📅 *Payable Days:* ${slip.workedDays || 31} / ${slip.totalDays || 31} Days
 
 💵 *GROSS EARNINGS:* *₹${gross}*
  • Basic Salary: ₹${basic}
  • DA: ₹${da}
  • HRA: ₹${hra}
- • Special Allowance: ₹${special}
+ • Special Plant Allowance: ₹${special}
 
 📉 *TOTAL DEDUCTIONS:* *₹${deductions}*
  • PF Contribution: ₹${pf}
  • ESIC: ₹${esic}
  • Professional Tax (PT): ₹${pt}
 
-💰 *NET SALARY DISBURSED:* *₹${netPay}*
+💰 *NET TAKE HOME SALARY:* *₹${netPay}*
 🏦 *Bank A/C:* ${slip.bankAccount || 'On Record'} (${slip.ifsc || ''})
 
+📄 _Your official PDF Payslip has been generated by Shree RR Trading Company Payroll System._
 ━━━━━━━━━━━━━━━━━━━━
-_Authorized Statement from Shree RR Trading Company._
 _Portal: https://payroll.shreerrtradingcompany.com_`;
 
   return { mobile: cleanMobile, text: msg };
@@ -2356,6 +2412,13 @@ function sendSlipWhatsApp(slipId) {
   const slip = allSalarySlips.find((s) => s.id === slipId);
   if (!slip) return;
 
+  // Auto trigger download of PDF document to device
+  try {
+    downloadSlipPdf(slip.id);
+  } catch (e) {
+    console.error('Payslip PDF error:', e);
+  }
+
   const { mobile, text } = createWhatsAppMessage(slip);
   if (!mobile || mobile.length < 10) {
     const manualMobile = prompt(`Enter 10-digit WhatsApp Mobile number for ${slip.userName}:`, '9822852945');
@@ -2364,7 +2427,7 @@ function sendSlipWhatsApp(slipId) {
   } else {
     window.open(`https://api.whatsapp.com/send?phone=91${mobile}&text=${encodeURIComponent(text)}`, '_blank');
   }
-  showToast(`Opening WhatsApp for ${slip.userName}...`);
+  showToast(`Downloaded PDF & Opening WhatsApp for ${slip.userName}...`);
 }
 
 function dispatchBulkWhatsApp() {
@@ -2387,7 +2450,7 @@ function dispatchBulkWhatsApp() {
     sendSlipWhatsApp(slip.id);
   }
 
-  if (confirm(`Open WhatsApp to send salary slips to ${monthSlips.length} employees?`)) {
+  if (confirm(`Open WhatsApp to send salary slips and download PDFs for ${monthSlips.length} employees?`)) {
     sendNext();
   }
 }
@@ -3379,7 +3442,7 @@ function openEditComplianceModal(vehId) {
 
   document.getElementById('modal-edit-compliance-title').innerHTML = `<i class="fa-solid fa-file-shield text-orange"></i> Update Statutory Compliance (${escapeHtml(veh.vehicleNo)})`;
   document.getElementById('edit-comp-veh-id').value = veh.id || veh.vehicleNo;
-  document.getElementById('edit-comp-veh-no').value = `${veh.vehicleNo} - ${veh.name} (${veh.type || 'Mining Machine'})`;
+  document.getElementById('edit-comp-veh-no').value = `${veh.vehicleNo} - ${veh.name} (${veh.type || 'Plant Machine'})`;
   document.getElementById('edit-comp-fitness-no').value = veh.fitnessCertNo || '';
   document.getElementById('edit-comp-fitness-exp').value = veh.fitnessExpiry || '';
   document.getElementById('edit-comp-puc-no').value = veh.pucCertNo || '';
@@ -3656,19 +3719,419 @@ function numberToWordsIndian(num) {
       str += inWords(Math.floor(n / 1000)) + 'Thousand ';
       n %= 1000;
     }
-    if (Math.floor(n / 1000) > 0) {
-      str += inWords(Math.floor(n / 100) % 10) + 'Hundred ';
-    } else if (Math.floor(n / 100) > 0) {
+    if (Math.floor(n / 100) > 0) {
       str += inWords(Math.floor(n / 100)) + 'Hundred ';
       n %= 100;
     }
     if (n > 0) {
-      if (str !== '') str += 'and ';
-      if (n < 20) str += a[n];
-      else str += b[Math.floor(n / 10)] + ' ' + a[n % 10];
+      if (n < 20) {
+        str += a[n];
+      } else {
+        str += b[Math.floor(n / 10)] + (n % 10 > 0 ? ' ' + a[n % 10] : ' ');
+      }
     }
     return str;
   }
 
-  return inWords(num).trim();
+  const result = inWords(num).trim();
+  return result ? result + ' Only' : 'Zero Only';
 }
+
+// 25. SYSTEM-GENERATED HR LETTERS & APPOINTMENT ENGINE
+function openAppointmentLetterModal(targetUserId) {
+  const empSelect = document.getElementById('letter-select-emp');
+  if (!empSelect) return;
+
+  const validUsers = allUsers.filter((u) => u.role !== 'Super Admin');
+  if (validUsers.length === 0) {
+    showToast('No active employees found to generate letters.', 'error');
+    return;
+  }
+
+  empSelect.innerHTML = validUsers
+    .map((u) => `<option value="${u.id || u.empId}">${u.empId || 'SRR'} - ${escapeHtml(u.name)} (${escapeHtml(u.designation || u.rank || 'Staff')})</option>`)
+    .join('');
+
+  if (targetUserId) {
+    const match = validUsers.find((u) => u.id === targetUserId || u.empId === targetUserId);
+    if (match) empSelect.value = match.id || match.empId;
+  }
+
+  const issueDateEl = document.getElementById('letter-issue-date');
+  if (issueDateEl && !issueDateEl.value) {
+    issueDateEl.value = new Date().toISOString().split('T')[0];
+  }
+
+  handleLetterEmployeeChange();
+  openModal('modal-appointment-letter');
+}
+
+function handleLetterEmployeeChange() {
+  const empSelect = document.getElementById('letter-select-emp');
+  const userId = empSelect ? empSelect.value : '';
+  const user = allUsers.find((u) => u.id === userId || u.empId === userId) || allUsers.find((u) => u.role !== 'Super Admin') || allUsers[0];
+  if (!user) return;
+
+  const numPart = user.empId ? user.empId.replace(/[^0-9]/g, '') : '01';
+  document.getElementById('letter-ref-no').value = `SRRTC/HR/ACC-PLANT/2026/${numPart.padStart(3, '0')}`;
+  document.getElementById('letter-doj-input').value = user.doj || '01/01/2026';
+  document.getElementById('letter-designation-input').value = user.designation || user.rank || 'Operator';
+  
+  const ctcVal = Number(user.ctc) || Number(user.baseSalary) || (Number(user.basicPerDay) ? Number(user.basicPerDay) * 30 : 35000);
+  document.getElementById('letter-ctc-input').value = ctcVal;
+  document.getElementById('letter-site-input').value = user.site || user.location || 'ACC Chanda Plant Site & Operations, Chandrapur';
+
+  updateLetterTemplate();
+}
+
+function updateLetterTemplate() {
+  const empSelect = document.getElementById('letter-select-emp');
+  const userId = empSelect ? empSelect.value : '';
+  const user = allUsers.find((u) => u.id === userId || u.empId === userId) || allUsers.find((u) => u.role !== 'Super Admin') || allUsers[0];
+  if (!user) return;
+
+  const letterType = document.getElementById('letter-type-select')?.value || 'appointment';
+  const refNo = document.getElementById('letter-ref-no')?.value || `SRRTC/HR/ACC-PLANT/2026/014`;
+  const issueDateRaw = document.getElementById('letter-issue-date')?.value || new Date().toISOString().split('T')[0];
+  const doj = document.getElementById('letter-doj-input')?.value || user.doj || '01/01/2026';
+  const probation = document.getElementById('letter-probation-input')?.value || '3 Months';
+  const designation = document.getElementById('letter-designation-input')?.value || user.designation || user.rank || 'Staff';
+  const ctc = Number(document.getElementById('letter-ctc-input')?.value || user.ctc || user.baseSalary || 35000);
+  const site = document.getElementById('letter-site-input')?.value || user.site || user.location || 'ACC Chanda Plant Site & Operations, Chandrapur';
+  const notice = document.getElementById('letter-notice-input')?.value || '30 Days';
+  const sigName = document.getElementById('letter-signatory-name')?.value || 'Managing Director / Authorized Signatory';
+  const sigTitle = document.getElementById('letter-signatory-title')?.value || 'Shree RR Trading Company';
+  const customNote = document.getElementById('letter-custom-note')?.value?.trim() || '';
+
+  // Format Date (e.g. 04 September 2026)
+  const dateObj = new Date(issueDateRaw);
+  const formattedDate = isNaN(dateObj.getTime())
+    ? issueDateRaw
+    : dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  // Update Headers & Recipient Particulars
+  document.getElementById('view-letter-ref').textContent = refNo;
+  document.getElementById('view-letter-date').textContent = formattedDate;
+  document.getElementById('view-letter-emp-name').textContent = `MR. ${user.name.toUpperCase()}`;
+  document.getElementById('view-letter-father').textContent = user.fatherName || 'On Record';
+  document.getElementById('view-letter-empid').textContent = user.empId || 'SRR';
+  document.getElementById('view-letter-desig').textContent = designation;
+  document.getElementById('view-letter-site').textContent = site;
+  document.getElementById('view-letter-mobile').textContent = user.mobile ? `+91 ${user.mobile}` : '+91 7416008100';
+  document.getElementById('view-letter-category').textContent = user.category || 'Skilled Plant Operations Staff';
+
+  document.getElementById('view-letter-acc-name').textContent = user.name.toUpperCase();
+  document.getElementById('view-letter-acc-mobile').textContent = user.mobile ? `+91 ${user.mobile}` : 'On Record';
+  document.getElementById('view-letter-sig-name').textContent = sigName;
+  document.getElementById('view-letter-sig-title').textContent = sigTitle;
+
+  const acceptanceBox = document.getElementById('view-letter-acceptance-slip');
+  const subjectEl = document.getElementById('view-letter-subject');
+  const bodyEl = document.getElementById('view-letter-body-content');
+
+  // Salary calculations
+  const basic = Math.round(ctc * 0.50);
+  const da = Math.round(ctc * 0.20);
+  const hra = Math.round(ctc * 0.15);
+  const special = Math.round(ctc - (basic + da + hra));
+  const pf = Math.round((basic + da) * 0.12);
+  const esic = Math.round(ctc * 0.0075);
+  const pt = 200;
+  const totalDed = pf + esic + pt;
+  const netTakeHome = ctc - totalDed;
+
+  const salaryTableHtml = `
+    <div style="margin: 14px 0;">
+      <div style="font-weight: 800; font-size: 11.5px; color: #0B1936; margin-bottom: 4px; text-transform: uppercase;">
+        Annexure-A: Monthly Remuneration & Compensation Breakup
+      </div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px; border: 1px solid #CBD5E1;">
+        <thead>
+          <tr style="background: #FFF5EE; border-bottom: 1.5px solid #FF6B00; text-align: left;">
+            <th style="padding: 6px 10px; border-right: 1px solid #E2E8F0;">Component / Allowance</th>
+            <th style="padding: 6px 10px; border-right: 1px solid #E2E8F0; text-align: right;">Amount (₹ / Month)</th>
+            <th style="padding: 6px 10px; border-right: 1px solid #E2E8F0;">Statutory Deductions</th>
+            <th style="padding: 6px 10px; text-align: right;">Amount (₹ / Month)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #E2E8F0;">
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Basic Salary</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${basic.toLocaleString('en-IN')}</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Provident Fund (PF @ 12%)</td>
+            <td style="padding: 5px 10px; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #E2E8F0;">
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Dearness Allowance (DA)</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${da.toLocaleString('en-IN')}</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">ESIC Contribution (0.75%)</td>
+            <td style="padding: 5px 10px; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #E2E8F0;">
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">House Rent Allowance (HRA)</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${hra.toLocaleString('en-IN')}</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
+            <td style="padding: 5px 10px; text-align: right; color: #DC2626;">₹${pt}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #CBD5E1;">
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0;">Special Plant Allowance</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${special.toLocaleString('en-IN')}</td>
+            <td style="padding: 5px 10px; border-right: 1px solid #E2E8F0; font-weight: 700;">Total Deductions</td>
+            <td style="padding: 5px 10px; text-align: right; font-weight: 700; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="background: #F8FAFC; font-weight: 800; border-top: 1.5px solid #0B1936;">
+            <td style="padding: 6px 10px; border-right: 1px solid #E2E8F0; color: #0B1936;">GROSS MONTHLY CTC</td>
+            <td style="padding: 6px 10px; border-right: 1px solid #E2E8F0; text-align: right; color: #FF6B00; font-size: 12px;">₹${ctc.toLocaleString('en-IN')}</td>
+            <td style="padding: 6px 10px; border-right: 1px solid #E2E8F0; color: #0B1936;">NET TAKE HOME PAY</td>
+            <td style="padding: 6px 10px; text-align: right; color: #059669; font-size: 12px;">₹${netTakeHome.toLocaleString('en-IN')}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+
+  if (letterType === 'appointment') {
+    if (acceptanceBox) acceptanceBox.style.display = 'block';
+    subjectEl.textContent = `SUBJECT: FORMAL LETTER OF APPOINTMENT AS ${designation.toUpperCase()} - PLANT OPERATIONS`;
+    bodyEl.innerHTML = `
+      <p style="margin-bottom: 10px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 10px;">
+        With reference to your application, technical interview, and subsequent discussions, the management of <strong>Shree RR Trading Company</strong> is pleased to appoint you as <strong>${escapeHtml(designation)}</strong> in our Plant Fleet & Operations Division on the following terms and conditions:
+      </p>
+
+      <div style="margin-bottom: 8px;"><strong>1. Date of Joining & Deployment Site:</strong> Your appointment is effective from <strong>${escapeHtml(doj)}</strong>. You will be posted at <strong>${escapeHtml(site)}</strong>. The company reserves the right to transfer or assign you to any of its plant sites, quarry crushing units, or infrastructure projects across India as operational requirements dictate.</div>
+
+      <div style="margin-bottom: 8px;"><strong>2. Probation Period:</strong> You will be on probation for an initial period of <strong>${escapeHtml(probation)}</strong> from the date of joining. Upon satisfactory completion of the probation period, your employment will be confirmed in writing.</div>
+
+      <div style="margin-bottom: 8px;"><strong>3. Remuneration & Benefits:</strong> Your total Gross Monthly Compensation (CTC) will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month). Statutory deductions including Employees' Provident Fund (EPF), ESIC, and Professional Tax will be deducted as applicable by law. Detailed salary component breakup is attached in <strong>Annexure-A</strong> below.</div>
+
+      ${salaryTableHtml}
+
+      <div style="margin-bottom: 8px;"><strong>4. Plant Duty Shifts & Roster:</strong> You will work in accordance with the 24/7 plant shift roster (G Shift: 08:30 AM – 05:30 PM, A Shift: 06:00 AM – 02:00 PM, B Shift: 02:00 PM – 10:00 PM, C Shift: 10:00 PM – 06:00 AM) as scheduled by the Shift In-Charge and Site Plant Engineer.</div>
+
+      <div style="margin-bottom: 8px;"><strong>5. Plant Safety, PPE & Equipment Guidelines:</strong> You must strictly adhere to the safety, environmental, and statutory regulations of the plant premises. Wearing prescribed Personal Protective Equipment (Safety Helmet, Steel-Toe Shoes, High-Visibility Vest) is mandatory during working hours. Zero-tolerance policy applies to safety violations.</div>
+
+      <div style="margin-bottom: 8px;"><strong>6. Notice Period & Termination:</strong> During probation or thereafter, either party may terminate this employment contract by giving <strong>${escapeHtml(notice)}</strong> prior notice in writing or payment of gross salary in lieu of notice.</div>
+
+      <div style="margin-bottom: 8px;"><strong>7. Confidentiality & Code of Conduct:</strong> You shall keep confidential all operational data, equipment maintenance logs, production statistics, and business affairs of the company and client entities (Ambuja Cement / ACC Cement).</div>
+
+      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 8px 12px; margin-top: 10px; color: #92400E;"><strong>Special Terms / Provisions:</strong> ${escapeHtml(customNote)}</div>` : ''}
+
+      <p style="margin-top: 12px; margin-bottom: 0;">
+        Please sign and return the duplicate copy of this letter as a token of your acceptance of these terms and conditions. We welcome you to Shree RR Trading Company and look forward to a long and mutually rewarding association.
+      </p>
+    `;
+  } else if (letterType === 'offer') {
+    if (acceptanceBox) acceptanceBox.style.display = 'block';
+    subjectEl.textContent = `SUBJECT: OFFER OF EMPLOYMENT FOR THE POSITION OF ${designation.toUpperCase()}`;
+    bodyEl.innerHTML = `
+      <p style="margin-bottom: 10px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 10px;">
+        We are pleased to offer you employment with <strong>Shree RR Trading Company</strong> as <strong>${escapeHtml(designation)}</strong> based at our <strong>${escapeHtml(site)}</strong>.
+      </p>
+      <p style="margin-bottom: 10px;">
+        We were impressed by your technical skill, operational background, and machine handling expertise, and we believe you will be a valuable addition to our plant fleet operations team.
+      </p>
+
+      <div style="margin-bottom: 8px;"><strong>• Proposed Designation:</strong> ${escapeHtml(designation)}</div>
+      <div style="margin-bottom: 8px;"><strong>• Plant Deployment Location:</strong> ${escapeHtml(site)}</div>
+      <div style="margin-bottom: 8px;"><strong>• Expected Joining Date:</strong> ${escapeHtml(doj)}</div>
+      <div style="margin-bottom: 8px;"><strong>• Monthly CTC Package:</strong> ₹${ctc.toLocaleString('en-IN')} / Month (Detailed Annexure-A attached below)</div>
+      <div style="margin-bottom: 8px;"><strong>• Probationary Period:</strong> ${escapeHtml(probation)}</div>
+
+      ${salaryTableHtml}
+
+      <div style="margin-bottom: 10px;">
+        <strong>Documents to Submit on Joining Day:</strong>
+        <ol style="margin-left: 20px; margin-top: 4px;">
+          <li>Original and self-attested copies of Aadhaar Card and PAN Card</li>
+          <li>Bank Account Passbook / Cancelled Cheque (with IFSC)</li>
+          <li>4 Passport Size Color Photographs</li>
+          <li>Previous Experience Certificates and Relieving Letters (if applicable)</li>
+          <li>Valid Commercial Driving / Heavy Equipment Operator License (for Operators)</li>
+        </ol>
+      </div>
+
+      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 8px 12px; margin-top: 10px; color: #92400E;"><strong>Special Notes:</strong> ${escapeHtml(customNote)}</div>` : ''}
+
+      <p style="margin-top: 12px; margin-bottom: 0;">
+        Please confirm your acceptance of this offer by signing and returning the acknowledgment copy within 7 days.
+      </p>
+    `;
+  } else if (letterType === 'experience') {
+    if (acceptanceBox) acceptanceBox.style.display = 'none';
+    subjectEl.textContent = `TO WHOMSOEVER IT MAY CONCERN`;
+    bodyEl.innerHTML = `
+      <p style="margin-bottom: 16px; font-size: 13.5px; line-height: 1.8;">
+        This is to certify that <strong>Mr. ${escapeHtml(user.name)}</strong>, S/o <strong>${escapeHtml(user.fatherName || 'On Record')}</strong>, holding Employee ID <strong>${escapeHtml(user.empId)}</strong>, was employed with <strong>Shree RR Trading Company</strong> from <strong>${escapeHtml(doj)}</strong> to <strong>${formattedDate}</strong>.
+      </p>
+
+      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+        During his tenure with our organization, he served as <strong>${escapeHtml(designation)}</strong> deployed at <strong>${escapeHtml(site)}</strong>. His primary responsibilities included operation, maintenance, and precision upkeep of heavy earth moving machinery, tippers, excavators, and plant fleet equipment.
+      </p>
+
+      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+        He has consistently demonstrated strong technical proficiency, professional discipline, adherence to strict plant safety standards, and exemplary attendance records. His character and conduct during his employment were found to be excellent.
+      </p>
+
+      ${customNote ? `<p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">${escapeHtml(customNote)}</p>` : ''}
+
+      <p style="margin-top: 20px; font-size: 13px; line-height: 1.8;">
+        We appreciate his valuable contributions to our plant operations and wish him all the very best in all his future career endeavors.
+      </p>
+    `;
+  } else if (letterType === 'relieving') {
+    if (acceptanceBox) acceptanceBox.style.display = 'none';
+    subjectEl.textContent = `SUBJECT: RELIEVING ORDER & NO DUES CLEARANCE CERTIFICATE`;
+    bodyEl.innerHTML = `
+      <p style="margin-bottom: 14px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+        With reference to your resignation letter dated <strong>${formattedDate}</strong>, we hereby confirm that you are formally relieved from your duties and responsibilities as <strong>${escapeHtml(designation)}</strong> with <strong>Shree RR Trading Company</strong> at <strong>${escapeHtml(site)}</strong>, effective from the close of working hours on <strong>${formattedDate}</strong>.
+      </p>
+
+      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+        We confirm that all company assets, machine logsheets, tools, PPE, and identification badges in your custody have been satisfactorily handed over to the site management. Your full and final salary settlement, accrued leave benefits, and statutory accounts have been processed as per company rules.
+      </p>
+
+      <p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">
+        We place on record our sincere appreciation for your valuable service and dedication during your tenure with us.
+      </p>
+
+      ${customNote ? `<p style="margin-bottom: 14px; font-size: 13px; line-height: 1.8;">${escapeHtml(customNote)}</p>` : ''}
+
+      <p style="margin-top: 18px; font-size: 13px; line-height: 1.8;">
+        We wish you the very best of success in all your future professional pursuits.
+      </p>
+    `;
+  } else if (letterType === 'increment') {
+    if (acceptanceBox) acceptanceBox.style.display = 'block';
+    subjectEl.textContent = `SUBJECT: ANNUAL PERFORMANCE APPRAISAL & SALARY REVISION LETTER`;
+    bodyEl.innerHTML = `
+      <p style="margin-bottom: 12px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
+      <p style="margin-bottom: 12px; font-size: 13px; line-height: 1.8;">
+        In recognition of your exceptional performance, machine uptime, dedication, and valuable contributions to the plant fleet operations at <strong>${escapeHtml(site)}</strong>, the management of <strong>Shree RR Trading Company</strong> is pleased to revise your monthly compensation package.
+      </p>
+      <p style="margin-bottom: 12px; font-size: 13px; line-height: 1.8;">
+        Effective from <strong>${escapeHtml(doj)}</strong>, your revised Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month).
+      </p>
+
+      ${salaryTableHtml}
+
+      <p style="margin-bottom: 12px; font-size: 13px; line-height: 1.8;">
+        All other terms and conditions of your original appointment letter remain unchanged and in full effect. We look forward to your continued commitment, high standards of safety, and operational excellence in the coming year.
+      </p>
+
+      ${customNote ? `<div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 4px; padding: 8px 12px; margin-top: 10px; color: #92400E;"><strong>Special Commendation:</strong> ${escapeHtml(customNote)}</div>` : ''}
+
+      <p style="margin-top: 14px; margin-bottom: 0;">
+        Congratulations on your well-deserved salary revision!
+      </p>
+    `;
+  }
+}
+
+function downloadLetterPdf() {
+  const empSelect = document.getElementById('letter-select-emp');
+  const userId = empSelect ? empSelect.value : '';
+  const user = allUsers.find((u) => u.id === userId || u.empId === userId) || allUsers[0];
+  const letterType = document.getElementById('letter-type-select')?.value || 'appointment';
+
+  const element = document.getElementById('printable-appointment-letter');
+  if (!element) return Promise.reject(new Error('No printable letter element'));
+
+  const opt = {
+    margin: [6, 8, 6, 8],
+    filename: `Shree_RR_${letterType.toUpperCase()}_Letter_${user ? user.empId : 'EMP'}_${user ? user.name.replace(/\s+/g, '_') : 'Letter'}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  showToast(`Generating ${letterType} letter PDF for ${user ? user.name : 'Employee'}...`);
+
+  if (typeof html2pdf !== 'undefined') {
+    return html2pdf().set(opt).from(element).save().then(() => {
+      showToast(`Downloaded Letter PDF: ${opt.filename}`);
+    });
+  } else {
+    window.print();
+    return Promise.resolve();
+  }
+}
+
+function printAppointmentLetter() {
+  window.print();
+}
+
+function sendLetterWhatsApp() {
+  const empSelect = document.getElementById('letter-select-emp');
+  const userId = empSelect ? empSelect.value : '';
+  const user = allUsers.find((u) => u.id === userId || u.empId === userId);
+  if (!user) {
+    showToast('Please select an employee first.', 'error');
+    return;
+  }
+
+  const letterType = document.getElementById('letter-type-select')?.value || 'appointment';
+  const letterTypeTitle = {
+    appointment: 'Letter of Appointment',
+    offer: 'Employment Offer Letter',
+    experience: 'Work Experience Certificate',
+    relieving: 'Relieving & Clearance Certificate',
+    increment: 'Salary Revision & Appraisal Letter'
+  }[letterType] || 'Official HR Letter';
+
+  const refNo = document.getElementById('letter-ref-no')?.value || 'SRRTC/HR/2026/01';
+  const designation = document.getElementById('letter-designation-input')?.value || user.designation || 'Staff';
+  const site = document.getElementById('letter-site-input')?.value || user.site || 'ACC Chanda Plant Site';
+  const ctc = Number(document.getElementById('letter-ctc-input')?.value || user.ctc || user.baseSalary || 35000);
+  const doj = document.getElementById('letter-doj-input')?.value || user.doj || '01/01/2026';
+
+  // Trigger PDF download
+  try {
+    downloadLetterPdf();
+  } catch (e) {
+    console.error('PDF error', e);
+  }
+
+  const cleanMobile = (user.mobile || user.phone || '').replace(/[^0-9]/g, '').slice(-10);
+
+  const msg = `*SHREE RR TRADING COMPANY*
+*Official HR Letter - ${letterTypeTitle}*
+━━━━━━━━━━━━━━━━━━━━
+📄 *Ref. No:* ${refNo}
+👤 *Employee:* ${user.name} (${user.empId})
+🛠 *Designation:* ${designation}
+📍 *Plant Site:* ${site}
+📅 *Effective Date:* ${doj}
+💵 *Gross Monthly CTC:* ₹${ctc.toLocaleString('en-IN')}
+
+📄 _Your official signed HR Letter (${letterTypeTitle}) PDF has been generated by Shree RR Trading Company._
+━━━━━━━━━━━━━━━━━━━━
+_Verification Portal: https://payroll.shreerrtradingcompany.com_`;
+
+  if (!cleanMobile || cleanMobile.length < 10) {
+    const manualMobile = prompt(`Enter 10-digit WhatsApp Mobile number for ${user.name}:`, '9822852945');
+    if (!manualMobile) return;
+    window.open(`https://api.whatsapp.com/send?phone=91${manualMobile.trim()}&text=${encodeURIComponent(msg)}`, '_blank');
+  } else {
+    window.open(`https://api.whatsapp.com/send?phone=91${cleanMobile}&text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  showToast(`Downloaded PDF & Opening WhatsApp for ${user.name}...`);
+}
+
+// Global Window Bindings for Inline HTML Callbacks
+window.openAppointmentLetterModal = openAppointmentLetterModal;
+window.handleLetterEmployeeChange = handleLetterEmployeeChange;
+window.updateLetterTemplate = updateLetterTemplate;
+window.downloadLetterPdf = downloadLetterPdf;
+window.printAppointmentLetter = printAppointmentLetter;
+window.sendLetterWhatsApp = sendLetterWhatsApp;
+window.downloadSlipPdf = downloadSlipPdf;
+window.viewSalarySlip = viewSalarySlip;
+window.sendSlipWhatsApp = sendSlipWhatsApp;
+window.dispatchBulkWhatsApp = dispatchBulkWhatsApp;
+

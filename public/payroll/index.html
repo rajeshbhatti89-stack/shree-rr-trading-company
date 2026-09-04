@@ -19,8 +19,11 @@
   <!-- SheetJS for Excel XLSX / CSV Export & Import -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+  <!-- html2pdf.js for Client-Side High Quality PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <!-- Payroll Theme Stylesheet -->
-  <link rel="stylesheet" href="/payroll/payroll.css?v=2.3.0">
+  <link rel="stylesheet" href="/payroll/payroll.css?v=2.4.0">
 </head>
 
 <body>
@@ -36,7 +39,7 @@
           <i class="fa-solid fa-shield-halved"></i> SECURE ENTERPRISE PORTAL
         </div>
         <h1 class="company-title">SHREE RR TRADING COMPANY</h1>
-        <p class="portal-subtitle">MINING FLEET O&M • PAYROLL & MUSTER ROLL SYSTEM</p>
+        <p class="portal-subtitle">PLANT FLEET O&M • PAYROLL & MUSTER ROLL SYSTEM</p>
       </div>
 
       <form id="login-form" class="login-form">
@@ -97,7 +100,7 @@
 
       <div class="entity-chip">
         <i class="fa-solid fa-mountain-city text-orange"></i>
-        <span>ACC Chanda & Mining Operations</span>
+        <span>ACC Chanda & Plant Operations</span>
       </div>
 
       <nav class="sidebar-menu">
@@ -108,7 +111,7 @@
           <i class="fa-solid fa-users-gear"></i> <span>Workforce & Users</span>
         </a>
         <a href="#vehicles" class="nav-item" data-tab="vehicles" id="nav-vehicles">
-          <i class="fa-solid fa-truck-monster"></i> <span>Mining Vehicles & Fleets</span>
+          <i class="fa-solid fa-truck-monster"></i> <span>Plant Vehicles & Fleets</span>
         </a>
         <a href="#compliance" class="nav-item" id="nav-compliance" onclick="openVehicleComplianceModal(); return false;" title="Track Fitness, PUC, Insurance & Permits">
           <i class="fa-solid fa-shield-halved text-warning"></i> <span>Vehicle Compliance</span>
@@ -124,6 +127,9 @@
         </a>
         <a href="#payroll" class="nav-item" data-tab="payroll" id="nav-payroll">
           <i class="fa-solid fa-file-invoice-dollar"></i> <span>Salary Slips & Disbursal</span>
+        </a>
+        <a href="#letters" class="nav-item" id="nav-letters" onclick="openAppointmentLetterModal(); return false;" title="Generate Appointment, Offer, Experience & Relieving Letters">
+          <i class="fa-solid fa-file-signature text-orange"></i> <span>HR Letters & Offers</span>
         </a>
         <a href="#reports" class="nav-item" data-tab="reports" id="nav-reports">
           <i class="fa-solid fa-file-excel text-success"></i> <span>Reports & Disbursals</span>
@@ -170,6 +176,9 @@
         </div>
 
         <div class="top-actions">
+          <button class="btn btn-outline-primary btn-sm" onclick="openAppointmentLetterModal()" title="Generate Official Appointment / Offer Letter">
+            <i class="fa-solid fa-file-signature text-orange"></i> <span>Generate HR Letter</span>
+          </button>
           <button class="btn btn-secondary btn-sm" id="btn-quick-tomorrow">
             <i class="fa-solid fa-clock-rotate-left text-orange"></i> <span>Tomorrow's Shifts</span>
           </button>
@@ -201,9 +210,9 @@
             <div class="kpi-card peach-glass">
               <div class="kpi-icon icon-orange"><i class="fa-solid fa-truck-monster"></i></div>
               <div class="kpi-details">
-                <span class="kpi-title">Heavy Fleet Machinery</span>
+                <span class="kpi-title">Heavy Plant Machinery</span>
                 <h3 class="kpi-value" id="kpi-total-vehicles">8</h3>
-                <span class="kpi-sub">CAT Excavators, Tippers, JCBs</span>
+                <span class="kpi-sub">Plant Excavators, Tippers, JCBs</span>
               </div>
             </div>
 
@@ -212,7 +221,7 @@
               <div class="kpi-details">
                 <span class="kpi-title">Today's Muster Present</span>
                 <h3 class="kpi-value" id="kpi-present-today">30</h3>
-                <span class="kpi-sub" id="kpi-present-rate">93.8% Mining Site Attendance</span>
+                <span class="kpi-sub" id="kpi-present-rate">93.8% Plant Site Attendance</span>
               </div>
             </div>
 
@@ -277,7 +286,7 @@
                   <span class="dist-count" id="dist-supervisors">2</span>
                 </div>
                 <div class="dist-row">
-                  <span class="dist-label"><i class="fa-solid fa-truck-monster text-navy"></i> Active Mining
+                  <span class="dist-label"><i class="fa-solid fa-truck-monster text-navy"></i> Active Plant
                     Vehicles</span>
                   <span class="dist-count" id="dist-vehicles">8</span>
                 </div>
@@ -311,6 +320,10 @@
             </div>
 
             <div class="action-buttons-group">
+              <button class="btn btn-outline-primary btn-sm" onclick="openAppointmentLetterModal()"
+                title="Generate Official Appointment / Offer Letter">
+                <i class="fa-solid fa-file-signature text-orange"></i> Offer / Appointment Letter
+              </button>
               <button class="btn btn-secondary btn-sm" id="btn-download-sample-csv"
                 title="Download Excel template for bulk import">
                 <i class="fa-solid fa-file-arrow-down text-orange"></i> Template
@@ -347,23 +360,17 @@
           </div>
         </section>
 
-        <!-- ==================== TAB 2: MINING VEHICLES & FLEETS ==================== -->
+        <!-- ==================== TAB 2: PLANT VEHICLES & FLEETS ==================== -->
         <section id="tab-vehicles" class="tab-pane">
           <div class="section-top-actions">
             <div class="search-filter-box">
               <div class="search-input-wrap">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="vehicle-search-input"
-                  placeholder="Search by vehicle reg no, model, equipment type, operator...">
+                  placeholder="Search by vehicle reg no, model, equipment category, operator...">
               </div>
               <select id="vehicle-type-filter" class="custom-select">
-                <option value="ALL">All Equipment Types</option>
-                <option value="Excavator">Excavator (CAT 349D)</option>
-                <option value="Tipper / Dumper">Tipper (Tata Signa 10x)</option>
-                <option value="JCB / Loader">JCB / Backhoe Loader</option>
-                <option value="Bobcat">Bobcat Skid Steer</option>
-                <option value="Water Tanker">Water Tanker</option>
-                <option value="Service Van">Service Van / Mobile Workshop</option>
+                <option value="ALL">All Equipment Categories</option>
               </select>
             </div>
 
@@ -375,7 +382,7 @@
                 <i class="fa-solid fa-file-excel"></i> Bulk Import (Excel)
               </button>
               <button class="btn btn-primary btn-sm" id="btn-open-add-vehicle-modal">
-                <i class="fa-solid fa-truck-ramp-box"></i> Add Mining Vehicle
+                <i class="fa-solid fa-truck-ramp-box"></i> Add Plant Vehicle
               </button>
               <button class="btn btn-outline btn-sm" id="btn-export-fleet-mttr-excel" title="Download Fleet Availability & MTTR Excel Report">
                 <i class="fa-solid fa-download text-orange"></i> MTTR Report (Excel)
@@ -390,7 +397,7 @@
           <div class="table-container peach-glass" style="margin-bottom: 28px;">
             <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
               <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-truck-monster text-orange"></i> Mining Machinery & Fleet Master
+                <i class="fa-solid fa-truck-monster text-orange"></i> Plant Machinery & Fleet Master
               </h3>
               <div style="display: flex; gap: 8px; align-items: center;">
                 <button class="btn btn-outline-warning btn-xs" onclick="openVehicleComplianceModal()" title="View Compliance Matrix">
@@ -404,9 +411,9 @@
                 <tr>
                   <th>Vehicle ID & Reg</th>
                   <th>Equipment Name & Model</th>
-                  <th>Type</th>
+                  <th>Category</th>
                   <th>Assigned Operator</th>
-                  <th>Mine Site Location</th>
+                  <th>Plant Site Location</th>
                   <th>Operational Status</th>
                   <th>Statutory Compliance</th>
                   <th>Hourly Rate</th>
@@ -424,7 +431,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
               <div>
                 <h3 style="font-size: 18px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
-                  <i class="fa-solid fa-chart-line text-orange"></i> HEMM Equipment Availability & MTTR Reliability Metrics
+                  <i class="fa-solid fa-chart-line text-orange"></i> Heavy Plant Equipment Availability & MTTR Reliability Metrics
                 </h3>
                 <p class="text-muted" style="margin-top: 4px;">
                   Track scheduled hours, actual operating hours, breakdown downtime (B/D in hours), <strong>MTTR (Mean Time to Repair)</strong>, and <strong>MTBF (Mean Time Between Failures)</strong>.
@@ -618,8 +625,8 @@
                   <th>Operator / Worker Name</th>
                   <th>Trade / Rank</th>
                   <th>Assigned Shift (G/A/B/C/WO/Leave/Absent)</th>
-                  <th>Assigned Mining Machine / Vehicle</th>
-                  <th>Mine Site / Pit Location</th>
+                  <th>Assigned Plant Machine / Vehicle</th>
+                  <th>Plant Site Location</th>
                   <th>Shift Supervisor</th>
                 </tr>
               </thead>
@@ -738,12 +745,12 @@
               </div>
               <h4 class="report-card-title">Tomorrow's Shift & Machine Schedule</h4>
               <p class="report-card-desc">Detailed roster of all heavy equipment operators assigned to CAT 349D
-                Excavators, Tata Signa Tippers, JCBs, and Bobcats for tomorrow's mining shifts (G: 8:30a-5:30p, A, B,
+                Excavators, Tata Signa Tippers, JCBs, and Bobcats for tomorrow's plant shifts (G: 8:30a-5:30p, A, B,
                 C).</p>
               <ul class="report-features">
                 <li><i class="fa-solid fa-check text-success"></i> Operator Emp ID & Full Name</li>
                 <li><i class="fa-solid fa-check text-success"></i> Vehicle Reg No & Machinery Model</li>
-                <li><i class="fa-solid fa-check text-success"></i> Shift Code (G, A, B, C) & Pit Location</li>
+                <li><i class="fa-solid fa-check text-success"></i> Shift Code (G, A, B, C) & Plant Location</li>
               </ul>
               <button class="btn btn-primary btn-block" id="btn-rep-tomorrow-excel">
                 <i class="fa-solid fa-file-arrow-down"></i> 1-Click Download Tomorrow Schedule (Excel)
@@ -816,11 +823,11 @@
   <div id="modal-bulk-vehicles" class="modal-backdrop hidden">
     <div class="modal-dialog modal-lg peach-glass">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-file-excel text-success"></i> Bulk Import Mining Vehicles & Fleet (Excel / CSV)</h3>
+        <h3><i class="fa-solid fa-file-excel text-success"></i> Bulk Import Plant Vehicles & Fleet (Excel / CSV)</h3>
         <button class="btn-close-modal" onclick="closeModal('modal-bulk-vehicles')">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">Upload your fleet spreadsheet (e.g. CAT Excavators, Tata Signa Tippers, JCBs, Bobcats, Water Tankers). The system will automatically import and validate all equipment details.</p>
+        <p class="modal-desc">Upload your fleet spreadsheet (e.g. Plant Excavators, Tata Signa Tippers, JCBs, Bobcats, Water Tankers). The system will automatically import and validate all equipment details.</p>
 
         <div class="drop-zone" id="drop-zone-vehicles">
           <i class="fa-solid fa-cloud-arrow-up drop-icon text-orange"></i>
@@ -848,7 +855,7 @@
                 <tr>
                   <th>Vehicle Reg No</th>
                   <th>Equipment Name</th>
-                  <th>Type</th>
+                  <th>Category</th>
                   <th>Model</th>
                   <th>Site Location</th>
                   <th>Status</th>
@@ -879,7 +886,7 @@
       <form id="form-vehicle-breakdown">
         <div class="modal-body modal-grid-2">
           <div class="form-group" style="grid-column: 1 / -1;">
-            <label><strong>Select Mining Vehicle / Equipment *</strong></label>
+            <label><strong>Select Plant Vehicle / Equipment *</strong></label>
             <select id="bd-vehicle-select" class="custom-select" required>
               <!-- Dynamically populated from allVehicles -->
             </select>
@@ -920,7 +927,7 @@
           <div class="form-group">
             <label><strong>Resolution Status *</strong></label>
             <select id="bd-status" class="custom-select" required>
-              <option value="Resolved">Resolved (Machine Back in Pit)</option>
+              <option value="Resolved">Resolved (Machine Back in Operation)</option>
               <option value="Under Repair">Under Repair in Maintenance Bay</option>
               <option value="Waiting for Spares">Waiting for Spare Parts</option>
               <option value="Operating Normal">Operating Normal</option>
@@ -929,7 +936,7 @@
 
           <div class="form-group" style="grid-column: 1 / -1;">
             <label>Breakdown Reason / Problem Description</label>
-            <input type="text" id="bd-reason" placeholder="e.g. Hydraulic arm hose burst during excavation at Pit A" value="Scheduled Maintenance">
+            <input type="text" id="bd-reason" placeholder="e.g. Hydraulic arm hose burst during plant operation at Bay 1" value="Scheduled Maintenance">
           </div>
 
           <div class="form-group" style="grid-column: 1 / -1;">
@@ -951,7 +958,7 @@
   <div id="modal-vehicle" class="modal-backdrop hidden">
     <div class="modal-dialog modal-lg peach-glass">
       <div class="modal-header">
-        <h3 id="modal-vehicle-title"><i class="fa-solid fa-truck-ramp-box text-orange"></i> Add Mining Vehicle / Fleet
+        <h3 id="modal-vehicle-title"><i class="fa-solid fa-truck-ramp-box text-orange"></i> Add Plant Vehicle / Fleet
         </h3>
         <button class="btn-close-modal" onclick="closeModal('modal-vehicle')">&times;</button>
       </div>
@@ -964,19 +971,24 @@
           </div>
           <div class="form-group">
             <label>Equipment Name & Description *</label>
-            <input type="text" id="veh-name" required placeholder="e.g. CAT 349D Heavy Mining Excavator #3">
+            <input type="text" id="veh-name" required placeholder="e.g. CAT 349D Heavy Plant Excavator #3">
           </div>
           <div class="form-group">
-            <label>Equipment Type *</label>
-            <select id="veh-type" class="custom-select" required>
-              <option value="Excavator">Excavator (CAT / Tata Hitachi)</option>
-              <option value="Tipper / Dumper">Tipper / Dumper (Tata Signa 10x)</option>
-              <option value="JCB / Loader">JCB / Backhoe Loader (3DX)</option>
-              <option value="Bobcat">Bobcat Skid Steer Loader</option>
-              <option value="Water Tanker">Water Tanker (Dust Suppression)</option>
-              <option value="Service Van">Service Van / Mobile Workshop</option>
-              <option value="Road Roller">Road Compactor / Roller</option>
-            </select>
+            <label>Equipment Type / Category *</label>
+            <input type="text" id="veh-type" list="veh-type-suggestions" required placeholder="Enter vehicle category (e.g. Excavator, Tipper, Loader...)">
+            <datalist id="veh-type-suggestions">
+              <option value="Excavator">
+              <option value="Tipper / Dumper">
+              <option value="JCB / Loader">
+              <option value="Bobcat">
+              <option value="Water Tanker">
+              <option value="Service Van">
+              <option value="Road Roller">
+              <option value="Forklift">
+              <option value="Hydra / Crane">
+              <option value="Transit Mixer">
+              <option value="Plant Vehicle">
+            </datalist>
           </div>
           <div class="form-group">
             <label>Model & Capacity Details</label>
@@ -989,13 +1001,13 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Mine Site Location</label>
-            <input type="text" id="veh-site" value="ACC Chanda Mine Pit" placeholder="e.g. ACC Chanda Mine Pit">
+            <label>Plant Site Location</label>
+            <input type="text" id="veh-site" value="ACC Chanda Plant Site" placeholder="e.g. ACC Chanda Plant Site">
           </div>
           <div class="form-group">
             <label>Operational Status *</label>
             <select id="veh-status" class="custom-select" required>
-              <option value="Active (In Pit)">Active (In Pit)</option>
+              <option value="Active (Plant Duty)">Active (Plant Duty)</option>
               <option value="Standby / Idle">Standby / Idle</option>
               <option value="Under Maintenance">Under Maintenance</option>
               <option value="Decommissioned">Decommissioned</option>
@@ -1041,7 +1053,7 @@
               <option value="Worker">Worker (Operator / Helper)</option>
               <option value="Employee">Employee (Technician / Mechanic / Welder)</option>
               <option value="Supervisor">Supervisor (Site Lead / Shift In-charge)</option>
-              <option value="Manager">Manager / Mining Engineer</option>
+              <option value="Manager">Manager / Plant Engineer</option>
               <option value="Super Admin">Super Admin (Full System Access)</option>
             </select>
           </div>
@@ -1078,7 +1090,7 @@
 
             <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
               <input type="checkbox" id="perm-manage-fleets" data-perm="fleets.manage" style="width: 18px; height: 18px; accent-color: var(--logo-orange); margin-top: 2px;">
-              <span><strong>Mining Fleets & Machinery:</strong> Add, edit, assign, and delete heavy vehicles</span>
+              <span><strong>Plant Fleets & Machinery:</strong> Add, edit, assign, and delete plant vehicles</span>
             </label>
 
             <label class="perm-checkbox-item" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; cursor: pointer;">
@@ -1385,7 +1397,7 @@
             <div>
               <div style="font-size: 11px; font-weight: 700; color: #065F46; text-transform: uppercase;">Fully Compliant</div>
               <div style="font-size: 24px; font-weight: 900; color: #059669;" id="compliance-count-compliant">0</div>
-              <div style="font-size: 11px; color: #047857;">Permitted in mine pit</div>
+              <div style="font-size: 11px; color: #047857;">Permitted on plant site</div>
             </div>
           </div>
 
@@ -1449,7 +1461,7 @@
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
         <div style="font-size: 12px; color: var(--text-muted);">
-          <i class="fa-solid fa-circle-info text-orange"></i> Automatic compliance countdown based on statutory RTO & Mining regulations.
+          <i class="fa-solid fa-circle-info text-orange"></i> Automatic compliance countdown based on statutory RTO & Plant regulations.
         </div>
         <button type="button" class="btn btn-secondary" onclick="closeModal('modal-vehicle-compliance')">Close</button>
       </div>
@@ -1525,7 +1537,7 @@
 
           <div style="background: rgba(255,255,255,0.7); border: 1px solid var(--border-light); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
             <h4 style="font-size: 13px; font-weight: 700; color: var(--logo-navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-              <i class="fa-solid fa-route text-orange"></i> 4. Mining & Goods Permit
+              <i class="fa-solid fa-route text-orange"></i> 4. Commercial & Goods Permit
             </h4>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
               <div class="form-group">
@@ -1533,8 +1545,8 @@
                 <select id="edit-comp-permit-type" class="custom-select">
                   <option value="National Permit">National Permit</option>
                   <option value="State Goods Permit (HP)">State Goods Permit (HP)</option>
-                  <option value="Mining Commercial Permit">Mining Commercial Permit</option>
-                  <option value="Temporary Pit Permit">Temporary Pit Permit</option>
+                  <option value="Plant Commercial Permit">Plant Commercial Permit</option>
+                  <option value="Temporary Plant Permit">Temporary Plant Permit</option>
                 </select>
               </div>
               <div class="form-group">
@@ -1587,14 +1599,14 @@
         </div>
 
         <div class="badge-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; font-size: 11px; font-weight: 700; background: var(--logo-orange); color: #FFF; border-radius: 20px; margin-bottom: 10px;">
-          <i class="fa-solid fa-award"></i> 40+ YEARS MINING O&M & FLEET LEADERSHIP
+          <i class="fa-solid fa-award"></i> 40+ YEARS PLANT O&M & FLEET LEADERSHIP
         </div>
         
         <h2 style="font-size: 20px; font-weight: 900; color: var(--logo-navy); margin: 0 0 6px; letter-spacing: -0.3px;">
           SHREE RR TRADING COMPANY
         </h2>
         <p style="font-size: 13px; color: var(--text-muted); margin: 0; font-weight: 500;">
-          Mining O&M Contract Partner for <strong>Ambuja Cement Darlaghat</strong> & HEMM Fleets
+          Plant O&M Contract Partner for <strong>Ambuja Cement Darlaghat</strong> & HEMM Fleets
         </p>
       </div>
 
@@ -1721,7 +1733,7 @@
               <option value="Worker">Worker (Operator / Helper / Field Staff)</option>
               <option value="Employee">Employee (Mechanic / Welder / Electrician)</option>
               <option value="Supervisor">Supervisor (Site In-charge / Shift Supervisor)</option>
-              <option value="Manager">Manager / Mining Engineer</option>
+              <option value="Manager">Manager / Plant Engineer</option>
             </select>
           </div>
           <div class="form-group">
@@ -1755,7 +1767,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Mine Site / Location</label>
+            <label>Plant Site / Location</label>
             <input type="text" id="user-location" placeholder="e.g. ACC Chanda" value="ACC Chanda">
           </div>
           <div class="form-group">
@@ -1806,12 +1818,15 @@
     <div class="modal-dialog modal-lg peach-glass">
       <div class="modal-header no-print">
         <h3><i class="fa-solid fa-file-invoice-dollar text-orange"></i> Official Salary Slip Statement</h3>
-        <div class="slip-header-actions">
-          <button type="button" class="btn btn-outline-success btn-sm" id="slip-whatsapp-btn">
-            <i class="fa-brands fa-whatsapp"></i> Send on WhatsApp
+        <div class="slip-header-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="downloadSlipPdf()" title="Download Crisp PDF Document">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF Slip
+          </button>
+          <button type="button" class="btn btn-outline-success btn-sm" id="slip-whatsapp-btn" title="Download PDF & Send WhatsApp Statement">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp PDF & Slip
           </button>
           <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
-            <i class="fa-solid fa-print"></i> Print Slip (PDF)
+            <i class="fa-solid fa-print"></i> Print Slip
           </button>
           <button class="btn-close-modal" onclick="closeModal('modal-salary-slip')">&times;</button>
         </div>
@@ -1823,8 +1838,8 @@
             <img src="/images/logo.png" alt="Shree RR Trading Company" class="slip-logo">
             <div class="slip-company-info">
               <h2>SHREE RR TRADING COMPANY</h2>
-              <p class="slip-sub">Mining O&M, Heavy Fleets & Earth Moving Machinery Contracts</p>
-              <p class="slip-site">ACC Chanda Mine Site & Darlaghat Operations</p>
+              <p class="slip-sub">Plant O&M, Heavy Fleets & Earth Moving Machinery Contracts</p>
+              <p class="slip-site">ACC Chanda Plant Site & Operations</p>
               <div class="slip-month-title" id="slip-display-month">PAY SLIP FOR JULY 2026</div>
             </div>
           </div>
@@ -1932,11 +1947,240 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: SYSTEM-GENERATED HR LETTERS & APPOINTMENT ENGINE ==================== -->
+  <div id="modal-appointment-letter" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-xl peach-glass" style="max-width: 1200px; width: 96vw; max-height: 94vh; display: flex; flex-direction: column;">
+      <div class="modal-header no-print" style="background: linear-gradient(135deg, #FFF5EE, #FFE4D6); border-bottom: 2px solid var(--border-orange); padding: 14px 20px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(255,107,0,0.12); display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--logo-orange);">
+            <i class="fa-solid fa-file-signature"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--logo-navy);">Official HR Letter & Appointment Certificate Engine</h3>
+            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Generate, customize, print, download PDF & WhatsApp official employment letters with company letterhead.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline-success btn-sm" onclick="sendLetterWhatsApp()" title="Download PDF & Send to Employee WhatsApp">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp Letter (PDF)
+          </button>
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="downloadLetterPdf()" title="Download Official Letter PDF">
+            <i class="fa-solid fa-file-pdf"></i> Download PDF
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="printAppointmentLetter()" title="Print Letterhead">
+            <i class="fa-solid fa-print"></i> Print Letter
+          </button>
+          <button class="btn-close-modal" onclick="closeModal('modal-appointment-letter')">&times;</button>
+        </div>
+      </div>
+
+      <div class="modal-body" style="padding: 0; display: flex; flex: 1; overflow: hidden; min-height: 0;">
+        <!-- Left: Configuration Controls -->
+        <div class="letter-controls-sidebar no-print" style="width: 380px; min-width: 340px; background: #FAF5F0; border-right: 1px solid var(--border-light); padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+          
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 700; color: var(--logo-navy);"><i class="fa-solid fa-user-check text-orange"></i> 1. Select Employee / Worker *</label>
+            <select id="letter-select-emp" class="custom-select" style="font-weight: 600;" onchange="handleLetterEmployeeChange()">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 700; color: var(--logo-navy);"><i class="fa-solid fa-file-lines text-orange"></i> 2. Letter Category / Type *</label>
+            <select id="letter-type-select" class="custom-select" style="font-weight: 700; color: var(--logo-navy);" onchange="updateLetterTemplate()">
+              <option value="appointment">📄 Formal Letter of Appointment</option>
+              <option value="offer">💼 Employment Offer & Welcome Letter</option>
+              <option value="experience">🏆 Work Experience & Service Certificate</option>
+              <option value="relieving">🤝 Relieving & Clearance Certificate</option>
+              <option value="increment">📈 Salary Increment & Revision Letter</option>
+            </select>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.9); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <h4 style="font-size: 13px; font-weight: 800; color: var(--logo-navy); margin-bottom: 2px; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-sliders text-orange"></i> Customizable Letterhead Fields
+            </h4>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Reference No.</label>
+                <input type="text" id="letter-ref-no" style="font-size: 12px; font-weight: 600; font-family: var(--font-mono);" value="SRRTC/HR/ACC-PLANT/2026/01">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Issue Date</label>
+                <input type="date" id="letter-issue-date" style="font-size: 12px;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Joining / Effective Date</label>
+                <input type="text" id="letter-doj-input" placeholder="01/01/2026" style="font-size: 12px;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Probation Period</label>
+                <select id="letter-probation-input" class="custom-select" style="font-size: 12px;">
+                  <option value="3 Months">3 Months</option>
+                  <option value="6 Months">6 Months</option>
+                  <option value="Confirmed Permanent">Confirmed Permanent</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px;">Designation / Trade</label>
+              <input type="text" id="letter-designation-input" placeholder="Operator / Mechanic" style="font-size: 12px; font-weight: 600;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Monthly Gross / CTC (₹)</label>
+                <input type="number" id="letter-ctc-input" placeholder="38000" style="font-size: 12px; font-weight: 700; color: var(--logo-orange);">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11px;">Notice Period</label>
+                <input type="text" id="letter-notice-input" value="30 Days" style="font-size: 12px;">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px;">Plant Site Location</label>
+              <input type="text" id="letter-site-input" value="ACC Chanda Plant Site & Operations, Chandrapur" style="font-size: 12px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px;">Signatory Name & Title</label>
+              <input type="text" id="letter-signatory-name" value="Managing Director / Authorized Signatory" style="font-size: 12px;">
+              <input type="text" id="letter-signatory-title" value="Shree RR Trading Company" style="font-size: 11px; margin-top: 4px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 11px;">Special Terms / Remarks (Optional)</label>
+              <textarea id="letter-custom-note" rows="2" style="font-size: 12px;" placeholder="e.g. Free site bachelor accommodation & safety PPE provided."></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-sm w-100" onclick="updateLetterTemplate()" style="margin-top: 6px;">
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh Letter Preview
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Official Letterhead Live Preview Container -->
+        <div class="letter-preview-pane" style="flex: 1; padding: 24px; overflow-y: auto; background: #E2E8F0; display: flex; justify-content: center;">
+          <div id="printable-appointment-letter" class="hr-letterhead-card" style="width: 100%; max-width: 820px; min-height: 1050px; background: #FFFFFF; padding: 40px 48px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); font-family: 'Outfit', sans-serif; color: #0F172A; line-height: 1.6; display: flex; flex-direction: column; justify-content: space-between;">
+            
+            <!-- Top Letterhead Header -->
+            <div>
+              <div class="hr-letter-header" style="border-bottom: 3px solid #0B1936; padding-bottom: 16px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <img src="/images/logo.png" alt="Shree RR Trading Company" style="height: 64px; max-width: 180px; object-fit: contain;">
+                  <div>
+                    <h1 style="font-size: 22px; font-weight: 900; color: #0B1936; margin: 0; letter-spacing: -0.5px; text-transform: uppercase;">
+                      SHREE RR TRADING COMPANY
+                    </h1>
+                    <p style="font-size: 12px; font-weight: 700; color: #FF6B00; margin: 2px 0 0; text-transform: uppercase;">
+                      Plant Operations • Heavy Fleets O&M • HEMM & Infra Contracts
+                    </p>
+                    <p style="font-size: 10.5px; color: #475569; margin: 2px 0 0;">
+                      Contract Partner: <strong>Ambuja Cement Darlaghat</strong> & <strong>ACC Cement Chanda</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div style="text-align: right; font-size: 10.5px; color: #475569; line-height: 1.35;">
+                  <div><strong>Head Office:</strong> Berri Baramana, Bilaspur (HP) 174001</div>
+                  <div><strong>Plant Office:</strong> ACC Chanda Plant Site, Chandrapur</div>
+                  <div><strong>GSTIN:</strong> 02FGHPR0580Q1ZW | <strong>State:</strong> HP (02)</div>
+                  <div><strong>Email:</strong> Ishav.ratwan@shreerrtradingcompany.com</div>
+                  <div><strong>Phone:</strong> +91 7416008100 | +91 9805775907</div>
+                </div>
+              </div>
+
+              <!-- Ref No & Date -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 13px;">
+                <div><strong>Ref. No:</strong> <span id="view-letter-ref" style="font-family: var(--font-mono); font-weight: 700; color: #0B1936;">SRRTC/HR/ACC-PLANT/2026/014</span></div>
+                <div><strong>Date of Issue:</strong> <span id="view-letter-date" style="font-weight: 700;">04 September 2026</span></div>
+              </div>
+
+              <!-- Recipient Particulars -->
+              <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-left: 4px solid #FF6B00; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px;">
+                <div style="font-weight: 800; color: #0B1936; margin-bottom: 4px;">TO,</div>
+                <div style="font-size: 15px; font-weight: 900; color: #0B1936;" id="view-letter-emp-name">MR. RAJU BALAJI KULMETHE</div>
+                <div style="color: #475569; margin-top: 2px;" id="view-letter-emp-sub">
+                  Father's Name: <strong id="view-letter-father">BALAJI</strong> | Employee ID: <strong id="view-letter-empid">SRR014</strong>
+                </div>
+                <div style="color: #475569; margin-top: 2px;" id="view-letter-emp-site">
+                  Designation: <strong id="view-letter-desig">Excavator Operator</strong> | Site: <strong id="view-letter-site">ACC Chanda Plant Site</strong>
+                </div>
+                <div style="color: #475569; margin-top: 2px;">
+                  Mobile / Contact: <strong id="view-letter-mobile">+91 8999776972</strong> | Category: <strong id="view-letter-category">Skilled Plant Staff</strong>
+                </div>
+              </div>
+
+              <!-- Dynamic Subject Line -->
+              <div style="text-align: center; margin-bottom: 18px;">
+                <h2 id="view-letter-subject" style="font-size: 14.5px; font-weight: 900; color: #0B1936; text-decoration: underline; text-underline-offset: 4px; margin: 0; text-transform: uppercase;">
+                  SUBJECT: FORMAL LETTER OF APPOINTMENT AS EXCAVATOR OPERATOR AT ACC CHANDA PLANT OPERATIONS
+                </h2>
+              </div>
+
+              <!-- Dynamic Letter Content Body -->
+              <div id="view-letter-body-content" style="font-size: 12.5px; color: #1E293B; line-height: 1.65; text-align: justify;">
+                <!-- Dynamically generated clauses and text -->
+              </div>
+            </div>
+
+            <!-- Signature, Acceptance & Stamp Footer -->
+            <div style="margin-top: 30px; padding-top: 16px; border-top: 1px solid #CBD5E1;">
+              <div id="view-letter-acceptance-slip" style="background: #F1F5F9; border: 1px dashed #94A3B8; border-radius: 6px; padding: 10px 14px; margin-bottom: 24px; font-size: 11.5px;">
+                <div style="font-weight: 800; color: #0B1936; margin-bottom: 4px; text-transform: uppercase;">
+                  Employee Acceptance & Acknowledgment Slip
+                </div>
+                <p style="margin: 0 0 14px 0; color: #475569;">
+                  I have read and understood all the terms, conditions, shift guidelines, and safety policies mentioned in this letter. I hereby accept this offer of employment and agree to abide by the statutory plant rules of Shree RR Trading Company.
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                  <div>
+                    <div><strong>Employee Name:</strong> <span id="view-letter-acc-name">RAJU BALAJI KULMETHE</span></div>
+                    <div><strong>Signature / Thumb Impression:</strong> ______________________</div>
+                  </div>
+                  <div>
+                    <div><strong>Date of Acceptance:</strong> ______________________</div>
+                    <div><strong>Contact Mobile:</strong> <span id="view-letter-acc-mobile">+91 8999776972</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                  <p style="font-size: 11px; color: #64748B; margin: 0;">This document is a system-authenticated employment certificate.</p>
+                  <p style="font-size: 10px; color: #94A3B8; margin: 0;">Portal Verification: https://payroll.shreerrtradingcompany.com</p>
+                </div>
+
+                <div style="text-align: right; min-width: 240px;">
+                  <p style="font-size: 12px; font-weight: 800; color: #0B1936; margin: 0 0 4px 0;">
+                    For SHREE RR TRADING COMPANY
+                  </p>
+                  <div style="display: inline-block; border: 1.5px solid #FF6B00; padding: 4px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 800; color: #FF6B00; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+                    ★ AUTHORIZED SIGNATORY & OFFICIAL STAMP ★
+                  </div>
+                  <div style="font-size: 12px; font-weight: 800; color: #0B1936;" id="view-letter-sig-name">Authorized Signatory / Managing Director</div>
+                  <div style="font-size: 11px; color: #475569;" id="view-letter-sig-title">Shree RR Trading Company</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification System -->
   <div id="toast" class="toast hidden"></div>
 
   <!-- Application Logic JS -->
-  <script src="/payroll/payroll.js?v=2.3.0"></script>
+  <script src="/payroll/payroll.js?v=2.4.0"></script>
 </body>
 
 </html>
