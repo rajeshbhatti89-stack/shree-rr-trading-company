@@ -2609,7 +2609,8 @@ function createWhatsAppMessage(slip) {
 
 📎 _Official 1-Page PDF Payslip attached._
 ━━━━━━━━━━━━━━━━━━━━
-_Portal: https://payroll.shreerrtradingcompany.com_`;
+_Portal: https://payroll.shreerrtradingcompany.com_
+_Developed & Powered by SrijanDev © 2026_`;
 
   return { mobile: cleanMobile, text: msg };
 }
@@ -4308,7 +4309,8 @@ async function sendLetterWhatsApp() {
 
 📎 _Official 1-Page HR Letter (${letterTypeTitle}) PDF document attached._
 ━━━━━━━━━━━━━━━━━━━━
-_Verification Portal: https://payroll.shreerrtradingcompany.com_`;
+_Verification Portal: https://payroll.shreerrtradingcompany.com_
+_Developed & Powered by SrijanDev © 2026_`;
 
   await dispatchWhatsAppWithPdfAttachment({
     element,

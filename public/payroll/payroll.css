@@ -2476,6 +2476,17 @@ html, body {
     padding-top: 6px !important;
   }
 
+  .slip-srijandev-footer {
+    margin-top: 6px !important;
+    padding-top: 4px !important;
+    border-top: 1px solid #CBD5E1 !important;
+    font-size: 8.5px !important;
+  }
+
+  .slip-srijandev-footer img {
+    height: 16px !important;
+  }
+
   /* Strict Single-Page HR Appointment & Offer Letters Print */
   .letter-preview-pane {
     padding: 0 !important;
@@ -2549,6 +2560,17 @@ html, body {
 
   #view-letter-acceptance-slip p {
     margin-bottom: 4px !important;
+  }
+
+  .letter-srijandev-footer {
+    margin-top: 6px !important;
+    padding-top: 4px !important;
+    border-top: 1px solid #CBD5E1 !important;
+    font-size: 8.5px !important;
+  }
+
+  .letter-srijandev-footer img {
+    height: 16px !important;
   }
 }
 
