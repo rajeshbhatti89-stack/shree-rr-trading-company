@@ -1,0 +1,11 @@
+# Cloudflare Workers Local Environment Variables Example
+# Copy this file to '.dev.vars' for local development with wrangler
+# NEVER commit '.dev.vars' to version control (it is protected in .gitignore)
+
+# Super Admin Portal Credentials
+ADMIN_EMAIL=admin@srijandev.in
+ADMIN_PASSWORD=ChangeThisToYourStrongPassword!
+
+# Application Configuration
+APP_ENV=development
+APP_NAME=Shree RR Trading Company Portal

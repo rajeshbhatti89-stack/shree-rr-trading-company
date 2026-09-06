@@ -3,7 +3,33 @@ import { cors } from 'hono/cors'
 
 const app = new Hono()
 
+// 1. Global CORS & Security Response Headers
 app.use('*', cors())
+
+app.use('*', async (c, next) => {
+  await next()
+  c.header('X-Content-Type-Options', 'nosniff')
+  c.header('X-Frame-Options', 'SAMEORIGIN')
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin')
+  c.header('X-XSS-Protection', '1; mode=block')
+})
+
+// 2. Global Error Handler - Prevents Internal Stack Traces & Key Leaks
+app.onError((err, c) => {
+  console.error('[Secure Error Handler]:', err && err.message ? err.message : err)
+  return c.json({
+    success: false,
+    message: 'An internal server error occurred. Please try again or contact system support.'
+  }, 500)
+})
+
+// Global 404 Handler
+app.notFound((c) => {
+  return c.json({
+    success: false,
+    message: 'Requested API endpoint was not found on this server.'
+  }, 404)
+})
 
 // Subdomain auto-redirect to /payroll/
 app.use('*', async (c, next) => {
@@ -15,6 +41,46 @@ app.use('*', async (c, next) => {
   }
   await next()
 })
+
+// Security Input Sanitization & Validation Helpers
+function sanitizeString(val, maxLen = 300) {
+  if (val === null || val === undefined) return ''
+  const str = String(val).trim()
+  return str
+    .replace(/[<>]/g, '')
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+    .slice(0, maxLen)
+}
+
+function sanitizeEmail(val) {
+  if (!val) return ''
+  return String(val)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9@._+-]/g, '')
+    .slice(0, 150)
+}
+
+function sanitizeAlphanumeric(val, maxLen = 100) {
+  if (!val) return ''
+  return String(val)
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9\-_./ ]/g, '')
+    .slice(0, maxLen)
+}
+
+function sanitizeNumber(val, defaultVal = 0, min = 0, max = 100000000) {
+  const num = Number(val)
+  if (isNaN(num)) return defaultVal
+  return Math.min(Math.max(num, min), max)
+}
+
+function sanitizeDateString(val) {
+  if (!val) return ''
+  const str = String(val).trim()
+  return str.replace(/[^0-9\-/T:Z.]/g, '').slice(0, 35)
+}
 
 // Clean Seed Data: Super Admin + 31 Employees (Vehicles cleared for fresh bulk upload, B/D & MTTR tracking ready)
 const DEFAULT_INITIAL_DB = {
@@ -4134,24 +4200,29 @@ app.post('/api/payroll/reset-db', async (c) => {
   return c.json({ success: true, message: 'Database reset to clean state: vehicles cleared, MTTR and availability tracking ready.' })
 })
 
-// 1. Auth Login (Strict Credential Verification)
+// 1. Auth Login (Strict Credential Verification with Env Vars & Input Sanitization)
 app.post('/api/payroll/auth/login', async (c) => {
-  const body = await c.req.json()
-  const { email, password } = body
-  if (!email || !password) {
+  const body = await c.req.json().catch(() => ({}))
+  const rawEmail = sanitizeString(body.email, 150)
+  const rawPassword = body.password ? String(body.password).trim() : ''
+
+  if (!rawEmail || !rawPassword) {
     return c.json({ success: false, message: 'Email / ID and password required' }, 400)
   }
 
-  const cleanEmail = email.trim().toLowerCase()
+  const cleanEmail = rawEmail.toLowerCase()
   const db = await getDb(c.env)
 
-  // Super Admin Check (Exclusive credentials)
-  if (cleanEmail === 'admin@srijandev.in' && password === 'Jaishreeram@907') {
-    const adminUser = db.users.find((u) => u.email.toLowerCase() === 'admin@srijandev.in') || {
+  // Super Admin Check (Environment-driven with safe dev defaults)
+  const adminEmail = sanitizeEmail(c.env?.ADMIN_EMAIL || 'admin@srijandev.in')
+  const adminPassword = c.env?.ADMIN_PASSWORD || 'Jaishreeram@907'
+
+  if (cleanEmail === adminEmail && rawPassword === adminPassword) {
+    const adminUser = (db.users || []).find((u) => u.email && u.email.toLowerCase() === adminEmail) || {
       id: 'usr-admin-srijandev',
       empId: 'SRR-ADMIN',
       name: 'Super Administrator',
-      email: 'admin@srijandev.in',
+      email: adminEmail,
       role: 'Super Admin',
       designation: 'System Administrator',
       loginAllowed: true,
@@ -4168,11 +4239,12 @@ app.post('/api/payroll/auth/login', async (c) => {
         '*': true
       }
     }
-    return c.json({ success: true, message: 'Super Admin login successful', user: adminUser })
+    const { password: _, ...adminSafe } = adminUser
+    return c.json({ success: true, message: 'Super Admin login successful', user: adminSafe })
   }
 
-  const user = db.users.find(
-    (u) => (u.email.toLowerCase() === cleanEmail || (u.empId && u.empId.toLowerCase() === cleanEmail)) && u.password === password
+  const user = (db.users || []).find(
+    (u) => (u.email && u.email.toLowerCase() === cleanEmail || (u.empId && u.empId.toLowerCase() === cleanEmail)) && u.password === rawPassword
   )
 
   if (!user) {
@@ -4191,16 +4263,19 @@ app.post('/api/payroll/auth/login', async (c) => {
 
 // Force Password Change API
 app.post('/api/payroll/auth/change-password', async (c) => {
-  const { userId, newPassword } = await c.req.json()
+  const body = await c.req.json().catch(() => ({}))
+  const userId = sanitizeAlphanumeric(body.userId, 100)
+  const newPassword = body.newPassword ? String(body.newPassword).trim() : ''
+
   if (!userId || !newPassword || newPassword.length < 6) {
     return c.json({ success: false, message: 'Valid new password is required (min 6 chars).' }, 400)
   }
 
   const db = await getDb(c.env)
-  const index = db.users.findIndex((u) => u.id === userId || u.empId === userId)
+  const index = (db.users || []).findIndex((u) => u.id === userId || u.empId === userId)
   if (index === -1) return c.json({ success: false, message: 'User not found' }, 404)
 
-  db.users[index].password = newPassword.trim()
+  db.users[index].password = newPassword
   db.users[index].mustChangePassword = false
   await setDb(c.env, db)
 
@@ -4210,31 +4285,30 @@ app.post('/api/payroll/auth/change-password', async (c) => {
 // 2. Users CRUD & Granular Feature Permissions Matrix
 app.get('/api/payroll/users', async (c) => {
   const db = await getDb(c.env)
-  const usersSafe = db.users.map(({ password, ...u }) => u)
+  const usersSafe = (db.users || []).map(({ password, ...u }) => u)
   return c.json({ success: true, users: usersSafe })
 })
 
 app.post('/api/payroll/users', async (c) => {
-  const body = await c.req.json()
-  const { name, email, password, role, designation, rank, department, site, location, phone, mobile, baseSalary, ctc, basicPerDay, uan, esicNo, pfNo, bankAccount, ifsc, fatherName, dob, doj, category, loginAllowed, loginEnabled, mustChangePassword, permissions } = body
-
+  const body = await c.req.json().catch(() => ({}))
+  const name = sanitizeString(body.name, 120)
   if (!name) {
     return c.json({ success: false, message: 'Employee name is required' }, 400)
   }
 
   const db = await getDb(c.env)
-  const empCount = db.users.length
-  const empId = body.empId || `SRR${String(empCount + 1).padStart(3, '0')}`
+  const empCount = (db.users || []).length
+  const empId = sanitizeAlphanumeric(body.empId, 50) || `SRR${String(empCount + 1).padStart(3, '0')}`
 
-  const existing = db.users.find((u) => u.empId && u.empId.toLowerCase() === empId.toLowerCase())
+  const existing = (db.users || []).find((u) => u.empId && u.empId.toLowerCase() === empId.toLowerCase())
   if (existing) {
     return c.json({ success: false, message: `Employee with ID ${empId} already exists` }, 400)
   }
 
-  const assignedRole = role || 'Worker'
+  const assignedRole = sanitizeString(body.role, 50) || 'Worker'
   const isSuper = assignedRole === 'Super Admin'
 
-  const defaultPermissions = permissions || {
+  const defaultPermissions = body.permissions || {
     'payroll.salary_structure.view': false,
     'payroll.manage_all': false,
     'reports.bank_deposit.export': false,
@@ -4246,44 +4320,47 @@ app.post('/api/payroll/users', async (c) => {
     'payroll.slip.view_own': true
   }
 
+  const emailVal = sanitizeEmail(body.email) || `${empId.toLowerCase()}@shreerrtradingcompany.com`
+  const pwdVal = body.password ? String(body.password).trim() : `${empId}@123`
+
   const newUser = {
     id: `usr-${empId.toLowerCase()}`,
     empId,
-    name: name.trim(),
-    email: (email || `${empId.toLowerCase()}@shreerrtradingcompany.com`).trim().toLowerCase(),
-    password: password || `${empId}@123`,
+    name,
+    email: emailVal,
+    password: pwdVal,
     role: assignedRole,
-    loginAllowed: loginAllowed !== undefined ? loginAllowed : (loginEnabled !== undefined ? loginEnabled : false),
-    loginEnabled: loginAllowed !== undefined ? loginAllowed : (loginEnabled !== undefined ? loginEnabled : false),
-    mustChangePassword: mustChangePassword !== undefined ? mustChangePassword : (!isSuper),
+    loginAllowed: body.loginAllowed !== undefined ? Boolean(body.loginAllowed) : (body.loginEnabled !== undefined ? Boolean(body.loginEnabled) : false),
+    loginEnabled: body.loginAllowed !== undefined ? Boolean(body.loginAllowed) : (body.loginEnabled !== undefined ? Boolean(body.loginEnabled) : false),
+    mustChangePassword: body.mustChangePassword !== undefined ? Boolean(body.mustChangePassword) : (!isSuper),
     permissions: defaultPermissions,
-    designation: designation || rank || 'Staff Member',
-    rank: rank || designation || 'Staff',
-    department: department || 'Plant Fleet & Garage O&M',
-    site: site || location || 'ACC Chanda',
-    location: location || site || 'ACC Chanda',
-    phone: phone || (mobile ? `+91 ${mobile}` : ''),
-    mobile: mobile || (phone ? phone.replace(/[^0-9]/g, '').slice(-10) : ''),
-    baseSalary: Number(baseSalary) || Number(ctc) || (Number(basicPerDay) ? Number(basicPerDay) * 30 : 25000),
-    ctc: Number(ctc) || null,
-    basicPerDay: Number(basicPerDay) || null,
-    bankAccount: bankAccount || '',
-    ifsc: ifsc || '',
-    uan: uan || '',
-    esicNo: esicNo || '',
-    pfNo: pfNo || '',
-    fatherName: fatherName || '',
-    dob: dob || '',
-    doj: doj || new Date().toLocaleDateString('en-GB'),
-    category: category || 'Skilled',
-    presentDays: Number(body.presentDays) || 26,
-    weakOff: Number(body.weakOff) || 4,
-    leave: Number(body.leave) || 0,
-    totalLeaves: 10,
-    leavesTaken: Number(body.leave) || 0,
-    leaveBalance: Math.max(0, 10 - (Number(body.leave) || 0)),
-    payableDays: (Number(body.presentDays) || 26) + (Number(body.weakOff) || 4) + (Number(body.leave) || 0),
-    daysInMonth: Number(body.daysInMonth) || 30,
+    designation: sanitizeString(body.designation || body.rank, 100) || 'Staff Member',
+    rank: sanitizeString(body.rank || body.designation, 100) || 'Staff',
+    department: sanitizeString(body.department, 100) || 'Plant Fleet & Garage O&M',
+    site: sanitizeString(body.site || body.location, 100) || 'ACC Chanda',
+    location: sanitizeString(body.location || body.site, 100) || 'ACC Chanda',
+    phone: sanitizeString(body.phone, 30) || (body.mobile ? `+91 ${sanitizeString(body.mobile, 15)}` : ''),
+    mobile: sanitizeString(body.mobile, 15) || (body.phone ? String(body.phone).replace(/[^0-9]/g, '').slice(-10) : ''),
+    baseSalary: sanitizeNumber(body.baseSalary || body.ctc, 25000),
+    ctc: body.ctc ? sanitizeNumber(body.ctc) : null,
+    basicPerDay: body.basicPerDay ? sanitizeNumber(body.basicPerDay) : null,
+    bankAccount: sanitizeAlphanumeric(body.bankAccount, 50),
+    ifsc: sanitizeAlphanumeric(body.ifsc, 30),
+    uan: sanitizeAlphanumeric(body.uan, 30),
+    esicNo: sanitizeAlphanumeric(body.esicNo, 30),
+    pfNo: sanitizeAlphanumeric(body.pfNo, 40),
+    fatherName: sanitizeString(body.fatherName, 120),
+    dob: sanitizeDateString(body.dob),
+    doj: sanitizeDateString(body.doj) || new Date().toLocaleDateString('en-GB'),
+    category: sanitizeString(body.category, 50) || 'Skilled',
+    presentDays: sanitizeNumber(body.presentDays, 26, 0, 31),
+    weakOff: sanitizeNumber(body.weakOff, 4, 0, 10),
+    leave: sanitizeNumber(body.leave, 0, 0, 31),
+    totalLeaves: sanitizeNumber(body.totalLeaves, 10, 0, 100),
+    leavesTaken: sanitizeNumber(body.leave, 0, 0, 100),
+    leaveBalance: Math.max(0, sanitizeNumber(body.totalLeaves, 10) - sanitizeNumber(body.leave, 0)),
+    payableDays: sanitizeNumber(body.presentDays, 26) + sanitizeNumber(body.weakOff, 4) + sanitizeNumber(body.leave, 0),
+    daysInMonth: sanitizeNumber(body.daysInMonth, 30, 28, 31),
     status: 'Active',
     createdAt: new Date().toISOString()
   }
@@ -4297,22 +4374,24 @@ app.post('/api/payroll/users', async (c) => {
 
 // Superadmin Dynamic Feature Provisioning Matrix Endpoint
 app.put('/api/payroll/users/:id/access', async (c) => {
-  const id = c.req.param('id')
-  const { loginAllowed, loginEnabled, password, permissions, role, mustChangePassword } = await c.req.json()
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const body = await c.req.json().catch(() => ({}))
   const db = await getDb(c.env)
 
-  const index = db.users.findIndex((u) => u.id === id || u.empId === id)
+  const index = (db.users || []).findIndex((u) => u.id === id || u.empId === id)
   if (index === -1) {
     return c.json({ success: false, message: 'User not found' }, 404)
   }
 
   const target = db.users[index]
-  if (loginAllowed !== undefined) target.loginAllowed = loginAllowed
-  if (loginEnabled !== undefined) target.loginEnabled = loginEnabled
-  if (mustChangePassword !== undefined) target.mustChangePassword = mustChangePassword
-  if (role) target.role = role
-  if (password && password.trim()) target.password = password.trim()
-  if (permissions) target.permissions = { ...(target.permissions || {}), ...permissions }
+  if (body.loginAllowed !== undefined) target.loginAllowed = Boolean(body.loginAllowed)
+  if (body.loginEnabled !== undefined) target.loginEnabled = Boolean(body.loginEnabled)
+  if (body.mustChangePassword !== undefined) target.mustChangePassword = Boolean(body.mustChangePassword)
+  if (body.role) target.role = sanitizeString(body.role, 50)
+  if (body.password && String(body.password).trim()) target.password = String(body.password).trim()
+  if (body.permissions && typeof body.permissions === 'object') {
+    target.permissions = { ...(target.permissions || {}), ...body.permissions }
+  }
 
   await setDb(c.env, db)
   const { password: _, ...userSafe } = target
@@ -4320,20 +4399,32 @@ app.put('/api/payroll/users/:id/access', async (c) => {
 })
 
 app.put('/api/payroll/users/:id', async (c) => {
-  const id = c.req.param('id')
-  const updates = await c.req.json()
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const updates = await c.req.json().catch(() => ({}))
   const db = await getDb(c.env)
 
-  const index = db.users.findIndex((u) => u.id === id || u.empId === id)
+  const index = (db.users || []).findIndex((u) => u.id === id || u.empId === id)
   if (index === -1) {
     return c.json({ success: false, message: 'Employee not found' }, 404)
   }
 
-  if (!updates.password) {
+  if (!updates.password || !String(updates.password).trim()) {
     delete updates.password
   }
 
-  db.users[index] = { ...db.users[index], ...updates }
+  // Sanitize updated fields
+  const safeUpdates = {}
+  for (const [k, v] of Object.entries(updates)) {
+    if (typeof v === 'string') {
+      safeUpdates[k] = sanitizeString(v, 250)
+    } else if (typeof v === 'number') {
+      safeUpdates[k] = sanitizeNumber(v)
+    } else {
+      safeUpdates[k] = v
+    }
+  }
+
+  db.users[index] = { ...db.users[index], ...safeUpdates }
   await setDb(c.env, db)
 
   const { password: _, ...userSafe } = db.users[index]
@@ -4341,11 +4432,11 @@ app.put('/api/payroll/users/:id', async (c) => {
 })
 
 app.delete('/api/payroll/users/:id', async (c) => {
-  const id = c.req.param('id')
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
   const db = await getDb(c.env)
 
-  const initialLength = db.users.length
-  db.users = db.users.filter((u) => u.id !== id && u.empId !== id)
+  const initialLength = (db.users || []).length
+  db.users = (db.users || []).filter((u) => u.id !== id && u.empId !== id)
 
   if (db.users.length === initialLength) {
     return c.json({ success: false, message: 'Employee not found' }, 404)
@@ -4362,12 +4453,9 @@ app.get('/api/payroll/vehicles', async (c) => {
 })
 
 app.post('/api/payroll/vehicles', async (c) => {
-  const body = await c.req.json()
-  const { 
-    vehicleNo, name, type, model, site, operatorId, operatorName, status, fuelType, hourlyRate, notes,
-    fitnessExpiry, fitnessCertNo, pucExpiry, pucCertNo, insuranceExpiry, insurancePolicyNo, insuranceProvider,
-    permitExpiry, permitNo, permitType, roadTaxExpiry, roadTaxReceipt, complianceNotes
-  } = body
+  const body = await c.req.json().catch(() => ({}))
+  const vehicleNo = sanitizeAlphanumeric(body.vehicleNo, 30)
+  const name = sanitizeString(body.name, 100)
 
   if (!vehicleNo || !name) {
     return c.json({ success: false, message: 'Vehicle number and name are required' }, 400)
@@ -4376,37 +4464,37 @@ app.post('/api/payroll/vehicles', async (c) => {
   const db = await getDb(c.env)
   if (!db.vehicles) db.vehicles = []
 
-  const existing = db.vehicles.find((v) => v.vehicleNo.toLowerCase() === vehicleNo.trim().toLowerCase())
+  const existing = db.vehicles.find((v) => v.vehicleNo.toLowerCase() === vehicleNo.toLowerCase())
   if (existing) {
     return c.json({ success: false, message: `Vehicle with number ${vehicleNo} already exists` }, 400)
   }
 
   const newVehicle = {
     id: `veh-${Date.now()}`,
-    vehicleNo: vehicleNo.trim().toUpperCase(),
-    name: name.trim(),
-    type: type || 'Excavator',
-    model: model || 'Heavy Plant Machinery',
-    site: site || 'ACC Chanda Plant Site',
-    operatorId: operatorId || '',
-    operatorName: operatorName || 'Unassigned',
-    status: status || 'Active (Plant Duty)',
-    fuelType: fuelType || 'Diesel',
-    hourlyRate: Number(hourlyRate) || 0,
-    notes: notes || '',
-    fitnessExpiry: fitnessExpiry || '',
-    fitnessCertNo: fitnessCertNo || '',
-    pucExpiry: pucExpiry || '',
-    pucCertNo: pucCertNo || '',
-    insuranceExpiry: insuranceExpiry || '',
-    insurancePolicyNo: insurancePolicyNo || '',
-    insuranceProvider: insuranceProvider || 'National Insurance / TATA AIG',
-    permitExpiry: permitExpiry || '',
-    permitNo: permitNo || '',
-    permitType: permitType || 'National / Commercial Goods Permit',
-    roadTaxExpiry: roadTaxExpiry || '',
-    roadTaxReceipt: roadTaxReceipt || '',
-    complianceNotes: complianceNotes || '',
+    vehicleNo,
+    name,
+    type: sanitizeString(body.type, 50) || 'Excavator',
+    model: sanitizeString(body.model, 80) || 'Heavy Plant Machinery',
+    site: sanitizeString(body.site, 80) || 'ACC Chanda Plant Site',
+    operatorId: sanitizeAlphanumeric(body.operatorId, 50),
+    operatorName: sanitizeString(body.operatorName, 100) || 'Unassigned',
+    status: sanitizeString(body.status, 50) || 'Active (Plant Duty)',
+    fuelType: sanitizeString(body.fuelType, 30) || 'Diesel',
+    hourlyRate: sanitizeNumber(body.hourlyRate),
+    notes: sanitizeString(body.notes, 250),
+    fitnessExpiry: sanitizeDateString(body.fitnessExpiry),
+    fitnessCertNo: sanitizeAlphanumeric(body.fitnessCertNo, 50),
+    pucExpiry: sanitizeDateString(body.pucExpiry),
+    pucCertNo: sanitizeAlphanumeric(body.pucCertNo, 50),
+    insuranceExpiry: sanitizeDateString(body.insuranceExpiry),
+    insurancePolicyNo: sanitizeAlphanumeric(body.insurancePolicyNo, 50),
+    insuranceProvider: sanitizeString(body.insuranceProvider, 100) || 'National Insurance / TATA AIG',
+    permitExpiry: sanitizeDateString(body.permitExpiry),
+    permitNo: sanitizeAlphanumeric(body.permitNo, 50),
+    permitType: sanitizeString(body.permitType, 80) || 'National / Commercial Goods Permit',
+    roadTaxExpiry: sanitizeDateString(body.roadTaxExpiry),
+    roadTaxReceipt: sanitizeAlphanumeric(body.roadTaxReceipt, 50),
+    complianceNotes: sanitizeString(body.complianceNotes, 250),
     createdAt: new Date().toISOString()
   }
 
@@ -4418,7 +4506,7 @@ app.post('/api/payroll/vehicles', async (c) => {
 
 // Bulk Import Vehicles Endpoint
 app.post('/api/payroll/vehicles/bulk', async (c) => {
-  const body = await c.req.json()
+  const body = await c.req.json().catch(() => ({}))
   const { vehicles } = body
 
   if (!Array.isArray(vehicles) || vehicles.length === 0) {
@@ -4430,36 +4518,38 @@ app.post('/api/payroll/vehicles/bulk', async (c) => {
 
   let importedCount = 0
   for (const v of vehicles) {
-    if (!v.vehicleNo || !v.name) continue
-    const vNo = v.vehicleNo.trim().toUpperCase()
-    const existingIndex = db.vehicles.findIndex((x) => x.vehicleNo.toUpperCase() === vNo)
+    const vNo = sanitizeAlphanumeric(v.vehicleNo, 30)
+    const vName = sanitizeString(v.name, 100)
+    if (!vNo || !vName) continue
+
+    const existingIndex = db.vehicles.findIndex((x) => x.vehicleNo.toUpperCase() === vNo.toUpperCase())
 
     const vehicleObj = {
       id: existingIndex !== -1 ? db.vehicles[existingIndex].id : `veh-${Date.now()}-${importedCount}`,
       vehicleNo: vNo,
-      name: v.name.trim(),
-      type: v.type || 'Excavator',
-      model: v.model || 'Heavy Plant Machinery',
-      site: v.site || 'ACC Chanda Plant Site',
-      operatorId: v.operatorId || '',
-      operatorName: v.operatorName || 'Unassigned',
-      status: v.status || 'Active (Plant Duty)',
-      fuelType: v.fuelType || 'Diesel',
-      hourlyRate: Number(v.hourlyRate) || 0,
-      notes: v.notes || 'Bulk Imported Plant Fleet',
-      fitnessExpiry: v.fitnessExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].fitnessExpiry : '2027-03-31'),
-      fitnessCertNo: v.fitnessCertNo || (existingIndex !== -1 ? db.vehicles[existingIndex].fitnessCertNo : `FIT-${vNo.slice(-4)}`),
-      pucExpiry: v.pucExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].pucExpiry : '2026-11-30'),
-      pucCertNo: v.pucCertNo || (existingIndex !== -1 ? db.vehicles[existingIndex].pucCertNo : `PUC-${vNo.slice(-4)}`),
-      insuranceExpiry: v.insuranceExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].insuranceExpiry : '2026-12-31'),
-      insurancePolicyNo: v.insurancePolicyNo || (existingIndex !== -1 ? db.vehicles[existingIndex].insurancePolicyNo : `POL-${vNo.slice(-6)}`),
-      insuranceProvider: v.insuranceProvider || (existingIndex !== -1 ? db.vehicles[existingIndex].insuranceProvider : 'National Insurance / TATA AIG'),
-      permitExpiry: v.permitExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].permitExpiry : '2027-06-30'),
-      permitNo: v.permitNo || (existingIndex !== -1 ? db.vehicles[existingIndex].permitNo : `PRM-${vNo.slice(-5)}`),
-      permitType: v.permitType || (existingIndex !== -1 ? db.vehicles[existingIndex].permitType : 'National / Commercial Goods Permit'),
-      roadTaxExpiry: v.roadTaxExpiry || (existingIndex !== -1 ? db.vehicles[existingIndex].roadTaxExpiry : '2027-03-31'),
-      roadTaxReceipt: v.roadTaxReceipt || '',
-      complianceNotes: v.complianceNotes || '',
+      name: vName,
+      type: sanitizeString(v.type, 50) || 'Excavator',
+      model: sanitizeString(v.model, 80) || 'Heavy Plant Machinery',
+      site: sanitizeString(v.site, 80) || 'ACC Chanda Plant Site',
+      operatorId: sanitizeAlphanumeric(v.operatorId, 50),
+      operatorName: sanitizeString(v.operatorName, 100) || 'Unassigned',
+      status: sanitizeString(v.status, 50) || 'Active (Plant Duty)',
+      fuelType: sanitizeString(v.fuelType, 30) || 'Diesel',
+      hourlyRate: sanitizeNumber(v.hourlyRate),
+      notes: sanitizeString(v.notes, 250) || 'Bulk Imported Plant Fleet',
+      fitnessExpiry: sanitizeDateString(v.fitnessExpiry) || (existingIndex !== -1 ? db.vehicles[existingIndex].fitnessExpiry : '2027-03-31'),
+      fitnessCertNo: sanitizeAlphanumeric(v.fitnessCertNo, 50) || (existingIndex !== -1 ? db.vehicles[existingIndex].fitnessCertNo : `FIT-${vNo.slice(-4)}`),
+      pucExpiry: sanitizeDateString(v.pucExpiry) || (existingIndex !== -1 ? db.vehicles[existingIndex].pucExpiry : '2026-11-30'),
+      pucCertNo: sanitizeAlphanumeric(v.pucCertNo, 50) || (existingIndex !== -1 ? db.vehicles[existingIndex].pucCertNo : `PUC-${vNo.slice(-4)}`),
+      insuranceExpiry: sanitizeDateString(v.insuranceExpiry) || (existingIndex !== -1 ? db.vehicles[existingIndex].insuranceExpiry : '2026-12-31'),
+      insurancePolicyNo: sanitizeAlphanumeric(v.insurancePolicyNo, 50) || (existingIndex !== -1 ? db.vehicles[existingIndex].insurancePolicyNo : `POL-${vNo.slice(-6)}`),
+      insuranceProvider: sanitizeString(v.insuranceProvider, 100) || (existingIndex !== -1 ? db.vehicles[existingIndex].insuranceProvider : 'National Insurance / TATA AIG'),
+      permitExpiry: sanitizeDateString(v.permitExpiry) || (existingIndex !== -1 ? db.vehicles[existingIndex].permitExpiry : '2027-06-30'),
+      permitNo: sanitizeAlphanumeric(v.permitNo, 50) || (existingIndex !== -1 ? db.vehicles[existingIndex].permitNo : `PRM-${vNo.slice(-5)}`),
+      permitType: sanitizeString(v.permitType, 80) || (existingIndex !== -1 ? db.vehicles[existingIndex].permitType : 'National / Commercial Goods Permit'),
+      roadTaxExpiry: sanitizeDateString(v.roadTaxExpiry) || (existingIndex !== -1 ? db.vehicles[existingIndex].roadTaxExpiry : '2027-03-31'),
+      roadTaxReceipt: sanitizeAlphanumeric(v.roadTaxReceipt, 50),
+      complianceNotes: sanitizeString(v.complianceNotes, 250),
       createdAt: new Date().toISOString()
     }
 
@@ -4484,17 +4574,24 @@ app.delete('/api/payroll/vehicles/all', async (c) => {
 })
 
 app.put('/api/payroll/vehicles/:id', async (c) => {
-  const id = c.req.param('id')
-  const updates = await c.req.json()
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const updates = await c.req.json().catch(() => ({}))
   const db = await getDb(c.env)
 
   if (!db.vehicles) db.vehicles = []
-  const index = db.vehicles.findIndex((v) => v.id === id || v.vehicleNo === id)
+  const index = db.vehicles.findIndex((v) => v.id === id || v.vehicleNo.toUpperCase() === id.toUpperCase())
   if (index === -1) {
     return c.json({ success: false, message: 'Vehicle not found' }, 404)
   }
 
-  db.vehicles[index] = { ...db.vehicles[index], ...updates }
+  const safeUpdates = {}
+  for (const [k, v] of Object.entries(updates)) {
+    if (typeof v === 'string') safeUpdates[k] = sanitizeString(v, 250)
+    else if (typeof v === 'number') safeUpdates[k] = sanitizeNumber(v)
+    else safeUpdates[k] = v
+  }
+
+  db.vehicles[index] = { ...db.vehicles[index], ...safeUpdates }
   await setDb(c.env, db)
 
   return c.json({ success: true, message: 'Vehicle updated successfully', vehicle: db.vehicles[index] })
@@ -4502,31 +4599,31 @@ app.put('/api/payroll/vehicles/:id', async (c) => {
 
 // Single Vehicle Compliance Update Endpoint
 app.put('/api/payroll/vehicles/:id/compliance', async (c) => {
-  const id = c.req.param('id')
-  const complianceData = await c.req.json()
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const complianceData = await c.req.json().catch(() => ({}))
   const db = await getDb(c.env)
 
   if (!db.vehicles) db.vehicles = []
-  const index = db.vehicles.findIndex((v) => v.id === id || v.vehicleNo === id)
+  const index = db.vehicles.findIndex((v) => v.id === id || v.vehicleNo.toUpperCase() === id.toUpperCase())
   if (index === -1) {
     return c.json({ success: false, message: 'Vehicle not found' }, 404)
   }
 
   db.vehicles[index] = {
     ...db.vehicles[index],
-    fitnessExpiry: complianceData.fitnessExpiry !== undefined ? complianceData.fitnessExpiry : db.vehicles[index].fitnessExpiry,
-    fitnessCertNo: complianceData.fitnessCertNo !== undefined ? complianceData.fitnessCertNo : db.vehicles[index].fitnessCertNo,
-    pucExpiry: complianceData.pucExpiry !== undefined ? complianceData.pucExpiry : db.vehicles[index].pucExpiry,
-    pucCertNo: complianceData.pucCertNo !== undefined ? complianceData.pucCertNo : db.vehicles[index].pucCertNo,
-    insuranceExpiry: complianceData.insuranceExpiry !== undefined ? complianceData.insuranceExpiry : db.vehicles[index].insuranceExpiry,
-    insurancePolicyNo: complianceData.insurancePolicyNo !== undefined ? complianceData.insurancePolicyNo : db.vehicles[index].insurancePolicyNo,
-    insuranceProvider: complianceData.insuranceProvider !== undefined ? complianceData.insuranceProvider : db.vehicles[index].insuranceProvider,
-    permitExpiry: complianceData.permitExpiry !== undefined ? complianceData.permitExpiry : db.vehicles[index].permitExpiry,
-    permitNo: complianceData.permitNo !== undefined ? complianceData.permitNo : db.vehicles[index].permitNo,
-    permitType: complianceData.permitType !== undefined ? complianceData.permitType : db.vehicles[index].permitType,
-    roadTaxExpiry: complianceData.roadTaxExpiry !== undefined ? complianceData.roadTaxExpiry : db.vehicles[index].roadTaxExpiry,
-    roadTaxReceipt: complianceData.roadTaxReceipt !== undefined ? complianceData.roadTaxReceipt : db.vehicles[index].roadTaxReceipt,
-    complianceNotes: complianceData.complianceNotes !== undefined ? complianceData.complianceNotes : db.vehicles[index].complianceNotes,
+    fitnessExpiry: complianceData.fitnessExpiry !== undefined ? sanitizeDateString(complianceData.fitnessExpiry) : db.vehicles[index].fitnessExpiry,
+    fitnessCertNo: complianceData.fitnessCertNo !== undefined ? sanitizeAlphanumeric(complianceData.fitnessCertNo, 50) : db.vehicles[index].fitnessCertNo,
+    pucExpiry: complianceData.pucExpiry !== undefined ? sanitizeDateString(complianceData.pucExpiry) : db.vehicles[index].pucExpiry,
+    pucCertNo: complianceData.pucCertNo !== undefined ? sanitizeAlphanumeric(complianceData.pucCertNo, 50) : db.vehicles[index].pucCertNo,
+    insuranceExpiry: complianceData.insuranceExpiry !== undefined ? sanitizeDateString(complianceData.insuranceExpiry) : db.vehicles[index].insuranceExpiry,
+    insurancePolicyNo: complianceData.insurancePolicyNo !== undefined ? sanitizeAlphanumeric(complianceData.insurancePolicyNo, 50) : db.vehicles[index].insurancePolicyNo,
+    insuranceProvider: complianceData.insuranceProvider !== undefined ? sanitizeString(complianceData.insuranceProvider, 100) : db.vehicles[index].insuranceProvider,
+    permitExpiry: complianceData.permitExpiry !== undefined ? sanitizeDateString(complianceData.permitExpiry) : db.vehicles[index].permitExpiry,
+    permitNo: complianceData.permitNo !== undefined ? sanitizeAlphanumeric(complianceData.permitNo, 50) : db.vehicles[index].permitNo,
+    permitType: complianceData.permitType !== undefined ? sanitizeString(complianceData.permitType, 80) : db.vehicles[index].permitType,
+    roadTaxExpiry: complianceData.roadTaxExpiry !== undefined ? sanitizeDateString(complianceData.roadTaxExpiry) : db.vehicles[index].roadTaxExpiry,
+    roadTaxReceipt: complianceData.roadTaxReceipt !== undefined ? sanitizeAlphanumeric(complianceData.roadTaxReceipt, 50) : db.vehicles[index].roadTaxReceipt,
+    complianceNotes: complianceData.complianceNotes !== undefined ? sanitizeString(complianceData.complianceNotes, 250) : db.vehicles[index].complianceNotes,
     lastComplianceUpdate: new Date().toISOString()
   }
 
@@ -4539,12 +4636,12 @@ app.put('/api/payroll/vehicles/:id/compliance', async (c) => {
 })
 
 app.delete('/api/payroll/vehicles/:id', async (c) => {
-  const id = c.req.param('id')
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
   const db = await getDb(c.env)
 
   if (!db.vehicles) db.vehicles = []
   const initialLength = db.vehicles.length
-  db.vehicles = db.vehicles.filter((v) => v.id !== id && v.vehicleNo !== id)
+  db.vehicles = db.vehicles.filter((v) => v.id !== id && v.vehicleNo.toUpperCase() !== id.toUpperCase())
 
   if (db.vehicles.length === initialLength) {
     return c.json({ success: false, message: 'Vehicle not found' }, 404)
@@ -4561,8 +4658,8 @@ app.get('/api/payroll/vehicle-logs', async (c) => {
 })
 
 app.post('/api/payroll/vehicle-logs', async (c) => {
-  const body = await c.req.json()
-  const { date, vehicleNo, totalHours, operatingHours, breakdownHours, idleHours, failureType, reason, actionTaken, status } = body
+  const body = await c.req.json().catch(() => ({}))
+  const vehicleNo = sanitizeAlphanumeric(body.vehicleNo, 30)
 
   if (!vehicleNo) {
     return c.json({ success: false, message: 'Vehicle number is required' }, 400)
@@ -4573,25 +4670,25 @@ app.post('/api/payroll/vehicle-logs', async (c) => {
 
   const veh = (db.vehicles || []).find((v) => v.vehicleNo.toUpperCase() === vehicleNo.toUpperCase())
 
-  const scheduledHrs = Number(totalHours) || 24
-  const bdHrs = Number(breakdownHours) || 0
-  const opHrs = operatingHours !== undefined ? Number(operatingHours) : Math.max(0, scheduledHrs - bdHrs)
-  const idlHrs = idleHours !== undefined ? Number(idleHours) : 0
+  const scheduledHrs = sanitizeNumber(body.totalHours, 24, 1, 24)
+  const bdHrs = sanitizeNumber(body.breakdownHours, 0, 0, scheduledHrs)
+  const opHrs = body.operatingHours !== undefined ? sanitizeNumber(body.operatingHours, 0, 0, scheduledHrs) : Math.max(0, scheduledHrs - bdHrs)
+  const idlHrs = sanitizeNumber(body.idleHours, 0, 0, scheduledHrs)
 
   const newLog = {
     id: `vlog-${Date.now()}`,
-    date: date || new Date().toISOString().split('T')[0],
-    vehicleNo: vehicleNo.toUpperCase(),
+    date: sanitizeDateString(body.date) || new Date().toISOString().split('T')[0],
+    vehicleNo,
     vehicleName: veh ? veh.name : 'Heavy Machinery',
     model: veh ? veh.model : '',
     totalHours: scheduledHrs,
     operatingHours: opHrs,
     breakdownHours: bdHrs,
     idleHours: idlHrs,
-    failureType: failureType || 'Mechanical Fault',
-    reason: reason || 'Scheduled Wear / Component Replacement',
-    actionTaken: actionTaken || 'Repaired & Inspected by Garage Engineer',
-    status: status || (bdHrs > 0 ? 'Resolved' : 'Operating Normal'),
+    failureType: sanitizeString(body.failureType, 80) || 'Mechanical Fault',
+    reason: sanitizeString(body.reason, 200) || 'Scheduled Wear / Component Replacement',
+    actionTaken: sanitizeString(body.actionTaken, 200) || 'Repaired & Inspected by Garage Engineer',
+    status: sanitizeString(body.status, 50) || (bdHrs > 0 ? 'Resolved' : 'Operating Normal'),
     createdAt: new Date().toISOString()
   }
 
@@ -4602,7 +4699,7 @@ app.post('/api/payroll/vehicle-logs', async (c) => {
 })
 
 app.delete('/api/payroll/vehicle-logs/:id', async (c) => {
-  const id = c.req.param('id')
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
   const db = await getDb(c.env)
   if (!db.vehicleLogs) db.vehicleLogs = []
   db.vehicleLogs = db.vehicleLogs.filter((l) => l.id !== id)
@@ -4617,29 +4714,33 @@ app.get('/api/payroll/attendance', async (c) => {
 })
 
 app.post('/api/payroll/attendance', async (c) => {
-  const body = await c.req.json()
-  const { userId, date, shift, shiftCode, clockIn, clockOut, status, site, notes } = body
+  const body = await c.req.json().catch(() => ({}))
+  const userId = sanitizeAlphanumeric(body.userId, 50)
+  const date = sanitizeDateString(body.date)
+
   if (!userId || !date) {
     return c.json({ success: false, message: 'userId and date are required' }, 400)
   }
 
   const db = await getDb(c.env)
-  const user = db.users.find((u) => u.id === userId || u.empId === userId)
+  const user = (db.users || []).find((u) => u.id === userId || u.empId === userId)
 
+  const status = sanitizeString(body.status, 30) || 'Present'
   const isAbsentOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave'
+
   const newRecord = {
     id: `att-${Date.now()}`,
     userId,
     empId: user ? user.empId : '',
     userName: user ? user.name : 'Employee',
-    date: date || new Date().toISOString().split('T')[0],
-    shift: shift || 'G Shift (08:30 AM - 05:30 PM)',
-    shiftCode: shiftCode || 'G',
-    clockIn: clockIn || (isAbsentOrOff ? '-' : '08:30 AM'),
-    clockOut: clockOut || (isAbsentOrOff ? '-' : '05:30 PM'),
-    status: status || 'Present',
-    site: site || (user ? user.site : 'ACC Chanda'),
-    notes: notes || (status === 'Absent' ? 'Muster Roll: Absent' : 'Muster Roll Entry')
+    date,
+    shift: sanitizeString(body.shift, 80) || 'G Shift (08:30 AM - 05:30 PM)',
+    shiftCode: sanitizeAlphanumeric(body.shiftCode, 10) || 'G',
+    clockIn: sanitizeString(body.clockIn, 30) || (isAbsentOrOff ? '-' : '08:30 AM'),
+    clockOut: sanitizeString(body.clockOut, 30) || (isAbsentOrOff ? '-' : '05:30 PM'),
+    status,
+    site: sanitizeString(body.site || (user ? user.site : 'ACC Chanda'), 80),
+    notes: sanitizeString(body.notes, 200) || (status === 'Absent' ? 'Muster Roll: Absent' : 'Muster Roll Entry')
   }
 
   if (!db.attendance) db.attendance = []
@@ -4650,8 +4751,9 @@ app.post('/api/payroll/attendance', async (c) => {
 })
 
 app.post('/api/payroll/attendance/muster-roll-bulk', async (c) => {
-  const body = await c.req.json()
-  const { date, musterRecords } = body
+  const body = await c.req.json().catch(() => ({}))
+  const date = sanitizeDateString(body.date)
+  const { musterRecords } = body
 
   if (!date || !Array.isArray(musterRecords) || musterRecords.length === 0) {
     return c.json({ success: false, message: 'Date and musterRecords array required' }, 400)
@@ -4663,21 +4765,24 @@ app.post('/api/payroll/attendance/muster-roll-bulk', async (c) => {
   db.attendance = db.attendance.filter((a) => a.date !== date)
 
   for (const r of musterRecords) {
-    const user = db.users.find((u) => u.id === r.userId || u.empId === r.empId)
-    const isAbOrOff = r.status === 'Absent' || r.status === 'Weekly Off' || r.status === 'Leave'
+    const user = (db.users || []).find((u) => u.id === r.userId || u.empId === r.empId)
+    const status = sanitizeString(r.status, 30) || 'Present'
+    const isAbOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave'
+    const shiftCode = sanitizeAlphanumeric(r.shiftCode, 10) || 'G'
+
     db.attendance.push({
-      id: `att-${Date.now()}-${r.empId}`,
-      userId: r.userId || (user ? user.id : ''),
-      empId: r.empId,
-      userName: r.userName || (user ? user.name : 'Employee'),
+      id: `att-${Date.now()}-${sanitizeAlphanumeric(r.empId, 30)}`,
+      userId: sanitizeAlphanumeric(r.userId, 50) || (user ? user.id : ''),
+      empId: sanitizeAlphanumeric(r.empId, 30),
+      userName: sanitizeString(r.userName, 100) || (user ? user.name : 'Employee'),
       date,
-      shift: r.shift || 'G Shift (08:30 AM - 05:30 PM)',
-      shiftCode: r.shiftCode || 'G',
-      clockIn: r.clockIn || (isAbOrOff ? '-' : (r.shiftCode === 'A' ? '06:00 AM' : (r.shiftCode === 'B' ? '02:00 PM' : (r.shiftCode === 'C' ? '10:00 PM' : '08:30 AM')))),
-      clockOut: r.clockOut || (isAbOrOff ? '-' : (r.shiftCode === 'A' ? '02:00 PM' : (r.shiftCode === 'B' ? '10:00 PM' : (r.shiftCode === 'C' ? '06:00 AM' : '05:30 PM')))),
-      status: r.status || 'Present',
-      site: r.site || (user ? user.site : 'ACC Chanda'),
-      notes: r.notes || (r.status === 'Absent' ? 'Daily Muster Roll: Absent' : `Daily Muster Roll: Shift ${r.shiftCode || 'G'} Marked`)
+      shift: sanitizeString(r.shift, 80) || 'G Shift (08:30 AM - 05:30 PM)',
+      shiftCode,
+      clockIn: sanitizeString(r.clockIn, 30) || (isAbOrOff ? '-' : (shiftCode === 'A' ? '06:00 AM' : (shiftCode === 'B' ? '02:00 PM' : (shiftCode === 'C' ? '10:00 PM' : '08:30 AM')))),
+      clockOut: sanitizeString(r.clockOut, 30) || (isAbOrOff ? '-' : (shiftCode === 'A' ? '02:00 PM' : (shiftCode === 'B' ? '10:00 PM' : (shiftCode === 'C' ? '06:00 AM' : '05:30 PM')))),
+      status,
+      site: sanitizeString(r.site || (user ? user.site : 'ACC Chanda'), 80),
+      notes: sanitizeString(r.notes, 200) || (status === 'Absent' ? 'Daily Muster Roll: Absent' : `Daily Muster Roll: Shift ${shiftCode} Marked`)
     })
   }
 
@@ -4696,14 +4801,17 @@ app.get('/api/payroll/rosters', async (c) => {
 })
 
 app.post('/api/payroll/rosters', async (c) => {
-  const body = await c.req.json()
-  const { userId, date, shift, shiftCode, site, equipment, vehicleId, supervisor } = body
+  const body = await c.req.json().catch(() => ({}))
+  const userId = sanitizeAlphanumeric(body.userId, 50)
+  const date = sanitizeDateString(body.date)
+  const shift = sanitizeString(body.shift, 80)
+
   if (!userId || !date || !shift) {
     return c.json({ success: false, message: 'userId, date, and shift are required' }, 400)
   }
 
   const db = await getDb(c.env)
-  const user = db.users.find((u) => u.id === userId || u.empId === userId)
+  const user = (db.users || []).find((u) => u.id === userId || u.empId === userId)
 
   const newRoster = {
     id: `rst-${Date.now()}`,
@@ -4713,11 +4821,11 @@ app.post('/api/payroll/rosters', async (c) => {
     designation: user ? user.designation : 'Staff',
     date,
     shift,
-    shiftCode: shiftCode || (shift.includes('G Shift') ? 'G' : (shift.includes('A Shift') ? 'A' : (shift.includes('B Shift') ? 'B' : 'C'))),
-    site: site || (user ? user.site : 'ACC Chanda'),
-    equipment: equipment || 'General Plant Duty',
-    vehicleId: vehicleId || '',
-    supervisor: supervisor || 'Shift Supervisor'
+    shiftCode: sanitizeAlphanumeric(body.shiftCode, 10) || (shift.includes('G Shift') ? 'G' : (shift.includes('A Shift') ? 'A' : (shift.includes('B Shift') ? 'B' : 'C'))),
+    site: sanitizeString(body.site || (user ? user.site : 'ACC Chanda'), 80),
+    equipment: sanitizeString(body.equipment, 100) || 'General Plant Duty',
+    vehicleId: sanitizeAlphanumeric(body.vehicleId, 50),
+    supervisor: sanitizeString(body.supervisor, 100) || 'Shift Supervisor'
   }
 
   if (!db.rosters) db.rosters = []
@@ -4728,8 +4836,9 @@ app.post('/api/payroll/rosters', async (c) => {
 })
 
 app.post('/api/payroll/rosters/tomorrow-bulk', async (c) => {
-  const body = await c.req.json()
-  const { date, scheduleRecords } = body
+  const body = await c.req.json().catch(() => ({}))
+  const date = sanitizeDateString(body.date)
+  const { scheduleRecords } = body
 
   if (!date || !Array.isArray(scheduleRecords) || scheduleRecords.length === 0) {
     return c.json({ success: false, message: 'Date and scheduleRecords array required' }, 400)
@@ -4741,20 +4850,20 @@ app.post('/api/payroll/rosters/tomorrow-bulk', async (c) => {
   db.rosters = db.rosters.filter((r) => r.date !== date)
 
   for (const s of scheduleRecords) {
-    const user = db.users.find((u) => u.id === s.userId || u.empId === s.empId)
+    const user = (db.users || []).find((u) => u.id === s.userId || u.empId === s.empId)
     db.rosters.push({
-      id: `rst-${Date.now()}-${s.empId}`,
-      userId: s.userId || (user ? user.id : ''),
-      empId: s.empId,
-      userName: s.userName || (user ? user.name : 'Employee'),
-      designation: user ? user.designation : (s.designation || 'Operator'),
+      id: `rst-${Date.now()}-${sanitizeAlphanumeric(s.empId, 30)}`,
+      userId: sanitizeAlphanumeric(s.userId, 50) || (user ? user.id : ''),
+      empId: sanitizeAlphanumeric(s.empId, 30),
+      userName: sanitizeString(s.userName, 100) || (user ? user.name : 'Employee'),
+      designation: user ? user.designation : (sanitizeString(s.designation, 100) || 'Operator'),
       date,
-      shift: s.shift || 'G Shift (08:30 AM - 05:30 PM)',
-      shiftCode: s.shiftCode || 'G',
-      site: s.site || 'ACC Chanda Mine Pit',
-      equipment: s.equipment || 'General Plant Duty',
-      vehicleId: s.vehicleId || '',
-      supervisor: s.supervisor || 'Shift In-charge'
+      shift: sanitizeString(s.shift, 80) || 'G Shift (08:30 AM - 05:30 PM)',
+      shiftCode: sanitizeAlphanumeric(s.shiftCode, 10) || 'G',
+      site: sanitizeString(s.site, 80) || 'ACC Chanda Mine Pit',
+      equipment: sanitizeString(s.equipment, 100) || 'General Plant Duty',
+      vehicleId: sanitizeAlphanumeric(s.vehicleId, 50),
+      supervisor: sanitizeString(s.supervisor, 100) || 'Shift In-charge'
     })
   }
 
@@ -4767,7 +4876,7 @@ app.post('/api/payroll/rosters/tomorrow-bulk', async (c) => {
 })
 
 app.delete('/api/payroll/rosters/:id', async (c) => {
-  const id = c.req.param('id')
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
   const db = await getDb(c.env)
   db.rosters = (db.rosters || []).filter((r) => r.id !== id)
   await setDb(c.env, db)
@@ -4781,27 +4890,29 @@ app.get('/api/payroll/leaves', async (c) => {
 })
 
 app.post('/api/payroll/leaves', async (c) => {
-  const body = await c.req.json()
-  const { userId, empId, leaveType, startDate, endDate, days, reason } = body
+  const body = await c.req.json().catch(() => ({}))
+  const userId = sanitizeAlphanumeric(body.userId, 50)
+  const empId = sanitizeAlphanumeric(body.empId, 30)
+  const startDate = sanitizeDateString(body.startDate)
 
   if (!userId || !startDate) {
     return c.json({ success: false, message: 'User and start date are required' }, 400)
   }
 
   const db = await getDb(c.env)
-  const user = db.users.find((u) => u.id === userId || u.empId === userId || u.empId === empId)
+  const user = (db.users || []).find((u) => u.id === userId || u.empId === userId || u.empId === empId)
 
-  const numDays = Number(days) || 1
+  const numDays = sanitizeNumber(body.days, 1, 0.5, 365)
   const newLeave = {
     id: `lev-${Date.now()}`,
     userId: user ? user.id : userId,
     empId: user ? user.empId : empId,
     userName: user ? user.name : 'Employee',
-    leaveType: leaveType || 'Casual Leave',
+    leaveType: sanitizeString(body.leaveType, 50) || 'Casual Leave',
     startDate,
-    endDate: endDate || startDate,
+    endDate: sanitizeDateString(body.endDate) || startDate,
     days: numDays,
-    reason: reason || 'Personal Leave',
+    reason: sanitizeString(body.reason, 200) || 'Personal Leave',
     status: 'Approved',
     appliedDate: new Date().toISOString().split('T')[0]
   }
@@ -4819,18 +4930,18 @@ app.post('/api/payroll/leaves', async (c) => {
 })
 
 app.post('/api/payroll/leaves/credit', async (c) => {
-  const body = await c.req.json()
-  const { userId, empId, creditDays, reason, notes } = body
+  const body = await c.req.json().catch(() => ({}))
+  const userId = sanitizeAlphanumeric(body.userId, 50)
+  const empId = sanitizeAlphanumeric(body.empId, 30)
 
-  const numCredit = Math.max(1, Number(creditDays) || 1)
+  const numCredit = sanitizeNumber(body.creditDays, 1, 1, 100)
   const db = await getDb(c.env)
-  const user = db.users.find((u) => u.id === userId || u.empId === userId || u.empId === empId)
+  const user = (db.users || []).find((u) => u.id === userId || u.empId === userId || u.empId === empId)
 
   if (!user) {
     return c.json({ success: false, message: 'Employee not found.' }, 404)
   }
 
-  // Credit leaves: Increase totalLeaves and leaveBalance
   user.totalLeaves = (Number(user.totalLeaves) || 10) + numCredit
   user.leaveBalance = Math.max(0, user.totalLeaves - (Number(user.leavesTaken) || 0))
 
@@ -4841,8 +4952,8 @@ app.post('/api/payroll/leaves/credit', async (c) => {
     empId: user.empId,
     userName: user.name,
     creditDays: numCredit,
-    reason: reason || 'Manual Leave Credit Adjustment',
-    notes: notes || '',
+    reason: sanitizeString(body.reason, 150) || 'Manual Leave Credit Adjustment',
+    notes: sanitizeString(body.notes, 200),
     date: new Date().toISOString().split('T')[0],
     createdAt: new Date().toISOString()
   }
@@ -4858,18 +4969,18 @@ app.post('/api/payroll/leaves/credit', async (c) => {
 })
 
 app.post('/api/payroll/leaves/deduct', async (c) => {
-  const body = await c.req.json()
-  const { userId, empId, deductDays, reason, notes } = body
+  const body = await c.req.json().catch(() => ({}))
+  const userId = sanitizeAlphanumeric(body.userId, 50)
+  const empId = sanitizeAlphanumeric(body.empId, 30)
 
-  const numDeduct = Math.max(1, Number(deductDays) || 1)
+  const numDeduct = sanitizeNumber(body.deductDays, 1, 1, 100)
   const db = await getDb(c.env)
-  const user = db.users.find((u) => u.id === userId || u.empId === userId || u.empId === empId)
+  const user = (db.users || []).find((u) => u.id === userId || u.empId === userId || u.empId === empId)
 
   if (!user) {
     return c.json({ success: false, message: 'Employee not found.' }, 404)
   }
 
-  // Deduct leaves from quota/balance safely
   user.totalLeaves = Math.max(0, (Number(user.totalLeaves) || 10) - numDeduct)
   user.leaveBalance = Math.max(0, user.totalLeaves - (Number(user.leavesTaken) || 0))
 
@@ -4880,8 +4991,8 @@ app.post('/api/payroll/leaves/deduct', async (c) => {
     empId: user.empId,
     userName: user.name,
     deductDays: numDeduct,
-    reason: reason || 'Manual Leave Quota Deduction',
-    notes: notes || '',
+    reason: sanitizeString(body.reason, 150) || 'Manual Leave Quota Deduction',
+    notes: sanitizeString(body.notes, 200),
     date: new Date().toISOString().split('T')[0],
     createdAt: new Date().toISOString()
   }
@@ -4897,7 +5008,7 @@ app.post('/api/payroll/leaves/deduct', async (c) => {
 })
 
 app.delete('/api/payroll/leaves/:id', async (c) => {
-  const id = c.req.param('id')
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
   const db = await getDb(c.env)
   if (!db.leaves) db.leaves = []
 
@@ -4906,13 +5017,12 @@ app.delete('/api/payroll/leaves/:id', async (c) => {
     return c.json({ success: false, message: 'Leave record not found.' }, 404)
   }
 
-  const user = db.users.find((u) => u.id === leave.userId || u.empId === leave.empId)
+  const user = (db.users || []).find((u) => u.id === leave.userId || u.empId === leave.empId)
   if (user) {
     user.leavesTaken = Math.max(0, (Number(user.leavesTaken) || 0) - (Number(leave.days) || 1))
     user.leaveBalance = Math.max(0, (Number(user.totalLeaves) || 10) - user.leavesTaken)
   }
 
-  // Remove any automated leave attendance override for this period
   if (Array.isArray(db.attendance)) {
     db.attendance = db.attendance.filter(
       (a) => !((a.userId === leave.userId || a.empId === leave.empId) && a.date >= leave.startDate && a.date <= leave.endDate && a.status === 'Leave')
@@ -4935,13 +5045,15 @@ app.get('/api/payroll/salary-slips', async (c) => {
 })
 
 app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
-  const body = await c.req.json()
-  const { monthYear, month, year } = body
+  const body = await c.req.json().catch(() => ({}))
+  const monthYear = sanitizeString(body.monthYear, 50)
+  const month = sanitizeString(body.month, 30)
+  const year = sanitizeString(body.year, 10)
 
   const mYear = monthYear || 'September 2026'
   const db = await getDb(c.env)
 
-  const activeEmployees = db.users.filter((u) => u.role !== 'Super Admin' && u.status === 'Active')
+  const activeEmployees = (db.users || []).filter((u) => u.role !== 'Super Admin' && u.status === 'Active')
   if (activeEmployees.length === 0) {
     return c.json({ success: false, message: 'No active employees found to generate salary slips' }, 400)
   }
@@ -4969,7 +5081,6 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
 
   for (const u of activeEmployees) {
     const empKey = `${u.empId || u.id}_${mYear}`
-    // If employee already has a manually corrected/locked slip for this month, keep it untouched
     if (lockedEmpKeys.has(empKey)) {
       continue
     }
@@ -5011,7 +5122,7 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
     }
 
     const slip = {
-      id: `slp-${u.empId.toLowerCase()}-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+      id: `slp-${(u.empId || 'srr').toLowerCase()}-${Date.now()}-${Math.floor(Math.random()*1000)}`,
       userId: u.id,
       empId: u.empId,
       userName: u.name,
@@ -5063,7 +5174,7 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
 })
 
 app.post('/api/payroll/salary-slips/update', async (c) => {
-  const body = await c.req.json()
+  const body = await c.req.json().catch(() => ({}))
   const {
     id,
     userId,
@@ -5090,19 +5201,23 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
     newBasicPerDay
   } = body
 
-  if ((!userId && !empId) || !monthYear) {
+  const sUserId = sanitizeAlphanumeric(userId, 50)
+  const sEmpId = sanitizeAlphanumeric(empId, 30)
+  const sMonthYear = sanitizeString(monthYear, 50)
+
+  if ((!sUserId && !sEmpId) || !sMonthYear) {
     return c.json({ success: false, message: 'Employee ID and Month/Year are required' }, 400)
   }
 
   const db = await getDb(c.env)
   if (!db.salarySlips) db.salarySlips = []
 
-  const user = db.users.find((u) => u.id === userId || u.empId === empId || u.empId === userId)
-  const finalUserId = user ? user.id : (userId || `usr-${(empId || 'srr').toLowerCase()}`)
-  const finalEmpId = user ? user.empId : (empId || 'SRR')
-  const finalUserName = user ? user.name : (body.userName || 'Employee')
+  const user = (db.users || []).find((u) => u.id === sUserId || u.empId === sEmpId || u.empId === sUserId)
+  const finalUserId = user ? user.id : (sUserId || `usr-${(sEmpId || 'srr').toLowerCase()}`)
+  const finalEmpId = user ? user.empId : (sEmpId || 'SRR')
+  const finalUserName = user ? user.name : sanitizeString(body.userName, 100) || 'Employee'
 
-  const cleanNum = (val) => Math.round((Number(val) || 0) * 100) / 100
+  const cleanNum = (val) => Math.round(sanitizeNumber(val, 0, 0, 100000000) * 100) / 100
 
   // STRICT COMPONENT ISOLATION: Keep every earning and deduction in its own clean bucket
   const safeBasic = cleanNum(earnings?.basic)
@@ -5124,34 +5239,34 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
   const safeDeductions = cleanNum(totalDeductions !== undefined ? totalDeductions : (safePf + safeEsic + safePt + safeLic + safeAdvance + safeTds))
   const safeNet = cleanNum(netPay !== undefined ? netPay : (safeGross - safeDeductions))
 
-  // Find existing slip by id or by user+monthYear
-  let existingIndex = db.salarySlips.findIndex((s) => (id && s.id === id) || ((s.userId === finalUserId || s.empId === finalEmpId) && s.monthYear === monthYear))
+  const safeSlipId = sanitizeAlphanumeric(id, 80)
+  let existingIndex = db.salarySlips.findIndex((s) => (safeSlipId && s.id === safeSlipId) || ((s.userId === finalUserId || s.empId === finalEmpId) && s.monthYear === sMonthYear))
 
   const updatedSlip = {
-    id: id || (existingIndex >= 0 ? db.salarySlips[existingIndex].id : `slp-${finalEmpId.toLowerCase()}-${Date.now()}`),
+    id: safeSlipId || (existingIndex >= 0 ? db.salarySlips[existingIndex].id : `slp-${finalEmpId.toLowerCase()}-${Date.now()}`),
     userId: finalUserId,
     empId: finalEmpId,
     userName: finalUserName,
-    monthYear,
-    month: month || monthYear.split(' ')[0],
-    year: year || monthYear.split(' ')[1] || '2026',
-    designation: user ? (user.designation || user.rank) : (body.designation || 'Staff'),
-    department: user ? user.department : (body.department || 'Plant Fleet & Garage O&M'),
-    fatherName: user ? user.fatherName : (body.fatherName || ''),
-    dob: user ? user.dob : (body.dob || ''),
-    doj: user ? user.doj : (body.doj || ''),
-    uan: user ? user.uan : (body.uan || ''),
-    esicNo: user ? user.esicNo : (body.esicNo || ''),
-    pfNo: user ? user.pfNo : (body.pfNo || ''),
-    bankAccount: bankAccount || (user ? user.bankAccount : ''),
-    ifsc: ifsc || (user ? user.ifsc : ''),
-    location: user ? (user.location || user.site) : (body.location || 'ACC Chanda'),
-    category: user ? user.category : (body.category || 'Skilled'),
-    mobile: user ? (user.mobile || user.phone) : (body.mobile || ''),
-    phone: user ? (user.phone || user.mobile) : (body.phone || ''),
-    workedDays: Number(workedDays) || 31,
-    totalDays: Number(totalDays) || 31,
-    otHours: Number(otHours) || 0,
+    monthYear: sMonthYear,
+    month: sanitizeString(month, 30) || sMonthYear.split(' ')[0],
+    year: sanitizeString(year, 10) || sMonthYear.split(' ')[1] || '2026',
+    designation: user ? (user.designation || user.rank) : sanitizeString(body.designation, 100) || 'Staff',
+    department: user ? user.department : sanitizeString(body.department, 100) || 'Plant Fleet & Garage O&M',
+    fatherName: user ? user.fatherName : sanitizeString(body.fatherName, 120),
+    dob: user ? user.dob : sanitizeDateString(body.dob),
+    doj: user ? user.doj : sanitizeDateString(body.doj),
+    uan: user ? user.uan : sanitizeAlphanumeric(body.uan, 30),
+    esicNo: user ? user.esicNo : sanitizeAlphanumeric(body.esicNo, 30),
+    pfNo: user ? user.pfNo : sanitizeAlphanumeric(body.pfNo, 40),
+    bankAccount: sanitizeAlphanumeric(bankAccount, 50) || (user ? user.bankAccount : ''),
+    ifsc: sanitizeAlphanumeric(ifsc, 30) || (user ? user.ifsc : ''),
+    location: user ? (user.location || user.site) : sanitizeString(body.location, 80) || 'ACC Chanda',
+    category: user ? user.category : sanitizeString(body.category, 50) || 'Skilled',
+    mobile: user ? (user.mobile || user.phone) : sanitizeString(body.mobile, 15),
+    phone: user ? (user.phone || user.mobile) : sanitizeString(body.phone, 30),
+    workedDays: sanitizeNumber(workedDays, 31, 0, 31),
+    totalDays: sanitizeNumber(totalDays, 31, 28, 31),
+    otHours: sanitizeNumber(otHours, 0, 0, 300),
     otWage: safeOtWage,
     earnings: {
       basic: safeBasic,
@@ -5172,9 +5287,9 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
     grossPay: safeGross,
     totalDeductions: safeDeductions,
     netPay: safeNet,
-    status: status || 'Paid',
-    paymentDate: paymentDate || new Date().toISOString().split('T')[0],
-    remarks: remarks || 'Salary structure adjusted/corrected by user',
+    status: sanitizeString(status, 30) || 'Paid',
+    paymentDate: sanitizeDateString(paymentDate) || new Date().toISOString().split('T')[0],
+    remarks: sanitizeString(remarks, 250) || 'Salary structure adjusted/corrected by user',
     isManuallyCorrected: true,
     manualLocked: true,
     updatedAt: new Date().toISOString()
@@ -5187,22 +5302,20 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
   }
 
   if (user) {
-    if (bankAccount) user.bankAccount = bankAccount
-    if (ifsc) user.ifsc = ifsc
+    if (bankAccount) user.bankAccount = sanitizeAlphanumeric(bankAccount, 50)
+    if (ifsc) user.ifsc = sanitizeAlphanumeric(ifsc, 30)
     if (updateUserBaseSalary) {
-      // STRICT RULE: Master profile CTC is strictly fixed recurring pay (Basic + DA + HRA + Special Allowance)
-      // Variable Overtime (safeOtWage) and one-time bonus (safeBonus) are NEVER merged into base monthly CTC!
       const fixedMonthlyCtc = cleanNum(safeBasic + safeDa + safeHra + safeSpecial)
       if (fixedMonthlyCtc > 0) {
         user.ctc = fixedMonthlyCtc
         user.baseSalary = fixedMonthlyCtc
       } else if (newCtc) {
-        user.ctc = Number(newCtc)
-        user.baseSalary = Number(newCtc)
+        user.ctc = sanitizeNumber(newCtc)
+        user.baseSalary = sanitizeNumber(newCtc)
       }
     }
     if (updateUserBaseSalary && newBasicPerDay) {
-      user.basicPerDay = Number(newBasicPerDay)
+      user.basicPerDay = sanitizeNumber(newBasicPerDay)
     }
   }
 
@@ -5210,14 +5323,14 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
 
   return c.json({
     success: true,
-    message: `⚡ Salary structure & monthly slip for ${finalUserName} (${monthYear}) updated successfully! (OT & Components Locked)`,
+    message: `⚡ Salary structure & monthly slip for ${finalUserName} (${sMonthYear}) updated successfully! (OT & Components Locked)`,
     slip: updatedSlip,
     salarySlips: db.salarySlips
   })
 })
 
 app.delete('/api/payroll/salary-slips/:id', async (c) => {
-  const id = c.req.param('id')
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
   const db = await getDb(c.env)
   db.salarySlips = (db.salarySlips || []).filter((s) => s.id !== id)
   await setDb(c.env, db)
