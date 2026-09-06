@@ -4035,7 +4035,9 @@ function generateDefaultSalarySlips(users, mYear = 'August 2026') {
       totalDeductions,
       netPay,
       status: 'Paid',
-      paymentDate: mYear.includes('August') ? '2026-08-31' : (mYear.includes('July') ? '2026-07-31' : '2026-09-30')
+      paymentDate: mYear.includes('August') ? '2026-08-31' : (mYear.includes('July') ? '2026-07-31' : '2026-09-30'),
+      isManuallyCorrected: false,
+      manualLocked: false
     })
   }
   return slips
@@ -4080,7 +4082,7 @@ const getDb = async (env) => {
     })
   }
 
-  // Ensure August 2026, July 2026, and September 2026 salary structures/slips exist
+  // Ensure August 2026, July 2026, and September 2026 salary structures/slips exist without overwriting existing/manual slips
   if (dbData && Array.isArray(dbData.users)) {
     if (!dbData.salarySlips) dbData.salarySlips = []
 
@@ -4090,17 +4092,20 @@ const getDb = async (env) => {
 
     if (!hasAugust || !hasJuly || !hasSeptember) {
       if (!hasAugust) {
-        const augSlips = generateDefaultSalarySlips(dbData.users, 'August 2026')
-        dbData.salarySlips = [...augSlips, ...dbData.salarySlips]
+        const existingEmpIds = new Set(dbData.salarySlips.filter((s) => s.monthYear === 'August 2026').map((s) => s.empId || s.userId))
+        const augSlips = generateDefaultSalarySlips(dbData.users.filter((u) => !existingEmpIds.has(u.empId) && !existingEmpIds.has(u.id)), 'August 2026')
+        dbData.salarySlips = [...dbData.salarySlips, ...augSlips]
         dbNeedsSave = true
       }
       if (!hasJuly) {
-        const julSlips = generateDefaultSalarySlips(dbData.users, 'July 2026')
+        const existingEmpIds = new Set(dbData.salarySlips.filter((s) => s.monthYear === 'July 2026').map((s) => s.empId || s.userId))
+        const julSlips = generateDefaultSalarySlips(dbData.users.filter((u) => !existingEmpIds.has(u.empId) && !existingEmpIds.has(u.id)), 'July 2026')
         dbData.salarySlips = [...dbData.salarySlips, ...julSlips]
         dbNeedsSave = true
       }
       if (!hasSeptember) {
-        const sepSlips = generateDefaultSalarySlips(dbData.users, 'September 2026')
+        const existingEmpIds = new Set(dbData.salarySlips.filter((s) => s.monthYear === 'September 2026').map((s) => s.empId || s.userId))
+        const sepSlips = generateDefaultSalarySlips(dbData.users.filter((u) => !existingEmpIds.has(u.empId) && !existingEmpIds.has(u.id)), 'September 2026')
         dbData.salarySlips = [...dbData.salarySlips, ...sepSlips]
         dbNeedsSave = true
       }
@@ -4952,9 +4957,23 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
     }
   }
 
+  if (!db.salarySlips) db.salarySlips = []
+
+  // STRICT RULE: Identify and preserve any slips that have been manually corrected / locked by user
+  const existingLockedSlips = db.salarySlips.filter(
+    (s) => s.monthYear === mYear && (s.isManuallyCorrected === true || s.manualLocked === true)
+  )
+  const lockedEmpKeys = new Set(existingLockedSlips.map((s) => `${s.empId || s.userId}_${s.monthYear}`))
+
   const newSlips = []
 
   for (const u of activeEmployees) {
+    const empKey = `${u.empId || u.id}_${mYear}`
+    // If employee already has a manually corrected/locked slip for this month, keep it untouched
+    if (lockedEmpKeys.has(empKey)) {
+      continue
+    }
+
     const dim = defaultDim
     const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0)))
     const ctc = Number(u.ctc)
@@ -4992,7 +5011,7 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
     }
 
     const slip = {
-      id: `slp-${u.empId.toLowerCase()}-${Date.now()}`,
+      id: `slp-${u.empId.toLowerCase()}-${Date.now()}-${Math.floor(Math.random()*1000)}`,
       userId: u.id,
       empId: u.empId,
       userName: u.name,
@@ -5023,19 +5042,21 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
       totalDeductions,
       netPay,
       status: 'Paid',
-      paymentDate: new Date().toISOString().split('T')[0]
+      paymentDate: new Date().toISOString().split('T')[0],
+      isManuallyCorrected: false,
+      manualLocked: false
     }
 
     newSlips.push(slip)
   }
 
-  if (!db.salarySlips) db.salarySlips = []
-  db.salarySlips = [...newSlips, ...db.salarySlips.filter((s) => s.monthYear !== mYear)]
+  const otherMonthSlips = db.salarySlips.filter((s) => s.monthYear !== mYear)
+  db.salarySlips = [...existingLockedSlips, ...newSlips, ...otherMonthSlips]
   await setDb(c.env, db)
 
   return c.json({ 
     success: true, 
-    message: `Generated ${newSlips.length} salary slips for ${mYear} successfully!`, 
+    message: `Generated ${newSlips.length} salary slips for ${mYear} successfully! (${existingLockedSlips.length} manual slips protected).`, 
     generatedCount: newSlips.length,
     salarySlips: db.salarySlips 
   })
@@ -5083,6 +5104,7 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
 
   const cleanNum = (val) => Math.round((Number(val) || 0) * 100) / 100
 
+  // STRICT COMPONENT ISOLATION: Keep every earning and deduction in its own clean bucket
   const safeBasic = cleanNum(earnings?.basic)
   const safeDa = cleanNum(earnings?.da)
   const safeHra = cleanNum(earnings?.hra)
@@ -5153,6 +5175,8 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
     status: status || 'Paid',
     paymentDate: paymentDate || new Date().toISOString().split('T')[0],
     remarks: remarks || 'Salary structure adjusted/corrected by user',
+    isManuallyCorrected: true,
+    manualLocked: true,
     updatedAt: new Date().toISOString()
   }
 
@@ -5165,9 +5189,17 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
   if (user) {
     if (bankAccount) user.bankAccount = bankAccount
     if (ifsc) user.ifsc = ifsc
-    if (updateUserBaseSalary && newCtc) {
-      user.ctc = Number(newCtc)
-      user.baseSalary = Number(newCtc)
+    if (updateUserBaseSalary) {
+      // STRICT RULE: Master profile CTC is strictly fixed recurring pay (Basic + DA + HRA + Special Allowance)
+      // Variable Overtime (safeOtWage) and one-time bonus (safeBonus) are NEVER merged into base monthly CTC!
+      const fixedMonthlyCtc = cleanNum(safeBasic + safeDa + safeHra + safeSpecial)
+      if (fixedMonthlyCtc > 0) {
+        user.ctc = fixedMonthlyCtc
+        user.baseSalary = fixedMonthlyCtc
+      } else if (newCtc) {
+        user.ctc = Number(newCtc)
+        user.baseSalary = Number(newCtc)
+      }
     }
     if (updateUserBaseSalary && newBasicPerDay) {
       user.basicPerDay = Number(newBasicPerDay)
@@ -5178,7 +5210,7 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
 
   return c.json({
     success: true,
-    message: `⚡ Salary structure & monthly slip for ${finalUserName} (${monthYear}) updated successfully!`,
+    message: `⚡ Salary structure & monthly slip for ${finalUserName} (${monthYear}) updated successfully! (OT & Components Locked)`,
     slip: updatedSlip,
     salarySlips: db.salarySlips
   })

@@ -420,10 +420,44 @@ async function fetchLeaves() {
   renderAttendanceGlassCards();
 }
 
+// Local Storage Keys & Robust Client Persistence Layer
+const STORAGE_KEYS = {
+  SLIPS: 'srr_payroll_salary_slips_v3',
+  USERS: 'srr_payroll_users_v3',
+  ATTENDANCE: 'srr_payroll_attendance_v3',
+  LEAVES: 'srr_payroll_leaves_v3'
+};
+
+function saveSlipsToStorage(slips) {
+  try {
+    if (Array.isArray(slips) && slips.length > 0) {
+      localStorage.setItem(STORAGE_KEYS.SLIPS, JSON.stringify(slips));
+    }
+  } catch (e) {
+    console.warn('LocalStorage save error:', e);
+  }
+}
+
+function loadSlipsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SLIPS);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('LocalStorage load error:', e);
+  }
+  return [];
+}
+
 // Client-side Salary Slips Generator Utility
-function generateClientSalarySlips(mYear = 'August 2026') {
-  if (!Array.isArray(allUsers) || allUsers.length === 0) return [];
-  const activeEmployees = allUsers.filter((u) => u.role !== 'Super Admin' && u.status !== 'Inactive');
+function generateClientSalarySlips(mYear = 'August 2026', userSubset = null) {
+  const targetUsers = Array.isArray(userSubset) ? userSubset : allUsers;
+  if (!Array.isArray(targetUsers) || targetUsers.length === 0) return [];
+  const activeEmployees = targetUsers.filter((u) => u.role !== 'Super Admin' && u.status !== 'Inactive');
   const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
   let defaultDim = 31;
   if (mYear) {
@@ -499,42 +533,74 @@ function generateClientSalarySlips(mYear = 'August 2026') {
       otHours: 0,
       otWage: 0,
       earnings: { basic, da, hra, specialAllowance, bonus: 0, otWage: 0 },
-      deductions: { pf, esic, pt, lic: 0, advance: 0 },
+      deductions: { pf, esic, pt, lic: 0, advance: 0, tds: 0 },
       grossPay,
       totalDeductions,
       netPay,
       status: 'Paid',
-      paymentDate: mYear.includes('August') ? '2026-08-31' : (mYear.includes('July') ? '2026-07-31' : '2026-09-30')
+      paymentDate: mYear.includes('August') ? '2026-08-31' : (mYear.includes('July') ? '2026-07-31' : '2026-09-30'),
+      isManuallyCorrected: false,
+      manualLocked: false
     };
   });
 }
 
 async function fetchSalarySlips() {
+  const cachedSlips = loadSlipsFromStorage();
+  if (cachedSlips.length > 0) {
+    allSalarySlips = cachedSlips;
+  }
+
   try {
     const res = await fetch('/api/payroll/salary-slips');
     const data = await res.json();
     if (data.success && Array.isArray(data.salarySlips) && data.salarySlips.length > 0) {
-      allSalarySlips = data.salarySlips;
+      const serverSlips = data.salarySlips;
+      const mergedSlipsMap = new Map();
+
+      // Seed with server slips
+      serverSlips.forEach((s) => {
+        const key = s.id || `${s.empId || s.userId}_${s.monthYear}`;
+        mergedSlipsMap.set(key, s);
+      });
+
+      // Override or retain local manually corrected slips so no server reset erases manual OT/components
+      cachedSlips.forEach((cs) => {
+        const key = cs.id || `${cs.empId || cs.userId}_${cs.monthYear}`;
+        const srv = mergedSlipsMap.get(key);
+        if (cs.isManuallyCorrected || cs.manualLocked) {
+          mergedSlipsMap.set(key, cs);
+        } else if (!srv) {
+          mergedSlipsMap.set(key, cs);
+        }
+      });
+
+      allSalarySlips = Array.from(mergedSlipsMap.values());
+      saveSlipsToStorage(allSalarySlips);
     }
   } catch (e) {
-    console.warn('Salary slips fetch failed', e);
+    console.warn('Salary slips fetch fallback to local cache', e);
   }
 
-  // Guarantee August 2026, July 2026, and September 2026 salary structures are loaded
+  // Guarantee August 2026, July 2026, and September 2026 salary structures are loaded without overwriting existing/manual slips
   if (allUsers.length > 0) {
-    const hasAugust = allSalarySlips.some((s) => s.monthYear === 'August 2026');
-    const hasJuly = allSalarySlips.some((s) => s.monthYear === 'July 2026');
-    const hasSeptember = allSalarySlips.some((s) => s.monthYear === 'September 2026');
+    const ensureMonthSlips = (mYear) => {
+      const existingEmpKeys = new Set(
+        allSalarySlips.filter((s) => s.monthYear === mYear).map((s) => s.empId || s.userId)
+      );
+      const missingUsers = allUsers.filter(
+        (u) => u.role !== 'Super Admin' && u.status !== 'Inactive' && !existingEmpKeys.has(u.empId) && !existingEmpKeys.has(u.id)
+      );
+      if (missingUsers.length > 0) {
+        const newMonthSlips = generateClientSalarySlips(mYear, missingUsers);
+        allSalarySlips = [...allSalarySlips, ...newMonthSlips];
+      }
+    };
 
-    if (!hasAugust) {
-      allSalarySlips = [...generateClientSalarySlips('August 2026'), ...allSalarySlips];
-    }
-    if (!hasJuly) {
-      allSalarySlips = [...allSalarySlips, ...generateClientSalarySlips('July 2026')];
-    }
-    if (!hasSeptember) {
-      allSalarySlips = [...allSalarySlips, ...generateClientSalarySlips('September 2026')];
-    }
+    ensureMonthSlips('August 2026');
+    ensureMonthSlips('July 2026');
+    ensureMonthSlips('September 2026');
+    saveSlipsToStorage(allSalarySlips);
   }
 
   renderSalaryTable();
@@ -2024,6 +2090,8 @@ function exportMonthlyPayrollExcel() {
       'DA (₹)',
       'HRA (₹)',
       'Special Allowance (₹)',
+      'Bonus / Arrears (₹)',
+      'Overtime (OT) Wages (₹)',
       'GROSS EARNINGS (₹)',
       'PF (12%) (₹)',
       'ESIC (₹)',
@@ -2054,6 +2122,8 @@ function exportMonthlyPayrollExcel() {
       Number(s.earnings?.da || 0).toFixed(2),
       Number(s.earnings?.hra || 0).toFixed(2),
       Number(s.earnings?.specialAllowance || 0).toFixed(2),
+      Number(s.earnings?.bonus || 0).toFixed(2),
+      Number(s.earnings?.otWage !== undefined ? s.earnings.otWage : (s.otWage || 0)).toFixed(2),
       Number(s.grossPay || 0).toFixed(2),
       Number(s.deductions?.pf || 0).toFixed(2),
       Number(s.deductions?.esic || 0).toFixed(2),
@@ -2403,17 +2473,29 @@ function renderSalaryTable() {
       const grossStr = `₹${Number(s.grossPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
       const dedStr = `₹${Number(s.totalDeductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
       const netStr = `₹${Number(s.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      const resolvedOt = Number(s.earnings?.otWage !== undefined ? s.earnings.otWage : (s.otWage || 0));
+      const isManual = s.isManuallyCorrected || s.manualLocked;
+
+      const otBadge = resolvedOt > 0
+        ? `<div style="margin-top: 3px;"><span class="badge" style="background: rgba(255,107,0,0.12); color: #C2410C; font-size: 10.5px; font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,107,0,0.3);"><i class="fa-solid fa-bolt text-orange"></i> OT: ₹${resolvedOt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>`
+        : '';
+      const lockBadge = isManual
+        ? `<span class="badge" style="background: rgba(14,165,233,0.1); color: #0284C7; font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-left: 4px;" title="Manually Corrected & Locked"><i class="fa-solid fa-lock"></i> Locked</span>`
+        : '';
 
       return `
       <tr>
         <td class="emp-cell-id">${s.id ? s.id.slice(-9) : 'SLP'}</td>
-        <td><strong>${escapeHtml(s.monthYear)}</strong></td>
+        <td><strong>${escapeHtml(s.monthYear)}</strong>${lockBadge}</td>
         <td>
           <span class="emp-cell-name">${escapeHtml(s.userName)}</span>
           <span class="emp-cell-sub">ID: ${escapeHtml(s.empId)} | Site: ${escapeHtml(s.location || 'ACC Chanda')}</span>
         </td>
         <td>${escapeHtml(s.designation || 'Staff')}</td>
-        <td><strong>${s.workedDays || 31} / ${s.totalDays || 31}</strong></td>
+        <td>
+          <strong>${s.workedDays || 31} / ${s.totalDays || 31}</strong>
+          ${otBadge}
+        </td>
         <td><strong>${grossStr}</strong></td>
         <td><span class="text-danger">${dedStr}</span></td>
         <td><strong class="text-orange text-lg">${netStr}</strong></td>
@@ -2574,9 +2656,11 @@ async function downloadSlipPdf(slipId) {
 function createWhatsAppMessage(slip) {
   const cleanMobile = String(slip.mobile || slip.phone || '').replace(/[^0-9]/g, '').slice(-10);
   const basic = Number(slip.earnings?.basic || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-  const da = Number(slip.earnings?.da || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+  const da = Number(slip.earnings?.da || 0);
   const hra = Number(slip.earnings?.hra || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-  const special = Number(slip.earnings?.specialAllowance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+  const special = Number(slip.earnings?.specialAllowance || 0);
+  const bonus = Number(slip.earnings?.bonus || 0);
+  const ot = Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0));
   const gross = Number(slip.grossPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
   const pf = Number(slip.deductions?.pf || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
@@ -2584,6 +2668,13 @@ function createWhatsAppMessage(slip) {
   const pt = Number(slip.deductions?.pt || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
   const deductions = Number(slip.totalDeductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
   const netPay = Number(slip.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+  let earningsText = ` • Basic Salary: ₹${basic}\n`;
+  if (da > 0) earningsText += ` • DA: ₹${da.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n`;
+  earningsText += ` • HRA: ₹${hra}\n`;
+  if (special > 0) earningsText += ` • Special Plant Allowance: ₹${special.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n`;
+  if (bonus > 0) earningsText += ` • Bonus / Arrears: ₹${bonus.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n`;
+  if (ot > 0) earningsText += ` • Overtime (OT) Wages: ₹${ot.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n`;
 
   const msg = `*SHREE RR TRADING COMPANY*
 *Official Salary Slip - ${slip.monthYear}*
@@ -2594,10 +2685,7 @@ function createWhatsAppMessage(slip) {
 📅 *Payable Days:* ${slip.workedDays || 31} / ${slip.totalDays || 31} Days
 
 💵 *GROSS EARNINGS:* *₹${gross}*
- • Basic Salary: ₹${basic}
- • DA: ₹${da}
- • HRA: ₹${hra}
- • Special Plant Allowance: ₹${special}
+${earningsText.trimEnd()}
 
 📉 *TOTAL DEDUCTIONS:* *₹${deductions}*
  • PF Contribution: ₹${pf}
@@ -2690,7 +2778,7 @@ function viewSalarySlip(slipId) {
   const da = Number(slip.earnings?.da || 0);
   const hra = Number(slip.earnings?.hra || 0);
   const special = Number(slip.earnings?.specialAllowance || 0);
-  const ot = Number(slip.earnings?.otWage || 0);
+  const ot = Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0));
   const gross = Number(slip.grossPay || 0);
 
   document.getElementById('slip-earn-basic').textContent = `₹${basic.toFixed(2)}`;
@@ -2702,7 +2790,7 @@ function viewSalarySlip(slipId) {
 
   const pf = Number(slip.deductions?.pf || 0);
   const esic = Number(slip.deductions?.esic || 0);
-  const pt = Number(slip.deductions?.pt || 0);
+  const pt = Number(slip.deductions?.pt !== undefined ? slip.deductions.pt : 200);
   const lic = Number(slip.deductions?.lic || 0);
   const adv = Number(slip.deductions?.advance || 0);
   const deductions = Number(slip.totalDeductions || 0);
@@ -4339,11 +4427,15 @@ function openSalaryCorrectionModal(slipIdOrUserId) {
   let targetUser = null;
 
   if (slipIdOrUserId) {
-    targetSlip = allSalarySlips.find((s) => s.id === slipIdOrUserId || s.userId === slipIdOrUserId || s.empId === slipIdOrUserId);
+    targetSlip = allSalarySlips.find((s) => s.id === slipIdOrUserId);
     if (targetSlip) {
       targetUser = allUsers.find((u) => u.id === targetSlip.userId || u.empId === targetSlip.empId);
     } else {
       targetUser = allUsers.find((u) => u.id === slipIdOrUserId || u.empId === slipIdOrUserId);
+      const selectedMonth = monthSelect ? monthSelect.value : (document.getElementById('payroll-month-select')?.value || 'August 2026');
+      if (targetUser) {
+        targetSlip = allSalarySlips.find((s) => (s.userId === targetUser.id || s.empId === targetUser.empId) && s.monthYear === selectedMonth);
+      }
     }
   }
 
@@ -4432,12 +4524,15 @@ function loadCorrectionFormData(slip, user) {
     workedDaysEl.value = slip ? (slip.workedDays !== undefined ? slip.workedDays : (user ? (user.payableDays || dim) : dim)) : (user ? (user.payableDays || dim) : dim);
   }
 
+  const resolvedOtWage = slip ? Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0)) : 0;
+  const resolvedOtHours = slip ? Number(slip.otHours || 0) : 0;
+
   const otHoursEl = document.getElementById('correction-ot-hours');
-  if (otHoursEl) otHoursEl.value = slip ? (slip.otHours || 0) : 0;
+  if (otHoursEl) otHoursEl.value = resolvedOtHours;
 
   const otRateEl = document.getElementById('correction-ot-rate');
   if (otRateEl) {
-    otRateEl.value = slip ? (slip.otHours && slip.otWage ? (slip.otWage / slip.otHours).toFixed(2) : 0) : 0;
+    otRateEl.value = (resolvedOtHours > 0 && resolvedOtWage > 0) ? (resolvedOtWage / resolvedOtHours).toFixed(2) : 0;
   }
 
   if (slip) {
@@ -4446,7 +4541,7 @@ function loadCorrectionFormData(slip, user) {
     document.getElementById('correction-earn-hra').value = Number(slip.earnings?.hra || 0).toFixed(2);
     document.getElementById('correction-earn-special').value = Number(slip.earnings?.specialAllowance || 0).toFixed(2);
     document.getElementById('correction-earn-bonus').value = Number(slip.earnings?.bonus || 0).toFixed(2);
-    document.getElementById('correction-earn-ot').value = Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0)).toFixed(2);
+    document.getElementById('correction-earn-ot').value = resolvedOtWage.toFixed(2);
 
     document.getElementById('correction-ded-pf').value = Number(slip.deductions?.pf || 0).toFixed(2);
     document.getElementById('correction-ded-esic').value = Number(slip.deductions?.esic || 0).toFixed(2);
@@ -4483,13 +4578,17 @@ function recalculateCorrectionSlip(useStandardFormula = false) {
   const otHours = Math.max(0, Number(document.getElementById('correction-ot-hours')?.value) || 0);
   const otRate = Math.max(0, Number(document.getElementById('correction-ot-rate')?.value) || 0);
 
+  // Preserve any currently typed/loaded OT wage
+  let currentOt = Number(document.getElementById('correction-earn-ot')?.value) || 0;
+
   if (useStandardFormula && user) {
     const ctc = Number(user.ctc);
     const bpd = Number(user.basicPerDay);
 
     let calcBasic = 0, calcDa = 0, calcHra = 0, calcSpecial = 0, calcGross = 0;
-    let calcPf = 0, calcEsic = 0, calcPt = 200, calcOtWage = 0;
+    let calcPf = 0, calcEsic = 0, calcPt = 200;
 
+    let calcOtWage = currentOt;
     if (otHours > 0 && otRate > 0) {
       calcOtWage = Math.round(otHours * otRate * 100) / 100;
     }
@@ -4522,26 +4621,19 @@ function recalculateCorrectionSlip(useStandardFormula = false) {
     document.getElementById('correction-earn-da').value = calcDa.toFixed(2);
     document.getElementById('correction-earn-hra').value = calcHra.toFixed(2);
     document.getElementById('correction-earn-special').value = calcSpecial.toFixed(2);
-    document.getElementById('correction-earn-bonus').value = '0.00';
+    // STRICT RULE: Do not wipe out Overtime (OT) wage when recalculating statutory components
     document.getElementById('correction-earn-ot').value = calcOtWage.toFixed(2);
 
     document.getElementById('correction-ded-pf').value = calcPf.toFixed(2);
     document.getElementById('correction-ded-esic').value = calcEsic.toFixed(2);
     document.getElementById('correction-ded-pt').value = calcPt.toFixed(2);
-    document.getElementById('correction-ded-advance').value = '0.00';
-    document.getElementById('correction-ded-lic').value = '0.00';
-    document.getElementById('correction-ded-tds').value = '0.00';
 
-    showToast(`⚡ Standard statutory salary formula calculated for ${user.name}!`);
-  }
-
-  // Auto calculate OT wages if OT rate & hours are keyed in
-  let currentOt = Number(document.getElementById('correction-earn-ot')?.value) || 0;
-  if (otHours > 0 && otRate > 0 && !useStandardFormula) {
-    currentOt = Math.round(otHours * otRate * 100) / 100;
+    showToast(`⚡ Standard statutory formula calculated for ${user.name}! (Overtime & Components Preserved)`);
+  } else if (otHours > 0 && otRate > 0) {
+    const computedOt = Math.round(otHours * otRate * 100) / 100;
     const otInput = document.getElementById('correction-earn-ot');
     if (otInput && document.activeElement !== otInput) {
-      otInput.value = currentOt.toFixed(2);
+      otInput.value = computedOt.toFixed(2);
     }
   }
 
@@ -4620,6 +4712,10 @@ async function saveSalaryCorrection() {
   const remarks = document.getElementById('correction-remarks')?.value.trim();
   const updateMasterCtc = document.getElementById('correction-update-profile-ctc')?.checked || false;
 
+  // STRICT RULE: Fixed Base Monthly CTC represents Basic + DA + HRA + Special Allowance only.
+  // Overtime (otWage) and Bonus (bonus) are NEVER merged into fixed master CTC!
+  const fixedBaseCtc = Math.round((basic + da + hra + specialAllowance) * 100) / 100;
+
   const payload = {
     id: slipId || undefined,
     userId: user.id,
@@ -4654,8 +4750,10 @@ async function saveSalaryCorrection() {
     status,
     paymentDate,
     remarks: remarks || `Salary structure corrected for ${monthYear}`,
+    isManuallyCorrected: true,
+    manualLocked: true,
     updateUserBaseSalary: updateMasterCtc,
-    newCtc: updateMasterCtc ? grossPay : undefined
+    newCtc: updateMasterCtc ? fixedBaseCtc : undefined
   };
 
   try {
@@ -4672,7 +4770,7 @@ async function saveSalaryCorrection() {
 
     const data = await res.json();
     if (data.success) {
-      showToast(data.message || `Salary structure & payslip for ${user.name} saved successfully!`);
+      showToast(data.message || `Salary structure & payslip for ${user.name} saved successfully! (OT & Components Locked)`);
 
       // Update in-memory state
       if (Array.isArray(data.salarySlips) && data.salarySlips.length > 0) {
@@ -4687,11 +4785,14 @@ async function saveSalaryCorrection() {
       }
 
       if (updateMasterCtc && user) {
-        user.ctc = grossPay;
-        user.baseSalary = grossPay;
+        user.ctc = fixedBaseCtc;
+        user.baseSalary = fixedBaseCtc;
       }
       if (bankAccount && user) user.bankAccount = bankAccount;
       if (ifsc && user) user.ifsc = ifsc;
+
+      // Save to persistent LocalStorage
+      saveSlipsToStorage(allSalarySlips);
 
       closeModal('modal-salary-correction');
       renderSalaryTable();
@@ -4701,15 +4802,24 @@ async function saveSalaryCorrection() {
     }
   } catch (err) {
     console.error('Error saving salary correction:', err);
-    // Offline local fallback
+    // Offline local fallback with complete protection
     const localSlip = { ...payload, id: slipId || `slp-${user.empId.toLowerCase()}-${Date.now()}` };
     const idx = allSalarySlips.findIndex((s) => s.id === localSlip.id || (s.empId === localSlip.empId && s.monthYear === localSlip.monthYear));
     if (idx >= 0) allSalarySlips[idx] = localSlip;
     else allSalarySlips.unshift(localSlip);
 
+    if (updateMasterCtc && user) {
+      user.ctc = fixedBaseCtc;
+      user.baseSalary = fixedBaseCtc;
+    }
+    if (bankAccount && user) user.bankAccount = bankAccount;
+    if (ifsc && user) user.ifsc = ifsc;
+
+    saveSlipsToStorage(allSalarySlips);
+
     closeModal('modal-salary-correction');
     renderSalaryTable();
-    showToast(`⚡ Salary structure updated locally for ${user.name}!`);
+    showToast(`⚡ Salary structure & OT locked locally for ${user.name}!`);
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;
