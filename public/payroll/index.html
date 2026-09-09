@@ -2511,11 +2511,148 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: BULK WHATSAPP SALARY SLIP DISPATCH HUB ==================== -->
+  <div id="modal-bulk-whatsapp-dispatch" class="modal-backdrop hidden">
+    <div class="modal-dialog modal-xl peach-glass" style="max-width: 1100px; width: 95vw; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="modal-header no-print" style="background: linear-gradient(135deg, #FFF7ED, #FFEDD5); border-bottom: 2px solid var(--border-orange); padding: 14px 22px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(37, 211, 102, 0.15); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #16A34A; border: 1px solid rgba(37, 211, 102, 0.3);">
+            <i class="fa-brands fa-whatsapp"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+              WhatsApp Salary Slip Bulk Dispatch Hub
+              <span id="bulk-wa-month-badge" class="badge" style="background: #FF6B00; color: #FFF; font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 700;">August 2026</span>
+            </h3>
+            <p style="margin: 2px 0 0 0; font-size: 12px; color: var(--text-muted);">
+              Automated 1-Click PDF generation, personalized breakdown formatting, and sequential WhatsApp dispatch to employee numbers.
+            </p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn-close-modal" onclick="closeModal('modal-bulk-whatsapp-dispatch')">&times;</button>
+        </div>
+      </div>
+
+      <!-- Live KPI Metrics Bar -->
+      <div style="padding: 12px 22px; background: #FFFFFF; border-bottom: 1px solid var(--border-light); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-users text-orange" style="font-size: 20px;"></i>
+          <div>
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Total Slips</div>
+            <div id="bulk-wa-total-count" style="font-size: 16px; font-weight: 800; color: var(--logo-navy);">0 Employees</div>
+          </div>
+        </div>
+        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-mobile-screen-button text-success" style="font-size: 20px;"></i>
+          <div>
+            <div style="font-size: 11px; color: #15803D; font-weight: 600;">Ready with WhatsApp</div>
+            <div id="bulk-wa-ready-count" style="font-size: 16px; font-weight: 800; color: #15803D;">0 / 0 Ready</div>
+          </div>
+        </div>
+        <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-paper-plane text-primary" style="font-size: 20px;"></i>
+          <div>
+            <div style="font-size: 11px; color: #1D4ED8; font-weight: 600;">Dispatch Progress</div>
+            <div id="bulk-wa-progress-count" style="font-size: 16px; font-weight: 800; color: #1D4ED8;">0 Dispatched</div>
+          </div>
+        </div>
+        <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-indian-rupee-sign text-warning" style="font-size: 20px;"></i>
+          <div>
+            <div style="font-size: 11px; color: #B45309; font-weight: 600;">Total Net Disbursal</div>
+            <div id="bulk-wa-total-net" style="font-size: 16px; font-weight: 800; color: #B45309;">₹0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Automated Queue Controls Panel -->
+      <div style="padding: 14px 22px; background: #FAF5F0; border-bottom: 1px solid var(--border-light);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" id="btn-start-bulk-whatsapp-queue" class="btn btn-success btn-glow" style="font-weight: 800; padding: 8px 18px; font-size: 14px; background: #16A34A; border-color: #15803D;" onclick="startAutomatedBulkWhatsAppDispatch()">
+              <i class="fa-solid fa-bolt"></i> Start Automated Dispatch All
+            </button>
+            <button type="button" id="btn-pause-bulk-whatsapp-queue" class="btn btn-outline-warning btn-sm hidden" onclick="togglePauseBulkWhatsApp()">
+              <i class="fa-solid fa-pause"></i> Pause
+            </button>
+            <button type="button" id="btn-next-bulk-whatsapp-queue" class="btn btn-primary btn-sm hidden" onclick="advanceNextBulkWhatsAppManual()">
+              <i class="fa-solid fa-forward-step"></i> Send Next Now ⏩
+            </button>
+            <button type="button" id="btn-stop-bulk-whatsapp-queue" class="btn btn-outline-danger btn-sm hidden" onclick="stopBulkWhatsAppDispatch()">
+              <i class="fa-solid fa-stop"></i> Stop
+            </button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--logo-navy);">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <label for="bulk-wa-delay-select" style="margin: 0; font-weight: 700; white-space: nowrap;">Dispatch Pace:</label>
+              <select id="bulk-wa-delay-select" class="custom-select" style="font-size: 12px; padding: 4px 10px; height: 32px; font-weight: 600; min-width: 170px;" onchange="handleBulkDelayChange()">
+                <option value="3" selected>⚡ Fast (3s auto-advance)</option>
+                <option value="5">⏱ Standard (5s auto-advance)</option>
+                <option value="0">✋ Manual (Click 'Send Next')</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; padding: 4px 10px; border-radius: 6px; border: 1px solid #E2E8F0;">
+              <input type="checkbox" id="bulk-wa-download-pdf-toggle" checked style="accent-color: var(--logo-orange); cursor: pointer;">
+              <label for="bulk-wa-download-pdf-toggle" style="margin: 0; cursor: pointer; font-weight: 600;">Auto-Download PDF</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar & Status Line -->
+        <div style="margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+            <span id="bulk-wa-status-text" style="color: var(--logo-navy);">
+              <i class="fa-solid fa-circle-info text-orange"></i> Click "Start Automated Dispatch All" to begin sending to all employees.
+            </span>
+            <span id="bulk-wa-percentage" style="color: #16A34A;">0%</span>
+          </div>
+          <div style="height: 10px; background: #E2E8F0; border-radius: 5px; overflow: hidden; position: relative;">
+            <div id="bulk-wa-progress-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #FF6B00, #16A34A); transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee Dispatch Interactive Table -->
+      <div class="modal-body" style="padding: 0; overflow-y: auto; flex: 1; max-height: 52vh;">
+        <table class="table" style="margin-bottom: 0; width: 100%; border-collapse: collapse;">
+          <thead style="position: sticky; top: 0; background: #F8FAFC; z-index: 2; border-bottom: 2px solid #E2E8F0;">
+            <tr>
+              <th style="width: 45px; text-align: center;">#</th>
+              <th>Employee Name & ID</th>
+              <th>Designation & Site</th>
+              <th style="min-width: 170px;">WhatsApp Mobile No.</th>
+              <th style="text-align: right;">Take-Home Pay</th>
+              <th style="text-align: center; width: 110px;">PDF Slip</th>
+              <th style="text-align: center; width: 130px;">Dispatch Status</th>
+              <th style="text-align: right; width: 140px;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="bulk-wa-table-body">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer" style="padding: 12px 22px; background: #FFFFFF; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-shield-check text-success"></i>
+          <span>Official 1-Page Payslip strictly formatted according to Shree RR Trading Company standards.</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modal-bulk-whatsapp-dispatch')">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification System -->
   <div id="toast" class="toast hidden"></div>
 
   <!-- Application Logic JS -->
-  <script src="/payroll/payroll.js?v=2.4.0"></script>
+  <script src="/payroll/payroll.js?v=2.5.0"></script>
   <!-- PWA Service Worker & Install Engine -->
   <script src="/pwa.js"></script>
 </body>
