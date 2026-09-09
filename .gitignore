@@ -39,8 +39,9 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
-*.swp
-*.swo
-*.tmp
+# WhatsApp Bot Auth & Sessions
+tools/**/auth_info_baileys/
+tools/**/node_modules/
+auth_info_baileys/
 
 

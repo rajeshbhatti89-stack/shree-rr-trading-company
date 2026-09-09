@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shree RR Trading - WhatsApp Salary Slip Auto-Dispatcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    :root {
+      --navy: #0B1936;
+      --orange: #FF6B00;
+      --bg: #0B1120;
+      --card-bg: #1E293B;
+      --border: #334155;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Top Brand Bar */
+    .brand-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--orange);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-title h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #FFFFFF;
+    }
+
+    .brand-title p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .badge-status.connected {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .badge-status.disconnected {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .badge-status.qr_ready {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--warning);
+      color: var(--warning);
+    }
+
+    /* Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    /* QR Box */
+    .qr-container {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .qr-image-wrap {
+      background: #FFFFFF;
+      padding: 12px;
+      border-radius: 12px;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      margin-bottom: 14px;
+    }
+
+    .qr-image-wrap img {
+      width: 220px;
+      height: 220px;
+      display: block;
+    }
+
+    .qr-instructions {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      text-align: left;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-top: 12px;
+    }
+
+    .qr-instructions ol {
+      padding-left: 18px;
+    }
+
+    /* Anti-Ban Shield Card */
+    .anti-ban-shield {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: #A7F3D0;
+      line-height: 1.5;
+    }
+
+    /* Controls Bar */
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .select-input, .text-input {
+      background: #0F172A;
+      border: 1px solid var(--border);
+      color: #FFFFFF;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .select-input:focus, .text-input:focus {
+      outline: none;
+      border-color: var(--orange);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--orange);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #E05E00;
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #FFFFFF;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #FFFFFF;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: #334155;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Progress Banner */
+    .progress-banner {
+      background: #0F172A;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+
+    .progress-bar-wrap {
+      background: #334155;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, var(--orange), #F59E0B);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* Slips Table */
+    .table-wrap {
+      overflow-x: auto;
+      max-height: 520px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      background: #0F172A;
+      color: var(--text-muted);
+      padding: 10px 14px;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Activity Logs */
+    .logs-box {
+      background: #0A0E1A;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      height: 150px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 14px;
+    }
+
+    .log-item {
+      margin-bottom: 4px;
+    }
+
+    .log-item.success { color: #34D399; }
+    .log-item.error { color: #F87171; }
+    .log-item.waiting { color: #FBBF24; }
+    .log-item.complete { color: #60A5FA; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Header -->
+    <header class="brand-header">
+      <div class="brand-title">
+        <div style="background: #FFFFFF; padding: 6px; border-radius: 8px; display: flex;">
+          <i class="fa-solid fa-file-invoice-dollar" style="color: var(--orange); font-size: 24px;"></i>
+        </div>
+        <div>
+          <h1>SHREE RR TRADING COMPANY</h1>
+          <p>Official 1-Click WhatsApp PDF Salary Slip Auto-Dispatcher (Anti-Ban Safe)</p>
+        </div>
+      </div>
+
+      <div id="connection-badge" class="badge-status disconnected">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Checking Connection...
+      </div>
+    </header>
+
+    <div class="main-grid">
+
+      <!-- Left Column: WhatsApp Status & QR Code -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <i class="fa-brands fa-whatsapp text-success" style="font-size: 20px; color: var(--success);"></i>
+            WhatsApp Device Link
+          </div>
+
+          <div id="qr-box" class="qr-container">
+            <div id="qr-spinner">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: var(--orange); margin: 20px 0;"></i>
+              <p style="font-size: 13px; color: var(--text-muted);">Initializing WhatsApp Engine...</p>
+            </div>
+            <div id="qr-content" style="display: none;">
+              <div class="qr-image-wrap">
+                <img id="qr-img" src="" alt="WhatsApp QR Code">
+              </div>
+              <div class="qr-instructions">
+                <strong>Kaise connect karein:</strong>
+                <ol>
+                  <li>Apne phone me <strong>WhatsApp</strong> khole.</li>
+                  <li>Upar 3 dots (Menu) ➡️ <strong>Linked Devices</strong> dabaye.</li>
+                  <li><strong>Link a Device</strong> dabakar is QR code ko scan karein.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div id="connected-box" style="display: none; text-align: center; padding: 20px 0;">
+            <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;">
+              <i class="fa-solid fa-check" style="color: var(--success); font-size: 28px;"></i>
+            </div>
+            <h3 style="font-size: 16px; margin-bottom: 4px;" id="connected-user-name">WhatsApp Connected</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;" id="connected-phone">+91 ...</p>
+            
+            <button class="btn btn-outline" onclick="logoutWhatsApp()" style="font-size: 12px;">
+              <i class="fa-solid fa-right-from-bracket"></i> Disconnect / Switch Number
+            </button>
+          </div>
+
+          <!-- Anti-Ban Shield Info -->
+          <div class="anti-ban-shield">
+            <strong><i class="fa-solid fa-shield-halved"></i> 100% Anti-Ban Protection Active:</strong>
+            <p style="margin-top: 4px;">
+              Bot har message ke pehle human typing simulate karta hai aur natural 8–12s delay leta hai. Isse WhatsApp spam filter trigger nahi hota aur number 100% safe rehta hai.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Salary Slips & Auto-Dispatch Hub -->
+      <div>
+        <div class="card">
+          <div class="card-title" style="justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid fa-paper-plane" style="color: var(--orange);"></i>
+              Salary Slips PDF Dispatch Hub
+            </div>
+            <span id="slip-count-badge" style="font-size: 12px; background: #0F172A; padding: 4px 10px; border-radius: 12px; color: var(--text-muted);">
+              0 Slips Loaded
+            </span>
+          </div>
+
+          <!-- Controls Row -->
+          <div class="controls-row">
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Month</label>
+              <select id="month-filter" class="select-input" onchange="filterSlips()">
+                <option value="August 2026">August 2026</option>
+                <option value="July 2026">July 2026</option>
+                <option value="">All Months</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Anti-Ban Delay</label>
+              <select id="delay-select" class="select-input">
+                <option value="8">8 Seconds (Safe)</option>
+                <option value="12" selected>12 Seconds (Extra Safe - Recommended)</option>
+                <option value="15">15 Seconds (Ultra Safe)</option>
+              </select>
+            </div>
+
+            <div style="margin-left: auto; display: flex; gap: 8px; align-items: flex-end;">
+              <button class="btn btn-outline" onclick="loadSlips()" title="Refresh Slips from Server">
+                <i class="fa-solid fa-rotate"></i> Sync Slips
+              </button>
+              <button id="btn-dispatch-all" class="btn btn-primary" onclick="startBatchDispatch()">
+                <i class="fa-solid fa-bolt"></i> Send All PDFs (Zero Click)
+              </button>
+              <button id="btn-stop-dispatch" class="btn btn-danger" onclick="stopBatchDispatch()" style="display: none;">
+                <i class="fa-solid fa-stop"></i> Stop
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Progress Banner -->
+          <div id="progress-box" class="progress-banner" style="display: none;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <strong id="progress-status-text">Dispatching in progress...</strong>
+              <span id="progress-counts">0 / 0</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div id="progress-bar-fill" class="progress-bar-fill"></div>
+            </div>
+            <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-muted);">
+              <span>✅ Sent: <strong id="prog-sent" style="color: var(--success);">0</strong></span>
+              <span>❌ Failed: <strong id="prog-failed" style="color: var(--danger);">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Table of Employees -->
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Emp ID</th>
+                  <th>Worker Name</th>
+                  <th>Designation</th>
+                  <th>Mobile</th>
+                  <th>Net Pay</th>
+                  <th>Preview PDF</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="slips-table-body">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading salary slips...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Live Activity Logs -->
+          <div class="logs-box" id="activity-logs">
+            <div class="log-item" style="color: var(--text-muted);">[System] Bot initialized. Ready to dispatch.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let allSlips = [];
+    let currentStatus = 'disconnected';
+    let pollInterval = null;
+
+    // 1. Poll Status
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        currentStatus = data.status;
+
+        const badge = document.getElementById('connection-badge');
+        const qrBox = document.getElementById('qr-box');
+        const connectedBox = document.getElementById('connected-box');
+        const btnDispatch = document.getElementById('btn-dispatch-all');
+
+        if (data.status === 'connected') {
+          badge.className = 'badge-status connected';
+          badge.innerHTML = '<i class="fa-solid fa-check"></i> WhatsApp Connected';
+          qrBox.style.display = 'none';
+          connectedBox.style.display = 'block';
+          
+          const phone = data.user?.id ? `+${data.user.id.split('@')[0].split(':')[0]}` : '';
+          document.getElementById('connected-phone').textContent = phone;
+          btnDispatch.disabled = false;
+        } else if (data.status === 'qr_ready') {
+          badge.className = 'badge-status qr_ready';
+          badge.innerHTML = '<i class="fa-solid fa-qrcode"></i> Scan QR Code';
+          qrBox.style.display = 'block';
+          connectedBox.style.display = 'none';
+          document.getElementById('qr-spinner').style.display = 'none';
+          document.getElementById('qr-content').style.display = 'block';
+          if (data.qrDataUrl) {
+            document.getElementById('qr-img').src = data.qrDataUrl;
+          }
+          btnDispatch.disabled = true;
+        } else {
+          badge.className = 'badge-status disconnected';
+          badge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Connecting...';
+          qrBox.style.display = 'block';
+          connectedBox.style.display = 'none';
+          document.getElementById('qr-spinner').style.display = 'block';
+          document.getElementById('qr-content').style.display = 'none';
+          btnDispatch.disabled = true;
+        }
+      } catch (err) {
+        console.error('Status error:', err);
+      }
+    }
+
+    // 2. Load Slips
+    async function loadSlips() {
+      try {
+        addLog('Syncing slips from live database...', 'waiting');
+        const res = await fetch('/api/slips');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.slips)) {
+          allSlips = data.slips;
+          filterSlips();
+          addLog(`Synced ${allSlips.length} total slips successfully.`, 'success');
+        }
+      } catch (err) {
+        addLog('Error syncing slips: ' + err.message, 'error');
+      }
+    }
+
+    function filterSlips() {
+      const month = document.getElementById('month-filter').value;
+      const filtered = month 
+        ? allSlips.filter(s => String(s.monthYear || '').toLowerCase() === month.toLowerCase())
+        : allSlips;
+
+      document.getElementById('slip-count-badge').textContent = `${filtered.length} Slips (${month || 'All'})`;
+
+      const tbody = document.getElementById('slips-table-body');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No slips found for ${month}.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(slip => {
+        const mob = slip.mobile || '-';
+        const hasMobile = mob.length === 10;
+        const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+        return `
+          <tr id="row-slip-${slip.id}">
+            <td><strong>${slip.empId || slip.userId || '-'}</strong></td>
+            <td><strong>${slip.userName || '-'}</strong></td>
+            <td style="color: var(--text-muted);">${slip.designation || 'Staff'}</td>
+            <td>
+              <span style="font-family: monospace; color: ${hasMobile ? '#34D399' : '#F87171'}; font-weight: 600;">
+                ${hasMobile ? '+91 ' + mob : 'Missing'}
+              </span>
+            </td>
+            <td style="font-weight: 700; color: var(--orange);">${fmt(slip.netPay)}</td>
+            <td>
+              <a href="/api/preview-pdf/${slip.id}" target="_blank" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;">
+                <i class="fa-solid fa-eye"></i> View PDF
+              </a>
+            </td>
+            <td>
+              <span id="status-slip-${slip.id}" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #0F172A; color: var(--text-muted);">
+                Ready
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="sendSingleSlip('${slip.id}')" ${!hasMobile ? 'disabled' : ''}>
+                <i class="fa-brands fa-whatsapp text-success"></i> Send PDF
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 3. Send Single Slip
+    async function sendSingleSlip(slipId) {
+      if (currentStatus !== 'connected') {
+        alert('Please scan WhatsApp QR code first!');
+        return;
+      }
+      const slip = allSlips.find(s => String(s.id).toLowerCase() === String(slipId).toLowerCase());
+      if (!slip) return;
+
+      const statusEl = document.getElementById(`status-slip-${slip.id}`);
+      if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending PDF...';
+
+      addLog(`Sending PDF for ${slip.userName} (+91 ${slip.mobile})...`, 'waiting');
+
+      try {
+        const res = await fetch('/api/send-single', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slip })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (statusEl) statusEl.innerHTML = '<span style="color: var(--success); font-weight: bold;">✅ Sent</span>';
+          addLog(`✅ PDF Sent to ${slip.userName} (+91 ${slip.mobile})!`, 'success');
+        } else {
+          if (statusEl) statusEl.innerHTML = '<span style="color: var(--danger); font-weight: bold;">❌ Failed</span>';
+          addLog(`❌ Failed for ${slip.userName}: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        if (statusEl) statusEl.innerHTML = '<span style="color: var(--danger); font-weight: bold;">❌ Error</span>';
+        addLog(`❌ Error: ${err.message}`, 'error');
+      }
+    }
+
+    // 4. Batch Dispatch
+    async function startBatchDispatch() {
+      if (currentStatus !== 'connected') {
+        alert('Please connect WhatsApp by scanning the QR code first!');
+        return;
+      }
+
+      const month = document.getElementById('month-filter').value;
+      const filtered = month 
+        ? allSlips.filter(s => String(s.monthYear || '').toLowerCase() === month.toLowerCase())
+        : allSlips;
+
+      const validSlips = filtered.filter(s => s.mobile && s.mobile.length === 10);
+      if (validSlips.length === 0) {
+        alert('No employees with valid mobile numbers found for ' + month);
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to auto-dispatch salary slip PDFs to ${validSlips.length} employees on WhatsApp?`)) {
+        return;
+      }
+
+      const delaySeconds = parseInt(document.getElementById('delay-select').value) || 8;
+
+      document.getElementById('btn-dispatch-all').style.display = 'none';
+      document.getElementById('btn-stop-dispatch').style.display = 'inline-flex';
+      document.getElementById('progress-box').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/send-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slips: validSlips, delaySeconds })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert('Error starting batch: ' + data.error);
+        } else {
+          pollBatchProgress();
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function stopBatchDispatch() {
+      try {
+        await fetch('/api/batch-stop', { method: 'POST' });
+        addLog('Stopping batch requested...', 'waiting');
+      } catch (e) {}
+    }
+
+    function pollBatchProgress() {
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch('/api/batch-progress');
+          const data = await res.json();
+
+          if (data.success) {
+            const pct = data.total > 0 ? Math.round((data.current / data.total) * 100) : 0;
+            document.getElementById('progress-bar-fill').style.width = pct + '%';
+            document.getElementById('progress-counts').textContent = `${data.current} / ${data.total} (${pct}%)`;
+            document.getElementById('prog-sent').textContent = data.sent;
+            document.getElementById('prog-failed').textContent = data.failed;
+
+            if (data.currentSlip) {
+              document.getElementById('progress-status-text').textContent = `Sending PDF to: ${data.currentSlip.userName}...`;
+            }
+
+            // Update log box
+            if (Array.isArray(data.logs)) {
+              const logsBox = document.getElementById('activity-logs');
+              logsBox.innerHTML = data.logs.slice(0, 30).map(l => `
+                <div class="log-item ${l.status || ''}">
+                  <span style="color: var(--text-muted);">[${l.time}]</span> ${l.text}
+                </div>
+              `).join('');
+            }
+
+            if (!data.running) {
+              clearInterval(interval);
+              document.getElementById('btn-dispatch-all').style.display = 'inline-flex';
+              document.getElementById('btn-stop-dispatch').style.display = 'none';
+              document.getElementById('progress-status-text').textContent = 'Batch Completed!';
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 1500);
+    }
+
+    async function logoutWhatsApp() {
+      if (!confirm('Are you sure you want to disconnect this WhatsApp number?')) return;
+      try {
+        await fetch('/api/logout', { method: 'POST' });
+        checkStatus();
+      } catch (e) {}
+    }
+
+    function addLog(text, status = '') {
+      const box = document.getElementById('activity-logs');
+      const div = document.createElement('div');
+      div.className = 'log-item ' + status;
+      div.innerHTML = `<span style="color: var(--text-muted);">[${new Date().toLocaleTimeString()}]</span> ${text}`;
+      box.insertBefore(div, box.firstChild);
+    }
+
+    // Init
+    checkStatus();
+    loadSlips();
+    setInterval(checkStatus, 3000);
+  </script>
+</body>
+</html>
