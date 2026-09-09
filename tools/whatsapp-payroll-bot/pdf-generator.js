@@ -2,22 +2,53 @@ const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
 
-const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+function getBrowserPath() {
+  const possiblePaths = [
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe'),
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    path.join(process.env.LOCALAPPDATA || '', 'Microsoft\\Edge\\Application\\msedge.exe'),
+  ];
+  for (const p of possiblePaths) {
+    if (p && fs.existsSync(p)) return p;
+  }
+  return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+}
 
-const logoPath = path.join(__dirname, '..', '..', 'public', 'images', 'logo.png');
-const srijandevLogoPath = path.join(__dirname, '..', '..', 'public', 'images', 'srijandev_logo.png');
+function findImage(fileName) {
+  const p1 = path.join(__dirname, 'public', 'images', fileName);
+  if (fs.existsSync(p1)) return p1;
+  const p2 = path.join(__dirname, '..', '..', 'public', 'images', fileName);
+  if (fs.existsSync(p2)) return p2;
+  return null;
+}
 
-const logoBase64 = fs.existsSync(logoPath) ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}` : '';
-const srijandevBase64 = fs.existsSync(srijandevLogoPath) ? `data:image/png;base64,${fs.readFileSync(srijandevLogoPath).toString('base64')}` : '';
+const logoPath = findImage('logo.png');
+const srijandevLogoPath = findImage('srijandev_logo.png');
+
+const logoBase64 = (logoPath && fs.existsSync(logoPath)) ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}` : '';
+const srijandevBase64 = (srijandevLogoPath && fs.existsSync(srijandevLogoPath)) ? `data:image/png;base64,${fs.readFileSync(srijandevLogoPath).toString('base64')}` : '';
 
 let sharedBrowser = null;
 
 async function getBrowser() {
-  if (sharedBrowser && sharedBrowser.isConnected()) {
-    return sharedBrowser;
+  if (sharedBrowser) {
+    try {
+      const isAlive = typeof sharedBrowser.isConnected === 'function'
+        ? sharedBrowser.isConnected()
+        : Boolean(sharedBrowser.connected);
+      if (isAlive) {
+        return sharedBrowser;
+      }
+    } catch (e) {
+      sharedBrowser = null;
+    }
   }
+  const browserPath = getBrowserPath();
   sharedBrowser = await puppeteer.launch({
-    executablePath: CHROME_PATH,
+    executablePath: browserPath,
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
   });
@@ -393,9 +424,10 @@ function buildScreenshot1Html(slip) {
 }
 
 async function generateSalarySlipPdf(slip) {
+  let page = null;
   try {
     const browser = await getBrowser();
-    const page = await browser.newPage();
+    page = await browser.newPage();
     const html = buildScreenshot1Html(slip);
 
     await page.setContent(html, { waitUntil: 'load' });
@@ -411,11 +443,15 @@ async function generateSalarySlipPdf(slip) {
       }
     });
 
-    await page.close();
     return Buffer.from(pdfBuf);
   } catch (err) {
-    console.error('PDF generation error, fallback:', err);
+    console.error('PDF generation error:', err);
+    sharedBrowser = null;
     throw err;
+  } finally {
+    if (page) {
+      try { await page.close(); } catch (_) {}
+    }
   }
 }
 
