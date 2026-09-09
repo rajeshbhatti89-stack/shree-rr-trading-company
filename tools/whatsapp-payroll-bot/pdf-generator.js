@@ -412,7 +412,7 @@ async function generateSalarySlipPdf(slip) {
     });
 
     await page.close();
-    return pdfBuf;
+    return Buffer.from(pdfBuf);
   } catch (err) {
     console.error('PDF generation error, fallback:', err);
     throw err;

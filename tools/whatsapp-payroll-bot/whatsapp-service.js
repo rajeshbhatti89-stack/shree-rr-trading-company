@@ -163,12 +163,13 @@ class WhatsAppService {
       // Non-fatal if presence fails
     }
 
-    // 2. Send actual PDF document file
+    // 2. Send actual PDF document file (ensuring true Node.js Buffer)
+    const safeBuffer = Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer);
     const result = await this.sock.sendMessage(jid, {
-      document: pdfBuffer,
+      document: safeBuffer,
       mimetype: 'application/pdf',
-      fileName: fileName || 'Salary_Slip.pdf',
-      caption: caption || `📄 Shree RR Trading Company - Salary Slip for ${employeeName}`
+      fileName: String(fileName || 'Salary_Slip.pdf'),
+      caption: String(caption || `📄 Shree RR Trading Company - Salary Slip for ${employeeName || 'Staff'}`)
     });
 
     return {
