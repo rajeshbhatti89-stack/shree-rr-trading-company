@@ -28,21 +28,68 @@ let batchState = {
 };
 
 const dbPath = path.join(__dirname, '..', '..', 'data', 'payroll_db.json');
+const LIVE_API_URL = 'https://shreerrtradingcompany.com';
 
-// Helper: load slips from local DB
-function getLocalPayrollSlips() {
-  if (fs.existsSync(dbPath)) {
+// Helper: load slips directly from live portal with local DB fallback
+async function getLivePayrollSlips() {
+  let slips = [];
+  let users = [];
+
+  try {
+    const res = await fetch(`${LIVE_API_URL}/api/payroll/salary-slips`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.salarySlips) && data.salarySlips.length > 0) {
+        slips = data.salarySlips;
+        console.log(`[Server] Loaded ${slips.length} slips directly from live portal (${LIVE_API_URL}).`);
+      }
+    }
+  } catch (netErr) {
+    console.warn('[Server] Live API fetch warning, fallback to local DB:', netErr.message);
+  }
+
+  // Fetch live users for mobile numbers
+  try {
+    const uRes = await fetch(`${LIVE_API_URL}/api/payroll/users`);
+    if (uRes.ok) {
+      const uData = await uRes.json();
+      if (uData.success && Array.isArray(uData.users)) {
+        users = uData.users;
+      }
+    }
+  } catch (e) {}
+
+  // Fallback to local DB if network failed
+  if (slips.length === 0 && fs.existsSync(dbPath)) {
     try {
       const raw = fs.readFileSync(dbPath, 'utf8');
       const db = JSON.parse(raw);
-      if (Array.isArray(db.salarySlips) && db.salarySlips.length > 0) {
-        return db.salarySlips;
-      }
+      if (Array.isArray(db.salarySlips)) slips = db.salarySlips;
+      if (Array.isArray(db.users) && users.length === 0) users = db.users;
     } catch (e) {
-      console.error('Error reading db:', e);
+      console.error('Error reading local db:', e);
     }
   }
-  return [];
+
+  // Map clean mobile numbers from user profiles
+  const userMap = new Map();
+  users.forEach(u => {
+    if (u.id) userMap.set(String(u.id).toLowerCase(), u);
+    if (u.empId) userMap.set(String(u.empId).toLowerCase(), u);
+  });
+
+  return slips.map(s => {
+    let mob = s.mobile || s.phone || '';
+    if (!mob && (s.userId || s.empId)) {
+      const u = userMap.get(String(s.userId || '').toLowerCase()) || userMap.get(String(s.empId || '').toLowerCase());
+      if (u) mob = u.mobile || u.phone || '';
+    }
+    const cleanMob = String(mob).replace(/\D/g, '').slice(-10);
+    return {
+      ...s,
+      mobile: cleanMob
+    };
+  });
 }
 
 // 1. Status of WhatsApp connection
@@ -56,10 +103,10 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// 2. Fetch Slips
-app.get('/api/slips', (req, res) => {
+// 2. Fetch Slips (Direct from Live Payroll)
+app.get('/api/slips', async (req, res) => {
   try {
-    const slips = getLocalPayrollSlips();
+    const slips = await getLivePayrollSlips();
     const month = req.query.month;
     const filtered = month 
       ? slips.filter(s => String(s.monthYear || '').toLowerCase() === String(month).toLowerCase())
@@ -265,8 +312,8 @@ app.post('/api/upload-excel', upload.single('file'), (req, res) => {
 // 4. Preview PDF for a slip
 app.get('/api/preview-pdf/:id', async (req, res) => {
   try {
-    const slips = getLocalPayrollSlips();
-    const slip = slips.find(s => String(s.id).toLowerCase() === String(req.params.id).toLowerCase());
+    const slips = await getLivePayrollSlips();
+    const slip = slips.find(s => String(s.id).toLowerCase() === String(req.params.id).toLowerCase() || String(s.empId).toLowerCase() === String(req.params.id).toLowerCase());
     if (!slip) {
       return res.status(404).send('Salary slip not found');
     }

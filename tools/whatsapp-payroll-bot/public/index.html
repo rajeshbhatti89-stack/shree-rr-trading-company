@@ -485,18 +485,19 @@
                 <tr>
                   <th>Emp ID</th>
                   <th>Worker Name</th>
-                  <th>Designation</th>
+                  <th>Days & OT</th>
+                  <th>Gross Earnings</th>
+                  <th>Deductions</th>
+                  <th>Net Disbursal</th>
                   <th>Mobile</th>
-                  <th>Net Pay</th>
-                  <th>Preview PDF</th>
-                  <th>Status</th>
+                  <th>Official Slip</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody id="slips-table-body">
                 <tr>
-                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
-                    <i class="fa-solid fa-spinner fa-spin"></i> Loading salary slips...
+                  <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading salary slips from live payroll portal...
                   </td>
                 </tr>
               </tbody>
@@ -600,13 +601,13 @@
     // 2. Load Slips
     async function loadSlips() {
       try {
-        addLog('Syncing slips from live database...', 'waiting');
+        addLog('Syncing slips directly from live payroll portal...', 'waiting');
         const res = await fetch('/api/slips');
         const data = await res.json();
         if (data.success && Array.isArray(data.slips)) {
           allSlips = data.slips;
           filterSlips();
-          addLog(`Synced ${allSlips.length} total slips successfully.`, 'success');
+          addLog(`Synced ${allSlips.length} total slips directly from live portal!`, 'success');
         }
       } catch (err) {
         addLog('Error syncing slips: ' + err.message, 'error');
@@ -623,7 +624,7 @@
 
       const tbody = document.getElementById('slips-table-body');
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No slips found for ${month}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">No slips found for ${month}.</td></tr>`;
         return;
       }
 
@@ -631,27 +632,34 @@
         const mob = slip.mobile || '-';
         const hasMobile = mob.length === 10;
         const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        const otVal = Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0));
 
         return `
           <tr id="row-slip-${slip.id}">
-            <td><strong>${slip.empId || slip.userId || '-'}</strong></td>
-            <td><strong>${slip.userName || '-'}</strong></td>
-            <td style="color: var(--text-muted);">${slip.designation || 'Staff'}</td>
             <td>
-              <span style="font-family: monospace; color: ${hasMobile ? '#34D399' : '#F87171'}; font-weight: 600;">
+              <strong>${slip.empId || slip.userId || '-'}</strong>
+              ${slip.manualLocked ? '<i class="fa-solid fa-lock" style="color: #38BDF8; font-size: 10px; margin-left: 4px;" title="Locked"></i>' : ''}
+            </td>
+            <td>
+              <strong>${slip.userName || '-'}</strong>
+              <div style="font-size: 11px; color: var(--text-muted);">${slip.designation || 'Staff'}</div>
+            </td>
+            <td>
+              <span>${slip.workedDays || 31} / ${slip.totalDays || 31}</span>
+              ${otVal > 0 ? `<div style="margin-top: 2px;"><span style="background: rgba(245, 158, 11, 0.2); color: #F59E0B; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;">⚡ OT: ₹${otVal.toLocaleString('en-IN')}</span></div>` : ''}
+            </td>
+            <td style="font-weight: 600;">${fmt(slip.grossPay)}</td>
+            <td style="color: var(--danger); font-weight: 600;">${fmt(slip.totalDeductions)}</td>
+            <td style="font-weight: 800; color: var(--orange); font-size: 14px;">${fmt(slip.netPay)}</td>
+            <td>
+              <span style="font-family: monospace; color: ${hasMobile ? '#34D399' : '#F87171'}; font-weight: 600; font-size: 12px;">
                 ${hasMobile ? '+91 ' + mob : 'Missing'}
               </span>
             </td>
-            <td style="font-weight: 700; color: var(--orange);">${fmt(slip.netPay)}</td>
             <td>
-              <a href="/api/preview-pdf/${slip.id}" target="_blank" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;">
-                <i class="fa-solid fa-eye"></i> View PDF
+              <a href="https://shreerrtradingcompany.com/payroll/slip.html?id=${slip.id}" target="_blank" class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" title="Open Official Stamped Salary Slip Statement">
+                <i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> View Slip
               </a>
-            </td>
-            <td>
-              <span id="status-slip-${slip.id}" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #0F172A; color: var(--text-muted);">
-                Ready
-              </span>
             </td>
             <td>
               <button class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="sendSingleSlip('${slip.id}')" ${!hasMobile ? 'disabled' : ''}>
