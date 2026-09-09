@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Official Salary Slip Statement - Shree RR Trading Company</title>
+  
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="stylesheet" href="/payroll/payroll.css?v=2.5.0">
+
+  <style>
+    body {
+      background: #F1F5F9;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-main, 'Outfit', sans-serif);
+      color: #0F172A;
+    }
+
+    .slip-viewer-header {
+      background: #FFFFFF;
+      border-bottom: 2px solid var(--border-orange, #FF6B00);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .slip-container-wrap {
+      max-width: 820px;
+      margin: 20px auto 40px auto;
+      padding: 0 15px;
+    }
+
+    .slip-card-render {
+      background: #FFFFFF;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #loading-indicator {
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 16px;
+      color: #64748B;
+    }
+
+    @media print {
+      .no-print, .slip-viewer-header {
+        display: none !important;
+      }
+      body {
+        background: #FFFFFF !important;
+      }
+      .slip-container-wrap {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .slip-card-render {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Sticky Top Header Actions -->
+  <header class="slip-viewer-header no-print">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="/payroll/" class="btn btn-outline btn-sm" title="Back to Main Portal" style="font-weight: 700;">
+        <i class="fa-solid fa-arrow-left"></i> Payroll Portal
+      </a>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <img src="/images/logo.png" alt="Shree RR" style="height: 32px; width: auto;">
+        <div>
+          <strong style="font-size: 14px; color: var(--logo-navy, #0B1936);">Shree RR Trading Company</strong>
+          <span style="font-size: 12px; color: #64748B; margin-left: 6px;">Official E-Salary Slip</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button type="button" class="btn btn-outline-primary btn-sm" onclick="downloadPayslipPdf()" title="Download Crisp 1-Page PDF">
+        <i class="fa-solid fa-file-pdf"></i> Download PDF
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="window.print()" title="Print Slip">
+        <i class="fa-solid fa-print"></i> Print
+      </button>
+    </div>
+  </header>
+
+  <div class="slip-container-wrap">
+    <div id="loading-indicator">
+      <i class="fa-solid fa-spinner fa-spin text-orange" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
+      Loading Official Salary Slip...
+    </div>
+
+    <div id="slip-content-wrapper" class="slip-card-render hidden">
+      <div class="modal-body" id="printable-salary-slip-content" style="padding: 24px;">
+        <div class="official-salary-slip">
+          <div class="slip-top-brand">
+            <img src="/images/logo.png" alt="Shree RR Trading Company" class="slip-logo">
+            <div class="slip-company-info">
+              <h2>SHREE RR TRADING COMPANY</h2>
+              <p class="slip-sub">Plant O&M, Heavy Fleets & Earth Moving Machinery Contracts</p>
+              <p class="slip-site">ACC Chanda Plant Site & Operations</p>
+              <div class="slip-month-title" id="slip-display-month">PAY SLIP</div>
+            </div>
+          </div>
+
+          <div class="slip-emp-details-grid">
+            <div class="slip-detail-col">
+              <div><strong>Employee ID:</strong> <span id="slip-val-empId">-</span></div>
+              <div><strong>Employee Name:</strong> <span id="slip-val-name">-</span></div>
+              <div><strong>Father/Husband Name:</strong> <span id="slip-val-father">-</span></div>
+              <div><strong>Designation:</strong> <span id="slip-val-designation">-</span></div>
+              <div><strong>Category:</strong> <span id="slip-val-category">-</span></div>
+              <div><strong>Location:</strong> <span id="slip-val-location">-</span></div>
+            </div>
+            <div class="slip-detail-col">
+              <div><strong>Date of Birth:</strong> <span id="slip-val-dob">-</span></div>
+              <div><strong>Date of Joining:</strong> <span id="slip-val-doj">-</span></div>
+              <div><strong>UAN Number:</strong> <span id="slip-val-uan">-</span></div>
+              <div><strong>PF Number:</strong> <span id="slip-val-pf">-</span></div>
+              <div><strong>ESIC Number:</strong> <span id="slip-val-esic">-</span></div>
+              <div><strong>Bank Account & IFSC:</strong> <span id="slip-val-bank">-</span></div>
+            </div>
+          </div>
+
+          <div class="slip-attendance-row">
+            <div><strong>Total Days in Month:</strong> <span id="slip-val-totalDays">31</span></div>
+            <div><strong>Payable Working Days:</strong> <span id="slip-val-workedDays">31</span></div>
+            <div><strong>Mobile Number:</strong> <span id="slip-val-mobile">-</span></div>
+          </div>
+
+          <!-- Earnings vs Deductions Table -->
+          <table class="slip-calc-table">
+            <thead>
+              <tr>
+                <th colspan="2" class="text-left bg-light">EARNINGS</th>
+                <th colspan="2" class="text-left bg-light">DEDUCTIONS</th>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <th class="text-right">Amount (₹)</th>
+                <th>Description</th>
+                <th class="text-right">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Basic Salary</td>
+                <td class="text-right" id="slip-earn-basic">₹0.00</td>
+                <td>Provident Fund (PF @ 12%)</td>
+                <td class="text-right" id="slip-ded-pf">₹0.00</td>
+              </tr>
+              <tr>
+                <td>Dearness Allowance (DA)</td>
+                <td class="text-right" id="slip-earn-da">₹0.00</td>
+                <td>ESIC Contribution</td>
+                <td class="text-right" id="slip-ded-esic">₹0.00</td>
+              </tr>
+              <tr>
+                <td>House Rent Allowance (HRA)</td>
+                <td class="text-right" id="slip-earn-hra">₹0.00</td>
+                <td>Professional Tax (PT)</td>
+                <td class="text-right" id="slip-ded-pt">₹200.00</td>
+              </tr>
+              <tr>
+                <td>Special Allowance / Field Pay</td>
+                <td class="text-right" id="slip-earn-special">₹0.00</td>
+                <td>LIC Premium / Other</td>
+                <td class="text-right" id="slip-ded-lic">₹0.00</td>
+              </tr>
+              <tr>
+                <td>Overtime (OT) Wages</td>
+                <td class="text-right" id="slip-earn-ot">₹0.00</td>
+                <td>Advance / Adjustments</td>
+                <td class="text-right" id="slip-ded-advance">₹0.00</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="slip-foot-gross">
+                <th>GROSS EARNINGS</th>
+                <th class="text-right" id="slip-calc-gross">₹0.00</th>
+                <th>TOTAL DEDUCTIONS</th>
+                <th class="text-right" id="slip-calc-deductions">₹0.00</th>
+              </tr>
+              <tr class="slip-foot-net">
+                <th colspan="2">NET TAKE HOME PAY</th>
+                <th colspan="2" class="text-right text-orange text-lg" id="slip-calc-net">₹0.00</th>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="slip-net-words-box">
+            <strong>Amount in Words:</strong> <span id="slip-val-networds">-</span>
+          </div>
+
+          <div class="slip-signature-row">
+            <div class="sig-box">
+              <p>Employee Signature / Thumb</p>
+            </div>
+            <div class="sig-box text-right">
+              <p><strong>For SHREE RR TRADING COMPANY</strong></p>
+              <div class="auth-stamp">Authorized Signatory / Managing Director</div>
+            </div>
+          </div>
+
+          <!-- SrijanDev Official Copyright & Powered By Footer -->
+          <div class="slip-srijandev-footer" style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #CBD5E1; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #64748B;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <img src="/images/srijandev_logo.png" alt="SrijanDev" style="height: 18px; width: auto; object-fit: contain;">
+              <div>
+                <span>© 2026 <strong>SrijanDev</strong>. All Rights Reserved.</span>
+                <span style="margin: 0 4px;">•</span>
+                <span>Powered by SrijanDev Operations & Payroll Engine</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span>System Generated Official Payslip</span>
+              <span style="margin: 0 4px;">•</span>
+              <span>Valid Without Physical Signature</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeSlipData = null;
+
+    function numberToWords(num) {
+      const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+      const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+      const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+      if (!n) return '';
+      let str = '';
+      str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+      str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+      str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+      str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+      str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Only ' : 'Only';
+      return str.trim();
+    }
+
+    async function loadSalarySlip() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slipId = urlParams.get('id');
+
+      if (!slipId) {
+        document.getElementById('loading-indicator').innerHTML = `
+          <div style="color: #DC2626; font-weight: 700;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
+            No Salary Slip ID provided.
+          </div>
+          <p style="font-size: 13px; color: #64748B; margin-top: 8px;">Please check the link provided in your WhatsApp statement.</p>
+        `;
+        return;
+      }
+
+      try {
+        let slip = null;
+        
+        // 1. Fetch from server API
+        try {
+          const res = await fetch(`/api/payroll/salary-slips/${encodeURIComponent(slipId)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.slip) {
+              slip = data.slip;
+            }
+          }
+        } catch (netErr) {
+          console.warn('Network fetch error, fallback to local storage:', netErr);
+        }
+
+        // 2. Fallback to all slips API if single slip endpoint not ready
+        if (!slip) {
+          try {
+            const allRes = await fetch('/api/payroll/salary-slips');
+            if (allRes.ok) {
+              const allData = await allRes.json();
+              if (allData.success && Array.isArray(allData.salarySlips)) {
+                slip = allData.salarySlips.find(s => 
+                  String(s.id).toLowerCase() === String(slipId).toLowerCase() ||
+                  String(s.empId).toLowerCase() === String(slipId).toLowerCase()
+                );
+              }
+            }
+          } catch (e) {}
+        }
+
+        // 3. Fallback to localStorage cache
+        if (!slip) {
+          try {
+            const raw = localStorage.getItem('srr_payroll_salary_slips_v3');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              slip = parsed.find(s => 
+                String(s.id).toLowerCase() === String(slipId).toLowerCase() ||
+                String(s.empId).toLowerCase() === String(slipId).toLowerCase()
+              );
+            }
+          } catch (lsErr) {}
+        }
+
+        if (!slip) {
+          document.getElementById('loading-indicator').innerHTML = `
+            <div style="color: #DC2626; font-weight: 700;">
+              <i class="fa-solid fa-file-circle-xmark" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
+              Salary Slip Not Found
+            </div>
+            <p style="font-size: 13px; color: #64748B; margin-top: 8px;">The requested salary slip (${slipId}) was not found or has been updated.</p>
+          `;
+          return;
+        }
+
+        activeSlipData = slip;
+        populateSlip(slip);
+
+        // Auto-download if requested via ?download=1
+        if (urlParams.get('download') === '1' || urlParams.get('auto') === '1') {
+          setTimeout(() => {
+            downloadPayslipPdf();
+          }, 600);
+        }
+
+      } catch (err) {
+        document.getElementById('loading-indicator').innerHTML = `
+          <div style="color: #DC2626; font-weight: 700;">Error Loading Salary Slip</div>
+          <p style="font-size: 13px; color: #64748B;">Please try again later.</p>
+        `;
+      }
+    }
+
+    function populateSlip(slip) {
+      document.getElementById('loading-indicator').classList.add('hidden');
+      document.getElementById('slip-content-wrapper').classList.remove('hidden');
+
+      document.getElementById('slip-display-month').textContent = `PAY SLIP FOR ${(slip.monthYear || '2026').toUpperCase()}`;
+      document.getElementById('slip-val-empId').textContent = slip.empId || 'SRR';
+      document.getElementById('slip-val-name').textContent = slip.userName || '-';
+      document.getElementById('slip-val-father').textContent = slip.fatherName || '-';
+      document.getElementById('slip-val-designation').textContent = slip.designation || 'Staff';
+      document.getElementById('slip-val-category').textContent = slip.category || 'Skilled';
+      document.getElementById('slip-val-location').textContent = slip.location || 'ACC Chanda Plant Site';
+
+      document.getElementById('slip-val-dob').textContent = slip.dob || '-';
+      document.getElementById('slip-val-doj').textContent = slip.doj || '-';
+      document.getElementById('slip-val-uan').textContent = slip.uan || '-';
+      document.getElementById('slip-val-pf').textContent = slip.pfNo || '-';
+      document.getElementById('slip-val-esic').textContent = slip.esicNo || '-';
+      document.getElementById('slip-val-bank').textContent = `${slip.bankAccount || '-'} (${slip.ifsc || '-'})`;
+
+      document.getElementById('slip-val-totalDays').textContent = slip.totalDays || 31;
+      document.getElementById('slip-val-workedDays').textContent = slip.workedDays || 31;
+      document.getElementById('slip-val-mobile').textContent = slip.mobile ? `+91 ${slip.mobile}` : (slip.phone || '-');
+
+      // Earnings
+      const fmt = (v) => `₹${Number(v || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('slip-earn-basic').textContent = fmt(slip.earnings?.basic);
+      document.getElementById('slip-earn-da').textContent = fmt(slip.earnings?.da);
+      document.getElementById('slip-earn-hra').textContent = fmt(slip.earnings?.hra);
+      document.getElementById('slip-earn-special').textContent = fmt(slip.earnings?.specialAllowance);
+      
+      const resolvedOt = Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0));
+      document.getElementById('slip-earn-ot').textContent = fmt(resolvedOt);
+
+      // Deductions
+      document.getElementById('slip-ded-pf').textContent = fmt(slip.deductions?.pf);
+      document.getElementById('slip-ded-esic').textContent = fmt(slip.deductions?.esic);
+      document.getElementById('slip-ded-pt').textContent = fmt(slip.deductions?.pt);
+      document.getElementById('slip-ded-lic').textContent = fmt(slip.deductions?.lic);
+      document.getElementById('slip-ded-advance').textContent = fmt(slip.deductions?.advance);
+
+      // Totals
+      document.getElementById('slip-calc-gross').textContent = fmt(slip.grossPay);
+      document.getElementById('slip-calc-deductions').textContent = fmt(slip.totalDeductions);
+      document.getElementById('slip-calc-net').textContent = fmt(slip.netPay);
+
+      const netInt = Math.round(Number(slip.netPay || 0));
+      document.getElementById('slip-val-networds').textContent = `Indian Rupees ${numberToWords(netInt)}`;
+    }
+
+    async function downloadPayslipPdf() {
+      if (!activeSlipData) return;
+      const element = document.getElementById('printable-salary-slip-content');
+      if (!element) return;
+
+      element.classList.add('pdf-strict-single-page');
+
+      const opt = {
+        margin: [4, 6, 4, 6],
+        filename: `Shree_RR_SalarySlip_${activeSlipData.empId || activeSlipData.userId || 'EMP'}_${(activeSlipData.monthYear || 'Month').replace(/\\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      try {
+        if (typeof html2pdf !== 'undefined') {
+          await html2pdf().set(opt).from(element).save();
+        } else {
+          window.print();
+        }
+      } finally {
+        element.classList.remove('pdf-strict-single-page');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSalarySlip);
+  </script>
+
+</body>
+</html>

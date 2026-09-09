@@ -65,8 +65,7 @@ function sanitizeAlphanumeric(val, maxLen = 100) {
   if (!val) return ''
   return String(val)
     .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9\-_./ ]/g, '')
+    .replace(/[^a-zA-Z0-9\-_./ ]/g, '')
     .slice(0, maxLen)
 }
 
@@ -4699,12 +4698,18 @@ app.post('/api/payroll/vehicle-logs', async (c) => {
 })
 
 app.delete('/api/payroll/vehicle-logs/:id', async (c) => {
-  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const rawId = c.req.param('id')
+  const id = sanitizeAlphanumeric(rawId, 100)
   const db = await getDb(c.env)
   if (!db.vehicleLogs) db.vehicleLogs = []
-  db.vehicleLogs = db.vehicleLogs.filter((l) => l.id !== id)
+  const initialLength = db.vehicleLogs.length
+  db.vehicleLogs = db.vehicleLogs.filter((l) => 
+    String(l.id || '').trim().toLowerCase() !== String(id).trim().toLowerCase() &&
+    String(l.id || '').trim().toLowerCase() !== String(rawId || '').trim().toLowerCase()
+  )
   await setDb(c.env, db)
-  return c.json({ success: true, message: 'Vehicle log entry deleted.' })
+  const deletedCount = initialLength - db.vehicleLogs.length
+  return c.json({ success: true, message: 'Vehicle log entry deleted.', deletedCount })
 })
 
 // 5. Attendance & Daily Muster Roll
@@ -5042,6 +5047,23 @@ app.delete('/api/payroll/leaves/:id', async (c) => {
 app.get('/api/payroll/salary-slips', async (c) => {
   const db = await getDb(c.env)
   return c.json({ success: true, salarySlips: db.salarySlips || [] })
+})
+
+app.get('/api/payroll/salary-slips/:id', async (c) => {
+  const rawId = c.req.param('id')
+  const id = sanitizeAlphanumeric(rawId, 100)
+  const db = await getDb(c.env)
+  const slips = db.salarySlips || []
+  const slip = slips.find(
+    (s) =>
+      String(s.id || '').trim().toLowerCase() === String(id).trim().toLowerCase() ||
+      String(s.id || '').trim().toLowerCase() === String(rawId).trim().toLowerCase() ||
+      String(s.empId || '').trim().toLowerCase() === String(id).trim().toLowerCase()
+  )
+  if (!slip) {
+    return c.json({ success: false, message: 'Salary slip not found' }, 404)
+  }
+  return c.json({ success: true, slip })
 })
 
 app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {

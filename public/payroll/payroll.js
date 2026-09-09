@@ -1285,16 +1285,15 @@ function renderVehicleBreakdownLogs() {
 async function deleteVehicleLog(logId) {
   if (!confirm('Are you sure you want to delete this breakdown log?')) return;
   try {
-    const res = await fetch(`/api/payroll/vehicle-logs/${logId}`, { method: 'DELETE' });
-    const data = await res.json();
+    const res = await fetch(`/api/payroll/vehicle-logs/${encodeURIComponent(logId)}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({ success: true }));
     if (data.success) {
-      showToast('Breakdown log deleted.');
-      allVehicleLogs = allVehicleLogs.filter((l) => l.id !== logId);
-      renderFleetMTTRMatrix();
-      renderVehicleBreakdownLogs();
+      showToast('Breakdown log permanently deleted.');
     }
   } catch (e) {
-    allVehicleLogs = allVehicleLogs.filter((l) => l.id !== logId);
+    console.warn('Vehicle log delete error:', e);
+  } finally {
+    allVehicleLogs = allVehicleLogs.filter((l) => String(l.id || '').toLowerCase() !== String(logId || '').toLowerCase());
     renderFleetMTTRMatrix();
     renderVehicleBreakdownLogs();
   }
@@ -2759,6 +2758,9 @@ function createWhatsAppMessage(slip) {
   if (bonus > 0) earningsText += ` • Bonus / Arrears: ₹${bonus.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n`;
   if (ot > 0) earningsText += ` • Overtime (OT) Wages: ₹${ot.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n`;
 
+  const slipIdParam = encodeURIComponent(slip.id || slip.empId || '');
+  const pdfDownloadUrl = `https://payroll.shreerrtradingcompany.com/payroll/slip.html?id=${slipIdParam}&download=1`;
+
   const msg = `*SHREE RR TRADING COMPANY*
 *Official Salary Slip - ${slip.monthYear}*
 ━━━━━━━━━━━━━━━━━━━━
@@ -2778,12 +2780,14 @@ ${earningsText.trimEnd()}
 💰 *NET TAKE HOME SALARY:* *₹${netPay}*
 🏦 *Bank A/C:* ${slip.bankAccount || 'On Record'} (${slip.ifsc || ''})
 
-📎 _Official 1-Page PDF Payslip attached._
+📄 *OFFICIAL 1-PAGE PDF PAYSLIP DOWNLOAD:*
+👉 ${pdfDownloadUrl}
+_(Click link to view & download official stamped PDF payslip)_
 ━━━━━━━━━━━━━━━━━━━━
 _Portal: https://payroll.shreerrtradingcompany.com_
 _Developed & Powered by SrijanDev © 2026_`;
 
-  return { mobile: cleanMobile, text: msg };
+  return { mobile: cleanMobile, text: msg, pdfUrl: pdfDownloadUrl };
 }
 
 async function sendSlipWhatsApp(slipId, options = {}) {
