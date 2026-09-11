@@ -3014,7 +3014,13 @@ async function dispatchWhatsAppWithPdfAttachment({ element, filename, mobile, te
   let pdfBlob = null;
   try {
     if (typeof html2pdf !== 'undefined') {
-      pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+      pdfBlob = await html2pdf().set(opt).from(element).toPdf().get('pdf').then((pdf) => {
+        const totalPages = pdf.internal.getNumberOfPages();
+        for (let i = totalPages; i > 1; i--) {
+          pdf.deletePage(i);
+        }
+        return pdf.output('blob');
+      });
     }
   } catch (err) {
     console.warn('PDF blob generation error:', err);
@@ -5580,7 +5586,12 @@ async function downloadLetterPdf() {
 
   try {
     if (typeof html2pdf !== 'undefined') {
-      await html2pdf().set(opt).from(element).save();
+      await html2pdf().set(opt).from(element).toPdf().get('pdf').then((pdf) => {
+        const totalPages = pdf.internal.getNumberOfPages();
+        for (let i = totalPages; i > 1; i--) {
+          pdf.deletePage(i);
+        }
+      }).save();
       showToast(`Downloaded 1-Page Letter PDF: ${opt.filename}`);
     } else {
       window.print();
@@ -5591,7 +5602,14 @@ async function downloadLetterPdf() {
 }
 
 function printAppointmentLetter() {
+  const element = document.getElementById('printable-appointment-letter');
+  if (element) {
+    element.classList.add('pdf-strict-single-page');
+  }
   window.print();
+  setTimeout(() => {
+    if (element) element.classList.remove('pdf-strict-single-page');
+  }, 2000);
 }
 
 async function sendLetterWhatsApp() {

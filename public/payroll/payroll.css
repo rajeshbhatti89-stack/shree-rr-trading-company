@@ -9,7 +9,7 @@
   --logo-navy-dark: #050B1A;
   --logo-navy-light: #1A2E54;
   --logo-navy-glass: rgba(11, 25, 54, 0.95);
-  
+
   --logo-orange: #FF6B00;
   --logo-orange-hover: #E56000;
   --logo-orange-glow: rgba(255, 107, 0, 0.35);
@@ -44,13 +44,16 @@
 }
 
 /* Reset & Setup */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: var(--font-main);
   background-color: var(--bg-light-gray);
@@ -60,17 +63,51 @@ html, body {
 }
 
 /* Helpers */
-.hidden { display: none !important; }
-.text-right { text-align: right; }
-.text-left { text-align: left; }
-.text-center { text-align: center; }
-.text-orange { color: var(--logo-orange) !important; }
-.text-navy { color: var(--logo-navy) !important; }
-.text-success { color: #059669 !important; }
-.text-warning { color: #D97706 !important; }
-.text-danger { color: #DC2626 !important; }
-.text-muted { color: var(--text-muted); font-size: 13px; }
-.text-lg { font-size: 1.25rem; font-weight: 700; }
+.hidden {
+  display: none !important;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-orange {
+  color: var(--logo-orange) !important;
+}
+
+.text-navy {
+  color: var(--logo-navy) !important;
+}
+
+.text-success {
+  color: #059669 !important;
+}
+
+.text-warning {
+  color: #D97706 !important;
+}
+
+.text-danger {
+  color: #DC2626 !important;
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.text-lg {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
 
 /* Peach Glassmorphism Cards */
 .peach-glass {
@@ -145,7 +182,8 @@ html, body {
   flex-wrap: wrap;
 }
 
-.legend-badge, .shift-badge {
+.legend-badge,
+.shift-badge {
   display: inline-flex;
   align-items: center;
   padding: 4px 8px;
@@ -434,7 +472,10 @@ html, body {
   margin-bottom: 6px;
 }
 
-.form-group input, .custom-select, .form-group select, .muster-select {
+.form-group input,
+.custom-select,
+.form-group select,
+.muster-select {
   width: 100%;
   padding: 10px 14px;
   font-size: 13px;
@@ -447,7 +488,10 @@ html, body {
   outline: none;
 }
 
-.form-group input:focus, .custom-select:focus, .form-group select:focus, .muster-select:focus {
+.form-group input:focus,
+.custom-select:focus,
+.form-group select:focus,
+.muster-select:focus {
   border-color: var(--logo-orange);
   background: #FFFFFF;
   box-shadow: 0 0 0 3px var(--logo-orange-subtle);
@@ -1015,11 +1059,30 @@ html, body {
   font-family: var(--font-mono);
 }
 
-.day-pill.pill-p { background: #D1FAE5; color: #065F46; }
-.day-pill.pill-a { background: #FEE2E2; color: #991B1B; }
-.day-pill.pill-wo { background: #E2E8F0; color: #475569; }
-.day-pill.pill-l { background: #FEF3C7; color: #92400E; }
-.day-pill.pill-hd { background: #E0F2FE; color: #075985; }
+.day-pill.pill-p {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.day-pill.pill-a {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.day-pill.pill-wo {
+  background: #E2E8F0;
+  color: #475569;
+}
+
+.day-pill.pill-l {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.day-pill.pill-hd {
+  background: #E0F2FE;
+  color: #075985;
+}
 
 /* ==================== REPORTS CENTER ==================== */
 .reports-hero-banner {
@@ -1219,7 +1282,9 @@ html, body {
   font-weight: 700;
 }
 
-.status-active, .status-paid, .status-present {
+.status-active,
+.status-paid,
+.status-present {
   background: rgba(16, 185, 129, 0.1);
   color: #059669;
 }
@@ -1583,7 +1648,8 @@ html, body {
   border: 1px solid var(--logo-navy);
 }
 
-.slip-calc-table th, .slip-calc-table td {
+.slip-calc-table th,
+.slip-calc-table td {
   border: 1px solid #CBD5E1;
   padding: 8px 10px;
 }
@@ -1646,8 +1712,15 @@ html, body {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Responsive Layout & Mobile Drawer System */
@@ -1781,7 +1854,8 @@ html, body {
     margin-bottom: 20px;
   }
 
-  .data-table th, .data-table td {
+  .data-table th,
+  .data-table td {
     padding: 10px 12px;
     font-size: 12px;
     white-space: nowrap;
@@ -1951,8 +2025,15 @@ html, body {
 }
 
 @keyframes pulseCompCritical {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
-  50% { box-shadow: 0 0 0 5px rgba(220, 38, 38, 0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 0 5px rgba(220, 38, 38, 0);
+  }
 }
 
 .badge-comp-warning {
@@ -2151,6 +2232,7 @@ html, body {
     opacity: 0;
     transform: scale(0.92) translateY(15px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -2256,6 +2338,7 @@ html, body {
   .feature-pill-grid {
     grid-template-columns: 1fr;
   }
+
   .opening-popup-card {
     max-width: 95%;
   }
@@ -2288,44 +2371,128 @@ html, body {
   width: 100% !important;
   max-width: 800px !important;
   margin: 0 auto !important;
-  padding: 16px 22px !important;
+  padding: 10px 16px !important;
   background: #FFFFFF !important;
-  font-size: 11px !important;
-  line-height: 1.35 !important;
+  font-size: 9.5px !important;
+  line-height: 1.26 !important;
   page-break-inside: avoid !important;
   break-inside: avoid !important;
   page-break-after: avoid !important;
+  page-break-before: avoid !important;
   overflow: hidden !important;
+  min-height: 0 !important;
+}
+
+.pdf-strict-single-page.hr-letterhead-card,
+.pdf-strict-single-page#printable-appointment-letter {
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 1060px !important;
+  padding: 8px 16px !important;
+  font-size: 9.2px !important;
+  line-height: 1.25 !important;
 }
 
 .pdf-strict-single-page .hr-letter-header {
-  padding-bottom: 8px !important;
-  margin-bottom: 10px !important;
+  padding-bottom: 4px !important;
+  margin-bottom: 6px !important;
   border-bottom: 2px solid #0B1936 !important;
 }
 
 .pdf-strict-single-page .hr-letter-header img {
-  height: 46px !important;
+  height: 38px !important;
+  max-width: 120px !important;
 }
 
-.pdf-strict-single-page h1 {
-  font-size: 16px !important;
+.pdf-strict-single-page .hr-letter-header h1 {
+  font-size: 14.5px !important;
+  margin: 0 !important;
 }
 
-.pdf-strict-single-page h2 {
-  font-size: 12px !important;
+.pdf-strict-single-page .hr-letter-header p {
+  font-size: 8.5px !important;
+  margin: 0 !important;
+}
+
+.pdf-strict-single-page .hr-letter-header div[style*="text-align: right"] {
+  font-size: 8px !important;
+  line-height: 1.2 !important;
+}
+
+.pdf-strict-single-page div[style*="background: #F8FAFC; border: 1px solid #E2E8F0"] {
+  padding: 4px 8px !important;
+  margin-bottom: 5px !important;
+  font-size: 9px !important;
+  line-height: 1.25 !important;
+}
+
+.pdf-strict-single-page #view-letter-emp-name {
+  font-size: 11px !important;
+}
+
+.pdf-strict-single-page #view-letter-subject {
+  font-size: 10px !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.pdf-strict-single-page #view-letter-body-content {
+  font-size: 9px !important;
+  line-height: 1.25 !important;
+}
+
+.pdf-strict-single-page #view-letter-body-content p,
+.pdf-strict-single-page #view-letter-body-content div {
+  margin-bottom: 2px !important;
+}
+
+.pdf-strict-single-page #view-letter-body-content table {
+  font-size: 8px !important;
+  margin: 3px 0 !important;
+}
+
+.pdf-strict-single-page #view-letter-body-content table th,
+.pdf-strict-single-page #view-letter-body-content table td {
+  padding: 1.5px 4px !important;
+}
+
+.pdf-strict-single-page #view-letter-acceptance-slip {
+  padding: 3px 6px !important;
+  margin-bottom: 4px !important;
+  font-size: 8px !important;
+  line-height: 1.2 !important;
+}
+
+.pdf-strict-single-page #view-letter-acceptance-slip p {
+  margin-bottom: 2px !important;
+  font-size: 7.5px !important;
+}
+
+.pdf-strict-single-page div[style*="margin-top: 14px; padding-top: 8px;"] {
+  margin-top: 4px !important;
+  padding-top: 3px !important;
+}
+
+.pdf-strict-single-page .letter-srijandev-footer {
+  margin-top: 3px !important;
+  padding-top: 2px !important;
+  font-size: 7.5px !important;
+}
+
+.pdf-strict-single-page .letter-srijandev-footer img {
+  height: 12px !important;
 }
 
 .pdf-strict-single-page .official-salary-slip {
-  padding: 12px 14px !important;
+  padding: 10px 14px !important;
   border: 1.5px solid #0F172A !important;
-  font-size: 10.5px !important;
+  font-size: 10px !important;
 }
 
 @media (max-width: 900px) {
   #modal-appointment-letter .modal-body {
     flex-direction: column !important;
   }
+
   .letter-controls-sidebar {
     width: 100% !important;
     min-width: 100% !important;
@@ -2333,9 +2500,11 @@ html, body {
     border-right: none !important;
     border-bottom: 1px solid var(--border-light);
   }
+
   .letter-preview-pane {
     padding: 12px !important;
   }
+
   .hr-letterhead-card {
     padding: 18px 20px !important;
   }
@@ -2350,8 +2519,10 @@ html, body {
 }
 
 @media print {
+
   /* Enforce Single Page Bounds */
-  html, body {
+  html,
+  body {
     background: #FFFFFF !important;
     color: #000000 !important;
     margin: 0 !important;
@@ -2460,7 +2631,7 @@ html, body {
     font-size: 9.5px !important;
   }
 
-  .slip-calc-table th, 
+  .slip-calc-table th,
   .slip-calc-table td {
     padding: 3px 6px !important;
   }
@@ -2488,89 +2659,144 @@ html, body {
   }
 
   /* Strict Single-Page HR Appointment & Offer Letters Print */
+  body.modal-open #modal-appointment-letter {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 285mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
   .letter-preview-pane {
     padding: 0 !important;
     background: #FFFFFF !important;
     overflow: visible !important;
     display: block !important;
     width: 100% !important;
+    height: auto !important;
   }
 
-  .hr-letterhead-card {
+  .hr-letterhead-card,
+  #printable-appointment-letter {
     box-shadow: none !important;
     border: none !important;
-    padding: 10px 16px !important;
+    padding: 6px 14px !important;
     margin: 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-height: 0 !important;
+    max-height: 280mm !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;
+    page-break-before: avoid !important;
     box-sizing: border-box !important;
-    font-size: 10.5px !important;
-    line-height: 1.32 !important;
+    font-size: 9.2px !important;
+    line-height: 1.25 !important;
+    overflow: hidden !important;
   }
 
   .hr-letter-header {
     border-bottom: 2px solid #000000 !important;
-    padding-bottom: 6px !important;
-    margin-bottom: 8px !important;
+    padding-bottom: 4px !important;
+    margin-bottom: 6px !important;
   }
 
   .hr-letter-header img {
-    height: 44px !important;
+    height: 38px !important;
+    max-width: 120px !important;
   }
 
   .hr-letter-header h1 {
-    font-size: 16px !important;
+    font-size: 14.5px !important;
+    margin: 0 !important;
+  }
+
+  .hr-letter-header p {
+    font-size: 8.5px !important;
+    margin: 0 !important;
+  }
+
+  .hr-letter-header div[style*="text-align: right"] {
+    font-size: 8px !important;
+    line-height: 1.2 !important;
   }
 
   .hr-letterhead-card h2 {
-    font-size: 11.5px !important;
-    margin: 4px 0 !important;
+    font-size: 10px !important;
+    margin: 3px 0 !important;
+  }
+
+  #printable-appointment-letter div[style*="background: #F8FAFC; border: 1px solid #E2E8F0"] {
+    padding: 4px 8px !important;
+    margin-bottom: 5px !important;
+    font-size: 9px !important;
+    line-height: 1.25 !important;
+  }
+
+  #view-letter-emp-name {
+    font-size: 11px !important;
+  }
+
+  #view-letter-subject {
+    font-size: 10px !important;
+    margin: 0 0 4px 0 !important;
   }
 
   #view-letter-body-content {
-    font-size: 10px !important;
-    line-height: 1.32 !important;
+    font-size: 9px !important;
+    line-height: 1.25 !important;
   }
 
   #view-letter-body-content p,
   #view-letter-body-content div {
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
   }
 
   #view-letter-body-content table {
-    font-size: 9px !important;
-    margin: 6px 0 !important;
+    font-size: 8px !important;
+    margin: 3px 0 !important;
   }
 
   #view-letter-body-content table th,
   #view-letter-body-content table td {
-    padding: 2px 5px !important;
+    padding: 1.5px 4px !important;
   }
 
   #view-letter-acceptance-slip {
     background: transparent !important;
     border: 1px dashed #000000 !important;
-    padding: 4px 8px !important;
-    margin-bottom: 6px !important;
-    font-size: 9.5px !important;
+    padding: 3px 6px !important;
+    margin-bottom: 4px !important;
+    font-size: 8px !important;
+    line-height: 1.2 !important;
   }
 
   #view-letter-acceptance-slip p {
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
+    font-size: 7.5px !important;
+  }
+
+  #printable-appointment-letter div[style*="margin-top: 14px; padding-top: 8px;"] {
+    margin-top: 4px !important;
+    padding-top: 3px !important;
   }
 
   .letter-srijandev-footer {
-    margin-top: 6px !important;
-    padding-top: 4px !important;
+    margin-top: 4px !important;
+    padding-top: 2px !important;
     border-top: 1px solid #CBD5E1 !important;
-    font-size: 8.5px !important;
+    font-size: 7.5px !important;
   }
 
   .letter-srijandev-footer img {
-    height: 16px !important;
+    height: 12px !important;
   }
 }
 
@@ -2604,6 +2830,7 @@ html, body {
     width: 98vw;
     max-height: 98vh;
   }
+
   #modal-salary-correction [style*="grid-template-columns: 2fr 1fr 1fr 1fr"],
   #modal-salary-correction [style*="grid-template-columns: repeat(4, 1fr)"],
   #modal-salary-correction [style*="grid-template-columns: 1fr 1fr 2fr"],
@@ -2767,14 +2994,12 @@ html, body {
     align-items: stretch;
     gap: 12px;
   }
+
   .pwa-banner-actions {
     justify-content: space-between;
   }
+
   .pwa-banner-actions .btn {
     flex: 1;
   }
 }
-
-
-
-
