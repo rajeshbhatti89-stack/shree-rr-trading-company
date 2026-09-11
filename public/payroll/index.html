@@ -1735,104 +1735,188 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL: ADD / EDIT EMPLOYEE / WORKER ==================== -->
+  <!-- ==================== MODAL: ADD / EDIT EMPLOYEE / WORKER (ONBOARDING WITH SALARY COMPONENTS) ==================== -->
   <div id="modal-user" class="modal-backdrop hidden">
-    <div class="modal-dialog modal-lg peach-glass">
-      <div class="modal-header">
-        <h3 id="modal-user-title"><i class="fa-solid fa-user-gear text-orange"></i> Add New Employee / Worker</h3>
-        <button class="btn-close-modal" onclick="closeModal('modal-user')">&times;</button>
-      </div>
-      <form id="form-user">
-        <input type="hidden" id="user-id">
-        <div class="modal-body modal-grid-2">
-          <div class="form-group">
-            <label>Employee / Worker ID *</label>
-            <input type="text" id="user-empId" required placeholder="e.g. SRR037">
-          </div>
-          <div class="form-group">
-            <label>Full Employee / Worker Name *</label>
-            <input type="text" id="user-name" required placeholder="e.g. Suresh Kumar">
-          </div>
-          <div class="form-group">
-            <label>Assigned User Role *</label>
-            <select id="user-role" class="custom-select" required>
-              <option value="Worker">Worker (Operator / Helper / Field Staff)</option>
-              <option value="Employee">Employee (Mechanic / Welder / Electrician)</option>
-              <option value="Supervisor">Supervisor (Site In-charge / Shift Supervisor)</option>
-              <option value="Manager">Manager / Plant Engineer</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Father / Husband Name</label>
-            <input type="text" id="user-fatherName" placeholder="e.g. Late Shri Ram Lal">
-          </div>
-          <div class="form-group">
-            <label>Mobile Number (For WhatsApp Slips) *</label>
-            <input type="text" id="user-mobile" required placeholder="10-digit mobile, e.g. 9822852945">
-          </div>
-          <div class="form-group">
-            <label>Designation / Trade *</label>
-            <select id="user-designation" class="custom-select" required>
-              <option value="Operator">Operator (Excavator / HEMM)</option>
-              <option value="Mechanic">Mechanic</option>
-              <option value="Welder / Fitter">Welder / Fitter</option>
-              <option value="Auto Electrician">Auto Electrician</option>
-              <option value="Helper">Helper</option>
-              <option value="Engineer">Engineer</option>
-              <option value="Supervisor">Supervisor</option>
-              <option value="Management">Management</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Skill Category *</label>
-            <select id="user-category" class="custom-select" required>
-              <option value="Skilled">Skilled</option>
-              <option value="Semi-Skilled">Semi-Skilled</option>
-              <option value="Unskilled">Unskilled</option>
-              <option value="Executive">Executive</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Plant Site / Location</label>
-            <input type="text" id="user-location" placeholder="e.g. ACC Chanda" value="ACC Chanda">
-          </div>
-          <div class="form-group">
-            <label>Monthly CTC (₹) [For Fixed Salary]</label>
-            <input type="number" id="user-ctc" placeholder="e.g. 35000">
-          </div>
-          <div class="form-group">
-            <label>Basic Per Day (₹) [For Daily Wage]</label>
-            <input type="number" step="0.01" id="user-basicPerDay" placeholder="e.g. 444.62">
-          </div>
-          <div class="form-group">
-            <label>Bank Account Number</label>
-            <input type="text" id="user-bankAccount" placeholder="e.g. 32049452658">
-          </div>
-          <div class="form-group">
-            <label>Bank IFSC Code</label>
-            <input type="text" id="user-ifsc" placeholder="e.g. SBIN0006872">
-          </div>
-          <div class="form-group">
-            <label>UAN Number</label>
-            <input type="text" id="user-uan" placeholder="e.g. 101306845435">
-          </div>
-          <div class="form-group">
-            <label>PF Account Number</label>
-            <input type="text" id="user-pfNo" placeholder="e.g. HPSML37703770000010029">
-          </div>
-          <div class="form-group">
-            <label>ESIC Number</label>
-            <input type="text" id="user-esicNo" placeholder="e.g. 2303010526">
-          </div>
-          <div class="form-group">
-            <label>Date of Birth</label>
-            <input type="text" id="user-dob" placeholder="DD/MM/YYYY">
+    <div class="modal-dialog modal-xl peach-glass" style="max-width: 900px; width: 96vw; max-height: 94vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #FFF5EE, #FFE4D6); border-bottom: 2px solid var(--border-orange); flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,107,0,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--logo-orange);"><i class="fa-solid fa-user-gear"></i></div>
+          <div>
+            <h3 id="modal-user-title" style="margin: 0; font-size: 17px; font-weight: 800; color: var(--logo-navy);">Add New Employee / Worker</h3>
+            <p style="margin: 0; font-size: 11px; color: var(--text-muted);">Complete onboarding with personal info, salary components &amp; statutory details</p>
           </div>
         </div>
-        <div class="modal-footer">
+        <button class="btn-close-modal" onclick="closeModal('modal-user')">&times;</button>
+      </div>
+      <form id="form-user" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
+        <input type="hidden" id="user-id">
+        <div style="overflow-y:auto; flex:1; padding:16px 20px; display:flex; flex-direction:column; gap:14px;">
+
+          <!-- PERSONAL INFORMATION -->
+          <div style="border:1.5px solid #E2E8F0; border-radius:10px; overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#0B1936,#1a2f5e); padding:9px 14px; display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-user" style="color:#FF6B00;"></i>
+              <span style="font-size:12px; font-weight:800; color:#FFF; text-transform:uppercase; letter-spacing:0.5px;">Personal Information</span>
+            </div>
+            <div style="padding:12px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+              <div class="form-group" style="margin-bottom:0;"><label>Employee ID *</label><input type="text" id="user-empId" required placeholder="e.g. SRR037"></div>
+              <div class="form-group" style="margin-bottom:0; grid-column:span 2;"><label>Full Name *</label><input type="text" id="user-name" required placeholder="e.g. SURESH KUMAR SINGH"></div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>User Role *</label>
+                <select id="user-role" class="custom-select" required>
+                  <option value="Worker">Worker (Operator / Helper / Field Staff)</option>
+                  <option value="Employee">Employee (Mechanic / Welder / Electrician)</option>
+                  <option value="Supervisor">Supervisor (Shift Supervisor)</option>
+                  <option value="Manager">Manager / Plant Engineer</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Designation / Trade *</label>
+                <select id="user-designation" class="custom-select" required>
+                  <option value="Operator">Operator (Excavator / HEMM)</option>
+                  <option value="Mechanic">Mechanic</option>
+                  <option value="Welder / Fitter">Welder / Fitter</option>
+                  <option value="Auto Electrician">Auto Electrician</option>
+                  <option value="Helper">Helper</option>
+                  <option value="Engineer">Engineer</option>
+                  <option value="Supervisor">Supervisor</option>
+                  <option value="Management">Management</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Skill Category *</label>
+                <select id="user-category" class="custom-select" required>
+                  <option value="Skilled">Skilled</option>
+                  <option value="Semi-Skilled">Semi-Skilled</option>
+                  <option value="Unskilled">Unskilled</option>
+                  <option value="Executive">Executive</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;"><label>Mobile (WhatsApp) *</label><input type="text" id="user-mobile" required placeholder="10-digit, e.g. 9822852945"></div>
+              <div class="form-group" style="margin-bottom:0;"><label>Father / Husband Name</label><input type="text" id="user-fatherName" placeholder="e.g. Late Shri Ram Lal"></div>
+              <div class="form-group" style="margin-bottom:0;"><label>Date of Birth</label><input type="text" id="user-dob" placeholder="DD/MM/YYYY"></div>
+              <div class="form-group" style="margin-bottom:0;"><label>Date of Joining (DOJ)</label><input type="text" id="user-doj" placeholder="DD/MM/YYYY"></div>
+              <div class="form-group" style="margin-bottom:0;"><label>Department</label><input type="text" id="user-department" placeholder="Plant Fleet &amp; Garage O&amp;M" value="Plant Fleet &amp; Garage O&amp;M"></div>
+              <div class="form-group" style="margin-bottom:0;"><label>Plant Site / Location</label><input type="text" id="user-location" placeholder="e.g. ACC Chanda" value="ACC Chanda"></div>
+              <div class="form-group" style="margin-bottom:0;"><label>Email (Portal Login)</label><input type="email" id="user-email" placeholder="srr037@shreerrtradingcompany.com"></div>
+            </div>
+          </div>
+
+          <!-- SALARY STRUCTURE & COMPONENTS -->
+          <div style="border:2px solid var(--border-orange); border-radius:10px; overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#C2410C,#FF6B00); padding:9px 14px; display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-indian-rupee-sign" style="color:#FFF; font-size:14px;"></i>
+              <span style="font-size:12px; font-weight:800; color:#FFF; text-transform:uppercase; letter-spacing:0.5px;">Salary Structure &amp; Components</span>
+              <span style="margin-left:auto; font-size:10px; color:rgba(255,255,255,0.7);">HR sets all components at onboarding</span>
+            </div>
+            <div style="padding:12px 14px;">
+              <!-- Payment Mode Selector -->
+              <div style="margin-bottom:12px;">
+                <label style="font-size:11px; font-weight:700; color:var(--logo-navy); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px; display:block;">Payment Mode *</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <label style="display:flex; align-items:center; gap:8px; padding:9px 12px; border:2px solid var(--border-orange); border-radius:7px; cursor:pointer; background:rgba(255,107,0,0.05);" id="mode-label-ctc">
+                    <input type="radio" name="salary-mode" id="salary-mode-ctc" value="ctc" checked onchange="onSalaryModeChange()" style="accent-color:#FF6B00; width:15px; height:15px; flex-shrink:0;">
+                    <div><div style="font-weight:700; color:var(--logo-navy); font-size:12px;"><i class="fa-solid fa-briefcase text-orange"></i> Fixed Monthly CTC</div><div style="font-size:10px; color:var(--text-muted);">PF, HRA &amp; allowances auto-calculated</div></div>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:8px; padding:9px 12px; border:2px solid #CBD5E1; border-radius:7px; cursor:pointer; background:#F8FAFC;" id="mode-label-daily">
+                    <input type="radio" name="salary-mode" id="salary-mode-daily" value="daily" onchange="onSalaryModeChange()" style="accent-color:#FF6B00; width:15px; height:15px; flex-shrink:0;">
+                    <div><div style="font-weight:700; color:var(--logo-navy); font-size:12px;"><i class="fa-solid fa-calendar-day text-navy"></i> Daily Wage Rate</div><div style="font-size:10px; color:var(--text-muted);">Basic + DA + HRA per day</div></div>
+                  </label>
+                </div>
+              </div>
+              <!-- Fixed CTC Block -->
+              <div id="salary-section-ctc">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                  <div class="form-group" style="margin-bottom:0;"><label style="font-weight:700; color:var(--logo-navy);">Monthly CTC / Gross (&#8377;) *</label><input type="number" id="user-ctc" placeholder="e.g. 35000" oninput="autoCalculateSalaryComponents()" style="font-weight:800; font-size:15px; color:var(--logo-navy); border-color:var(--logo-orange);"></div>
+                  <div class="form-group" style="margin-bottom:0;"><label>OT Hourly Rate (&#8377;) <small style="color:var(--text-muted);">Optional</small></label><input type="number" step="0.01" id="user-otRate" placeholder="e.g. 150.00"></div>
+                </div>
+                <div style="background:#F0FDF4; border:1.5px solid #86EFAC; border-radius:8px; padding:10px 12px; margin-bottom:8px;">
+                  <div style="font-size:11px; font-weight:800; color:#15803D; text-transform:uppercase; margin-bottom:8px;"><i class="fa-solid fa-circle-plus"></i> Earnings / Allowances Breakdown <span style="font-weight:400; color:#4ADE80; text-transform:none;">(Auto-filled — editable)</span></div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Basic Salary (&#8377;/mo)</label><input type="number" step="0.01" id="comp-basic" placeholder="Auto" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">DA — Dearness Allow. (&#8377;/mo)</label><input type="number" step="0.01" id="comp-da" placeholder="Auto / 0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">HRA — House Rent Allow. (&#8377;/mo)</label><input type="number" step="0.01" id="comp-hra" placeholder="Auto" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Special / Field Allowance (&#8377;/mo)</label><input type="number" step="0.01" id="comp-special" placeholder="e.g. 2000" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Bonus / Incentive (&#8377;/mo)</label><input type="number" step="0.01" id="comp-bonus" placeholder="e.g. 1500" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Other Earnings (&#8377;/mo)</label><input type="number" step="0.01" id="comp-other-earn" placeholder="e.g. 500" value="0" oninput="updateSalaryPreview()"></div>
+                  </div>
+                </div>
+                <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
+                  <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:8px;"><i class="fa-solid fa-circle-minus"></i> Statutory Deductions Setup</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employee % <small>(default 12%)</small></label><input type="number" step="0.01" id="comp-pf-pct" value="12" min="0" max="20" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC % <small>(0.75% if applicable)</small></label><input type="number" step="0.01" id="comp-esic-pct" value="0" min="0" max="5" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Professional Tax — PT (&#8377;/mo)</label><input type="number" step="1" id="comp-pt" value="200" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (&#8377;/mo)</label><input type="number" step="0.01" id="comp-lic" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (&#8377;/mo)</label><input type="number" step="0.01" id="comp-advance" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">TDS / Other Deduction (&#8377;/mo)</label><input type="number" step="0.01" id="comp-tds" value="0" oninput="updateSalaryPreview()"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Daily Wage Block -->
+              <div id="salary-section-daily" style="display:none;">
+                <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px; margin-bottom:8px;">
+                  <div style="font-size:11px; font-weight:800; color:var(--logo-navy); text-transform:uppercase; margin-bottom:8px;">Daily Wage Structure</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="form-group" style="margin-bottom:0;"><label>Basic Per Day (&#8377;) *</label><input type="number" step="0.01" id="user-basicPerDay" placeholder="e.g. 444.62" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>DA Per Day (&#8377;)</label><input type="number" step="0.01" id="comp-da-perday" placeholder="e.g. 289.38" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>HRA Per Day (&#8377;)</label><input type="number" step="0.01" id="comp-hra-perday" placeholder="e.g. 62.70" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>OT Hourly Rate (&#8377;)</label><input type="number" step="0.01" id="user-otRate-daily" placeholder="e.g. 150.00"></div>
+                  </div>
+                </div>
+                <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
+                  <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:8px;">Deductions — Daily Wage</div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF % (default 12%)</label><input type="number" step="0.01" id="comp-pf-pct-daily" value="12" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC % (0.75%)</label><input type="number" step="0.01" id="comp-esic-pct-daily" value="0.75" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PT (&#8377;/mo)</label><input type="number" step="1" id="comp-pt-daily" value="200" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (&#8377;/mo)</label><input type="number" step="0.01" id="comp-lic-daily" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (&#8377;/mo)</label><input type="number" step="0.01" id="comp-advance-daily" value="0" oninput="updateSalaryPreview()"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- Live Preview -->
+              <div style="background:linear-gradient(135deg,#0B1936,#1a2f5e); border-radius:10px; padding:12px 16px; margin-top:10px; color:#FFF;">
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:8px; display:flex; align-items:center; gap:5px;"><i class="fa-solid fa-chart-bar" style="color:#FF6B00;"></i> Live Salary Preview — Full Month</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:6px;">
+                  <div><div style="font-size:10px; color:rgba(255,255,255,0.45); margin-bottom:2px;">Gross Earnings</div><div style="font-size:16px; font-weight:900; color:#4ADE80;" id="preview-gross">&#8377;0.00</div></div>
+                  <div><div style="font-size:10px; color:rgba(255,255,255,0.45); margin-bottom:2px;">Total Deductions</div><div style="font-size:16px; font-weight:900; color:#F87171;" id="preview-deductions">&#8377;0.00</div></div>
+                  <div><div style="font-size:10px; color:rgba(255,255,255,0.45); margin-bottom:2px;">Net Take Home</div><div style="font-size:20px; font-weight:900; color:#FF6B00;" id="preview-net">&#8377;0.00</div></div>
+                </div>
+                <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:5px; font-size:10px; color:rgba(255,255,255,0.4);" id="preview-breakdown-text">Enter CTC or daily wage above to see the live salary breakdown.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STATUTORY & BANK DETAILS -->
+          <div style="border:1.5px solid rgba(99,102,241,0.3); border-radius:10px; overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#4338CA,#6366F1); padding:9px 14px; display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-file-shield" style="color:#FFF; font-size:13px;"></i>
+              <span style="font-size:12px; font-weight:800; color:#FFF; text-transform:uppercase; letter-spacing:0.5px;">Statutory Numbers &amp; Bank Details</span>
+            </div>
+            <div style="padding:12px 14px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px;">
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;"><i class="fa-solid fa-shield-halved text-orange"></i> UAN Number</label><input type="text" id="user-uan" placeholder="e.g. 101306845435"></div>
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Account Number</label><input type="text" id="user-pfNo" placeholder="e.g. HPSML37703770000010029"></div>
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC Number</label><input type="text" id="user-esicNo" placeholder="e.g. 2303010526"></div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px;">
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;"><i class="fa-solid fa-building-columns text-success"></i> Bank Account Number</label><input type="text" id="user-bankAccount" placeholder="e.g. 32049452658"></div>
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Bank IFSC Code</label><input type="text" id="user-ifsc" placeholder="e.g. SBIN0006872"></div>
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Bank Name</label><input type="text" id="user-bankName" placeholder="e.g. State Bank of India"></div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Aadhar Card Number</label><input type="text" id="user-aadhar" placeholder="e.g. 1234 5678 9012" maxlength="14"></div>
+                <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PAN Card Number</label><input type="text" id="user-pan" placeholder="e.g. ABCDE1234F" maxlength="10" style="text-transform:uppercase;"></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end scrollable body -->
+        <div class="modal-footer" style="flex-shrink:0; padding:12px 20px; border-top:1.5px solid var(--border-orange); background:rgba(255,245,238,0.95); display:flex; justify-content:flex-end; gap:10px;">
           <button type="button" class="btn btn-secondary" onclick="closeModal('modal-user')">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-save-user">
-            <i class="fa-solid fa-check"></i> Save Record
+          <button type="submit" class="btn btn-primary btn-glow" id="btn-save-user" style="min-width:220px; font-size:14px; font-weight:700;">
+            <i class="fa-solid fa-user-plus"></i> Complete Onboarding &amp; Save
           </button>
         </div>
       </form>

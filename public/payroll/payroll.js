@@ -799,15 +799,59 @@ function editUser(userId) {
   document.getElementById('user-designation').value = user.designation || user.rank || 'Operator';
   document.getElementById('user-category').value = user.category || 'Skilled';
   document.getElementById('user-location').value = user.location || user.site || 'ACC Chanda';
-  document.getElementById('user-ctc').value = user.ctc || '';
-  document.getElementById('user-basicPerDay').value = user.basicPerDay || '';
+  document.getElementById('user-dob').value = user.dob || '';
+  document.getElementById('user-doj').value = user.doj || '';
+  document.getElementById('user-department').value = user.department || 'Plant Fleet & Garage O&M';
+  document.getElementById('user-email').value = user.email || '';
+
+  // Salary mode & components
+  const isDaily = !user.ctc && !!user.basicPerDay;
+  document.getElementById('salary-mode-ctc').checked = !isDaily;
+  document.getElementById('salary-mode-daily').checked = isDaily;
+  onSalaryModeChange();
+
+  if (!isDaily) {
+    document.getElementById('user-ctc').value = user.ctc || '';
+    const sc = user.salaryComponents || {};
+    document.getElementById('comp-basic').value = sc.basic || '';
+    document.getElementById('comp-da').value = sc.da || '';
+    document.getElementById('comp-hra').value = sc.hra || '';
+    document.getElementById('comp-special').value = sc.specialAllowance || '';
+    document.getElementById('comp-bonus').value = sc.bonus || '0';
+    document.getElementById('comp-other-earn').value = sc.otherEarnings || '0';
+    const dr = user.deductionRates || {};
+    document.getElementById('comp-pf-pct').value = dr.pfPct !== undefined ? dr.pfPct : 12;
+    document.getElementById('comp-esic-pct').value = dr.esicPct !== undefined ? dr.esicPct : 0;
+    document.getElementById('comp-pt').value = dr.pt !== undefined ? dr.pt : 200;
+    document.getElementById('comp-lic').value = dr.lic || 0;
+    document.getElementById('comp-advance').value = dr.advance || 0;
+    document.getElementById('comp-tds').value = dr.tds || 0;
+    document.getElementById('user-otRate').value = user.otRate || '';
+  } else {
+    document.getElementById('user-basicPerDay').value = user.basicPerDay || '';
+    const sc = user.salaryComponents || {};
+    document.getElementById('comp-da-perday').value = sc.daPerDay || '';
+    document.getElementById('comp-hra-perday').value = sc.hraPerDay || '';
+    const dr = user.deductionRates || {};
+    document.getElementById('comp-pf-pct-daily').value = dr.pfPct !== undefined ? dr.pfPct : 12;
+    document.getElementById('comp-esic-pct-daily').value = dr.esicPct !== undefined ? dr.esicPct : 0.75;
+    document.getElementById('comp-pt-daily').value = dr.pt !== undefined ? dr.pt : 200;
+    document.getElementById('comp-lic-daily').value = dr.lic || 0;
+    document.getElementById('comp-advance-daily').value = dr.advance || 0;
+    document.getElementById('user-otRate-daily').value = user.otRate || '';
+  }
+
+  // Statutory & bank
   document.getElementById('user-bankAccount').value = user.bankAccount || '';
   document.getElementById('user-ifsc').value = user.ifsc || '';
+  document.getElementById('user-bankName').value = user.bankName || '';
   document.getElementById('user-uan').value = user.uan || '';
   document.getElementById('user-pfNo').value = user.pfNo || '';
   document.getElementById('user-esicNo').value = user.esicNo || '';
-  document.getElementById('user-dob').value = user.dob || '';
+  document.getElementById('user-aadhar').value = user.aadhar || '';
+  document.getElementById('user-pan').value = user.pan || '';
 
+  updateSalaryPreview();
   openModal('modal-user');
 }
 
@@ -818,7 +862,148 @@ function openAddUserModal() {
   document.getElementById('user-empId').readOnly = false;
   const nextId = `SRR${String(allUsers.length + 1).padStart(3, '0')}`;
   document.getElementById('user-empId').value = nextId;
+  // Reset salary mode to CTC
+  document.getElementById('salary-mode-ctc').checked = true;
+  onSalaryModeChange();
+  // Reset deduction defaults
+  document.getElementById('comp-pf-pct').value = 12;
+  document.getElementById('comp-esic-pct').value = 0;
+  document.getElementById('comp-pt').value = 200;
+  document.getElementById('comp-lic').value = 0;
+  document.getElementById('comp-advance').value = 0;
+  document.getElementById('comp-tds').value = 0;
+  document.getElementById('comp-bonus').value = 0;
+  document.getElementById('comp-other-earn').value = 0;
+  document.getElementById('user-location').value = 'ACC Chanda';
+  document.getElementById('user-department').value = 'Plant Fleet & Garage O&M';
+  updateSalaryPreview();
   openModal('modal-user');
+}
+
+// ── Salary Mode Toggle ──
+function onSalaryModeChange() {
+  const isCtc = document.getElementById('salary-mode-ctc').checked;
+  const ctcSection = document.getElementById('salary-section-ctc');
+  const dailySection = document.getElementById('salary-section-daily');
+  const ctcLabel = document.getElementById('mode-label-ctc');
+  const dailyLabel = document.getElementById('mode-label-daily');
+
+  if (isCtc) {
+    if (ctcSection) ctcSection.style.display = 'block';
+    if (dailySection) dailySection.style.display = 'none';
+    if (ctcLabel) { ctcLabel.style.borderColor = 'var(--border-orange)'; ctcLabel.style.background = 'rgba(255,107,0,0.05)'; }
+    if (dailyLabel) { dailyLabel.style.borderColor = '#CBD5E1'; dailyLabel.style.background = '#F8FAFC'; }
+  } else {
+    if (ctcSection) ctcSection.style.display = 'none';
+    if (dailySection) dailySection.style.display = 'block';
+    if (ctcLabel) { ctcLabel.style.borderColor = '#CBD5E1'; ctcLabel.style.background = '#F8FAFC'; }
+    if (dailyLabel) { dailyLabel.style.borderColor = 'var(--border-orange)'; dailyLabel.style.background = 'rgba(255,107,0,0.05)'; }
+  }
+  updateSalaryPreview();
+}
+
+// ── Auto-calculate salary components from CTC ──
+function autoCalculateSalaryComponents() {
+  const ctc = Number(document.getElementById('user-ctc')?.value) || 0;
+  if (!ctc) {
+    ['comp-basic','comp-da','comp-hra','comp-special'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    updateSalaryPreview();
+    return;
+  }
+  // Standard Indian payroll split
+  const basic = Math.round(ctc * 0.50);
+  const da = Math.round(ctc * 0.00); // DA typically 0 for private firms
+  const hra = Math.round(ctc * 0.20);
+  const special = Math.max(0, ctc - basic - da - hra);
+
+  const basicEl = document.getElementById('comp-basic');
+  const daEl = document.getElementById('comp-da');
+  const hraEl = document.getElementById('comp-hra');
+  const specialEl = document.getElementById('comp-special');
+
+  // Only auto-fill if blank (don't override HR's manual values)
+  if (basicEl && !basicEl.value) basicEl.value = basic;
+  if (daEl && !daEl.value) daEl.value = da;
+  if (hraEl && !hraEl.value) hraEl.value = hra;
+  if (specialEl && !specialEl.value) specialEl.value = special;
+
+  updateSalaryPreview();
+}
+
+// ── Live Salary Preview ──
+function updateSalaryPreview() {
+  const isCtc = document.getElementById('salary-mode-ctc')?.checked;
+  let gross = 0, deductions = 0;
+  let breakdownParts = [];
+
+  if (isCtc) {
+    const basic = Number(document.getElementById('comp-basic')?.value) || 0;
+    const da = Number(document.getElementById('comp-da')?.value) || 0;
+    const hra = Number(document.getElementById('comp-hra')?.value) || 0;
+    const special = Number(document.getElementById('comp-special')?.value) || 0;
+    const bonus = Number(document.getElementById('comp-bonus')?.value) || 0;
+    const otherEarn = Number(document.getElementById('comp-other-earn')?.value) || 0;
+    gross = basic + da + hra + special + bonus + otherEarn;
+
+    const pfPct = Number(document.getElementById('comp-pf-pct')?.value) || 0;
+    const esicPct = Number(document.getElementById('comp-esic-pct')?.value) || 0;
+    const pt = Number(document.getElementById('comp-pt')?.value) || 0;
+    const lic = Number(document.getElementById('comp-lic')?.value) || 0;
+    const advance = Number(document.getElementById('comp-advance')?.value) || 0;
+    const tds = Number(document.getElementById('comp-tds')?.value) || 0;
+    const pf = Math.round(basic * pfPct / 100);
+    const esic = Math.round(gross * esicPct / 100);
+    deductions = pf + esic + pt + lic + advance + tds;
+
+    breakdownParts = [
+      basic ? `Basic ₹${basic.toLocaleString('en-IN')}` : '',
+      hra ? `HRA ₹${hra.toLocaleString('en-IN')}` : '',
+      special ? `Special ₹${special.toLocaleString('en-IN')}` : '',
+      pf ? `PF ₹${pf.toLocaleString('en-IN')}` : '',
+      esic ? `ESIC ₹${esic.toLocaleString('en-IN')}` : '',
+      pt ? `PT ₹${pt.toLocaleString('en-IN')}` : ''
+    ].filter(Boolean);
+  } else {
+    const basicPD = Number(document.getElementById('user-basicPerDay')?.value) || 0;
+    const daPD = Number(document.getElementById('comp-da-perday')?.value) || 0;
+    const hraPD = Number(document.getElementById('comp-hra-perday')?.value) || 0;
+    const days = 26; // Standard payable days
+    gross = (basicPD + daPD + hraPD) * days;
+
+    const pfPct = Number(document.getElementById('comp-pf-pct-daily')?.value) || 0;
+    const esicPct = Number(document.getElementById('comp-esic-pct-daily')?.value) || 0;
+    const pt = Number(document.getElementById('comp-pt-daily')?.value) || 0;
+    const lic = Number(document.getElementById('comp-lic-daily')?.value) || 0;
+    const advance = Number(document.getElementById('comp-advance-daily')?.value) || 0;
+    const pf = Math.round(basicPD * days * pfPct / 100);
+    const esic = Math.round(gross * esicPct / 100);
+    deductions = pf + esic + pt + lic + advance;
+
+    breakdownParts = [
+      basicPD ? `Basic/day ₹${basicPD.toLocaleString('en-IN')} × ${days}d` : '',
+      pf ? `PF ₹${pf.toLocaleString('en-IN')}` : '',
+      esic ? `ESIC ₹${esic.toLocaleString('en-IN')}` : '',
+      pt ? `PT ₹${pt.toLocaleString('en-IN')}` : ''
+    ].filter(Boolean);
+  }
+
+  const net = Math.max(0, gross - deductions);
+  const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+  const grossEl = document.getElementById('preview-gross');
+  const dedEl = document.getElementById('preview-deductions');
+  const netEl = document.getElementById('preview-net');
+  const breakEl = document.getElementById('preview-breakdown-text');
+
+  if (grossEl) grossEl.textContent = fmt(gross);
+  if (dedEl) dedEl.textContent = fmt(deductions);
+  if (netEl) netEl.textContent = fmt(net);
+  if (breakEl) breakEl.textContent = gross > 0
+    ? breakdownParts.join('  |  ')
+    : 'Enter CTC or daily wage above to see the live salary breakdown.';
 }
 
 // 9. Vehicles Management Table
@@ -3414,11 +3599,12 @@ function initEventListeners() {
     openModal('modal-bulk-import');
   });
 
-  // Form: Save User (Superadmin Exclusive User Creation)
+  // Form: Save User (Superadmin Exclusive User Creation — with Salary Components)
   const formUser = document.getElementById('form-user');
   if (formUser) {
     formUser.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const saveBtn = document.getElementById('btn-save-user');
       const id = document.getElementById('user-id').value;
       const empId = document.getElementById('user-empId').value.trim();
       const name = document.getElementById('user-name').value.trim();
@@ -3428,35 +3614,70 @@ function initEventListeners() {
       const designation = document.getElementById('user-designation').value;
       const category = document.getElementById('user-category').value;
       const location = document.getElementById('user-location').value.trim();
-      const ctc = document.getElementById('user-ctc').value ? Number(document.getElementById('user-ctc').value) : null;
-      const basicPerDay = document.getElementById('user-basicPerDay').value ? Number(document.getElementById('user-basicPerDay').value) : null;
+      const dob = document.getElementById('user-dob').value.trim();
+      const doj = document.getElementById('user-doj').value.trim();
+      const department = document.getElementById('user-department').value.trim();
+      const email = document.getElementById('user-email').value.trim();
+
+      // Salary mode & components
+      const isCtcMode = document.getElementById('salary-mode-ctc').checked;
+      let ctc = null, basicPerDay = null, salaryComponents = {}, deductionRates = {}, otRate = null;
+
+      if (isCtcMode) {
+        ctc = document.getElementById('user-ctc').value ? Number(document.getElementById('user-ctc').value) : null;
+        otRate = document.getElementById('user-otRate').value ? Number(document.getElementById('user-otRate').value) : null;
+        salaryComponents = {
+          basic: Number(document.getElementById('comp-basic').value) || 0,
+          da: Number(document.getElementById('comp-da').value) || 0,
+          hra: Number(document.getElementById('comp-hra').value) || 0,
+          specialAllowance: Number(document.getElementById('comp-special').value) || 0,
+          bonus: Number(document.getElementById('comp-bonus').value) || 0,
+          otherEarnings: Number(document.getElementById('comp-other-earn').value) || 0
+        };
+        deductionRates = {
+          pfPct: Number(document.getElementById('comp-pf-pct').value) || 12,
+          esicPct: Number(document.getElementById('comp-esic-pct').value) || 0,
+          pt: Number(document.getElementById('comp-pt').value) || 200,
+          lic: Number(document.getElementById('comp-lic').value) || 0,
+          advance: Number(document.getElementById('comp-advance').value) || 0,
+          tds: Number(document.getElementById('comp-tds').value) || 0
+        };
+      } else {
+        basicPerDay = document.getElementById('user-basicPerDay').value ? Number(document.getElementById('user-basicPerDay').value) : null;
+        otRate = document.getElementById('user-otRate-daily').value ? Number(document.getElementById('user-otRate-daily').value) : null;
+        salaryComponents = {
+          daPerDay: Number(document.getElementById('comp-da-perday').value) || 0,
+          hraPerDay: Number(document.getElementById('comp-hra-perday').value) || 0
+        };
+        deductionRates = {
+          pfPct: Number(document.getElementById('comp-pf-pct-daily').value) || 12,
+          esicPct: Number(document.getElementById('comp-esic-pct-daily').value) || 0.75,
+          pt: Number(document.getElementById('comp-pt-daily').value) || 200,
+          lic: Number(document.getElementById('comp-lic-daily').value) || 0,
+          advance: Number(document.getElementById('comp-advance-daily').value) || 0
+        };
+      }
+
+      // Statutory & Bank
       const bankAccount = document.getElementById('user-bankAccount').value.trim();
       const ifsc = document.getElementById('user-ifsc').value.trim();
+      const bankName = document.getElementById('user-bankName').value.trim();
       const uan = document.getElementById('user-uan').value.trim();
       const pfNo = document.getElementById('user-pfNo').value.trim();
       const esicNo = document.getElementById('user-esicNo').value.trim();
-      const dob = document.getElementById('user-dob').value.trim();
+      const aadhar = document.getElementById('user-aadhar').value.trim();
+      const pan = document.getElementById('user-pan').value.trim();
 
       const payload = {
-        empId,
-        name,
-        role,
-        fatherName,
-        mobile,
-        phone: mobile ? `+91 ${mobile}` : '',
-        designation,
-        rank: designation,
-        category,
-        location,
-        site: location,
-        ctc,
-        basicPerDay,
-        bankAccount,
-        ifsc,
-        uan,
-        pfNo,
-        esicNo,
-        dob
+        empId, name, role, fatherName,
+        mobile, phone: mobile ? `+91 ${mobile}` : '',
+        email, designation, rank: designation,
+        category, location, site: location, department,
+        dob, doj,
+        ctc, basicPerDay, baseSalary: ctc || (basicPerDay ? basicPerDay * 26 : 0),
+        otRate, salaryComponents, deductionRates,
+        bankAccount, ifsc, bankName,
+        uan, pfNo, esicNo, aadhar, pan
       };
 
       const isEdit = !!id;
@@ -3464,17 +3685,30 @@ function initEventListeners() {
       const method = isEdit ? 'PUT' : 'POST';
 
       try {
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
         const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await res.json();
         if (data.success) {
-          showToast(data.message || 'Saved successfully!');
+          showToast(data.message || (isEdit ? `Employee record updated!` : `${name} onboarded successfully!`));
           closeModal('modal-user');
           await fetchUsers();
           updateDashboardMetrics();
         }
       } catch (err) {
+        // Offline local fallback
+        const localUser = { ...payload, id: id || `usr-${empId.toLowerCase()}-${Date.now()}` };
+        if (isEdit) {
+          const idx = allUsers.findIndex((u) => u.id === id || u.empId === empId);
+          if (idx >= 0) allUsers[idx] = { ...allUsers[idx], ...localUser };
+        } else {
+          allUsers.push(localUser);
+        }
+        renderUsersTable();
+        updateDashboardMetrics();
         closeModal('modal-user');
-        fetchUsers();
+        showToast(`${name} ${isEdit ? 'updated' : 'onboarded'} locally!`);
+      } finally {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Complete Onboarding & Save'; }
       }
     });
   }
