@@ -652,18 +652,46 @@ function renderUsersTable() {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center" style="padding: 30px; color: var(--text-dim);">No matching employees found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center" style="padding: 30px; color: var(--text-dim);">No matching employees found.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered
     .map((u) => {
       const isDaily = !!u.basicPerDay;
-      const rateText = isDaily
-        ? `₹${Number(u.basicPerDay).toFixed(2)} / Day`
-        : u.ctc
-        ? `₹${Number(u.ctc).toLocaleString('en-IN')} / Mo`
-        : `₹${Number(u.baseSalary || 25000).toLocaleString('en-IN')} / Mo`;
+      let grossHtml = '', ctcHtml = '';
+
+      if (isDaily) {
+        const sc = u.salaryComponents || {};
+        const dailyRate = Number(u.basicPerDay) + (Number(sc.daPerDay) || 0) + (Number(sc.hraPerDay) || 0);
+        const monthlyGross = Math.round(dailyRate * 26);
+        const ec = u.employerContributions || {};
+        const erPf = ec.pfAmount || (Math.round(Number(u.basicPerDay) * 26 * ((ec.pfVal ?? 12) <= 30 ? (ec.pfVal ?? 12) / 100 : 0)) || (ec.pfVal > 30 ? ec.pfVal : 0));
+        const erEsic = ec.esicAmount || (monthlyGross <= 21000 ? Math.round(monthlyGross * ((ec.esicVal ?? 3.25) <= 10 ? (ec.esicVal ?? 3.25) / 100 : 0)) : 0);
+        const totalCtc = u.ctc || (monthlyGross + erPf + erEsic);
+
+        grossHtml = `<strong>₹${monthlyGross.toLocaleString('en-IN')}</strong><span class="emp-cell-sub">₹${dailyRate.toFixed(2)}/d × 26d</span>`;
+        ctcHtml = `<strong style="color: #FF6B00;">₹${Math.round(totalCtc).toLocaleString('en-IN')}</strong><span class="emp-cell-sub">Est. CTC / Mo</span>`;
+      } else {
+        const sc = u.salaryComponents || {};
+        const scSum = sc.basic ? (Number(sc.basic || 0) + Number(sc.da || 0) + Number(sc.hra || 0) + Number(sc.specialAllowance || 0) + Number(sc.bonus || 0) + Number(sc.otherEarnings || 0)) : 0;
+        const monthlyGross = u.grossSalary || scSum || u.baseSalary || u.ctc || 25000;
+
+        const ec = u.employerContributions || {};
+        let totalCtc = u.ctc;
+        if (!totalCtc) {
+          if (ec.totalEmployer) {
+            totalCtc = monthlyGross + Number(ec.totalEmployer);
+          } else {
+            const erPf = ec.pfAmount || Math.round((Number(sc.basic) || (monthlyGross * 0.5)) * ((ec.pfVal ?? 12) <= 30 ? (ec.pfVal ?? 12) / 100 : 0));
+            const erEsic = ec.esicAmount || (monthlyGross <= 21000 ? Math.round(monthlyGross * ((ec.esicVal ?? 0) <= 10 ? (ec.esicVal ?? 0) / 100 : 0)) : 0);
+            totalCtc = monthlyGross + erPf + erEsic + Number(ec.gratuity || 0);
+          }
+        }
+
+        grossHtml = `<strong style="color: #15803D;">₹${Number(monthlyGross).toLocaleString('en-IN')}</strong><span class="emp-cell-sub">Gross / Mo</span>`;
+        ctcHtml = `<strong style="color: #FF6B00;">₹${Number(totalCtc).toLocaleString('en-IN')}</strong><span class="emp-cell-sub">Total CTC / Mo</span>`;
+      }
 
       const cleanMobile = (u.mobile || u.phone || '').replace(/[^0-9]/g, '').slice(-10);
       const whatsappBtn = cleanMobile
@@ -713,7 +741,8 @@ function renderUsersTable() {
           <strong>${escapeHtml(u.bankAccount || 'N/A')}</strong>
           <span class="emp-cell-sub">IFSC: ${escapeHtml(u.ifsc || 'N/A')}</span>
         </td>
-        <td><strong>${rateText}</strong></td>
+        <td>${grossHtml}</td>
+        <td>${ctcHtml}</td>
         <td class="text-right">
           <div style="display: inline-flex; gap: 6px;">
             <button class="btn-icon-only text-orange" title="Generate Official Appointment / Offer Letter" onclick="openAppointmentLetterModal('${u.id || u.empId}')">
@@ -811,14 +840,19 @@ function editUser(userId) {
   onSalaryModeChange();
 
   if (!isDaily) {
-    document.getElementById('user-ctc').value = user.ctc || '';
     const sc = user.salaryComponents || {};
+    const scGross = sc.basic ? (Number(sc.basic || 0) + Number(sc.da || 0) + Number(sc.hra || 0) + Number(sc.specialAllowance || 0) + Number(sc.bonus || 0) + Number(sc.otherEarnings || 0)) : 0;
+    const grossVal = user.grossSalary || scGross || user.baseSalary || user.ctc || '';
+    document.getElementById('user-gross').value = grossVal || '';
+    document.getElementById('user-ctc').value = user.ctc || '';
+
     document.getElementById('comp-basic').value = sc.basic || '';
-    document.getElementById('comp-da').value = sc.da || '';
+    document.getElementById('comp-da').value = sc.da || '0';
     document.getElementById('comp-hra').value = sc.hra || '';
     document.getElementById('comp-special').value = sc.specialAllowance || '';
     document.getElementById('comp-bonus').value = sc.bonus || '0';
     document.getElementById('comp-other-earn').value = sc.otherEarnings || '0';
+
     const dr = user.deductionRates || {};
     document.getElementById('comp-pf-pct').value = dr.pfVal !== undefined ? dr.pfVal : (dr.pfPct !== undefined ? dr.pfPct : 12);
     document.getElementById('comp-esic-pct').value = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : 0);
@@ -826,18 +860,30 @@ function editUser(userId) {
     document.getElementById('comp-lic').value = dr.lic || 0;
     document.getElementById('comp-advance').value = dr.advance || 0;
     document.getElementById('comp-tds').value = dr.tds || 0;
+
+    const ec = user.employerContributions || {};
+    document.getElementById('comp-er-pf').value = ec.pfVal !== undefined ? ec.pfVal : 12;
+    document.getElementById('comp-er-esic').value = ec.esicVal !== undefined ? ec.esicVal : 0;
+    document.getElementById('comp-er-gratuity').value = ec.gratuity || 0;
+
     document.getElementById('user-otRate').value = user.otRate || '';
   } else {
     document.getElementById('user-basicPerDay').value = user.basicPerDay || '';
     const sc = user.salaryComponents || {};
     document.getElementById('comp-da-perday').value = sc.daPerDay || '';
     document.getElementById('comp-hra-perday').value = sc.hraPerDay || '';
+
     const dr = user.deductionRates || {};
     document.getElementById('comp-pf-pct-daily').value = dr.pfVal !== undefined ? dr.pfVal : (dr.pfPct !== undefined ? dr.pfPct : 12);
     document.getElementById('comp-esic-pct-daily').value = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : 0.75);
     document.getElementById('comp-pt-daily').value = dr.pt !== undefined ? dr.pt : 200;
     document.getElementById('comp-lic-daily').value = dr.lic || 0;
     document.getElementById('comp-advance-daily').value = dr.advance || 0;
+
+    const ec = user.employerContributions || {};
+    document.getElementById('comp-er-pf-daily').value = ec.pfVal !== undefined ? ec.pfVal : 12;
+    document.getElementById('comp-er-esic-daily').value = ec.esicVal !== undefined ? ec.esicVal : 3.25;
+
     document.getElementById('user-otRate-daily').value = user.otRate || '';
   }
 
@@ -871,18 +917,41 @@ function openAddUserModal() {
   const nextNum = Math.max(maxEmpNum + 1, (allUsers ? allUsers.length + 1 : 1));
   const nextId = `SRR${String(nextNum).padStart(3, '0')}`;
   document.getElementById('user-empId').value = nextId;
+
   // Reset salary mode to CTC
   document.getElementById('salary-mode-ctc').checked = true;
   onSalaryModeChange();
-  // Reset deduction defaults
+
+  // Reset all salary fields
+  document.getElementById('user-gross').value = '';
+  document.getElementById('user-ctc').value = '';
+  document.getElementById('comp-basic').value = '';
+  document.getElementById('comp-da').value = '0';
+  document.getElementById('comp-hra').value = '';
+  document.getElementById('comp-special').value = '';
+  document.getElementById('comp-bonus').value = 0;
+  document.getElementById('comp-other-earn').value = 0;
+
+  // Employee Deduction Defaults
   document.getElementById('comp-pf-pct').value = 12;
   document.getElementById('comp-esic-pct').value = 0;
   document.getElementById('comp-pt').value = 200;
   document.getElementById('comp-lic').value = 0;
   document.getElementById('comp-advance').value = 0;
   document.getElementById('comp-tds').value = 0;
-  document.getElementById('comp-bonus').value = 0;
-  document.getElementById('comp-other-earn').value = 0;
+
+  // Employer Contribution Defaults
+  document.getElementById('comp-er-pf').value = 12;
+  document.getElementById('comp-er-esic').value = 0;
+  document.getElementById('comp-er-gratuity').value = 0;
+
+  // Daily Wage Defaults
+  document.getElementById('comp-pf-pct-daily').value = 12;
+  document.getElementById('comp-esic-pct-daily').value = 0.75;
+  document.getElementById('comp-pt-daily').value = 200;
+  document.getElementById('comp-er-pf-daily').value = 12;
+  document.getElementById('comp-er-esic-daily').value = 3.25;
+
   document.getElementById('user-location').value = 'ACC Chanda';
   document.getElementById('user-department').value = 'Plant Fleet & Garage O&M';
   updateSalaryPreview();
@@ -911,41 +980,148 @@ function onSalaryModeChange() {
   updateSalaryPreview();
 }
 
-// ── Auto-calculate salary components from CTC ──
-function autoCalculateSalaryComponents() {
-  const ctc = Number(document.getElementById('user-ctc')?.value) || 0;
-  if (!ctc) {
-    ['comp-basic','comp-da','comp-hra','comp-special'].forEach(id => {
+// ── Gross Salary Input Handler ──
+function onGrossSalaryInput() {
+  const gross = Number(document.getElementById('user-gross')?.value) || 0;
+  if (!gross) {
+    document.getElementById('user-ctc').value = '';
+    ['comp-basic', 'comp-da', 'comp-hra', 'comp-special', 'comp-bonus', 'comp-other-earn'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.value = '';
+      if (el) el.value = (id === 'comp-bonus' || id === 'comp-other-earn' || id === 'comp-da') ? '0' : '';
     });
     updateSalaryPreview();
     return;
   }
-  // Standard Indian payroll split
-  const basic = Math.round(ctc * 0.50);
-  const da = Math.round(ctc * 0.00); // DA typically 0 for private firms
-  const hra = Math.round(ctc * 0.20);
-  const special = Math.max(0, ctc - basic - da - hra);
+
+  // Standard Indian payroll breakdown:
+  // Basic = 50%, DA = 0, HRA = 20%, Special Allowance = 30%
+  const basic = Math.round(gross * 0.50);
+  const da = 0;
+  const hra = Math.round(gross * 0.20);
+  const special = Math.max(0, gross - basic - da - hra);
 
   const basicEl = document.getElementById('comp-basic');
   const daEl = document.getElementById('comp-da');
   const hraEl = document.getElementById('comp-hra');
   const specialEl = document.getElementById('comp-special');
 
-  // Only auto-fill if blank (don't override HR's manual values)
-  if (basicEl && !basicEl.value) basicEl.value = basic;
-  if (daEl && !daEl.value) daEl.value = da;
-  if (hraEl && !hraEl.value) hraEl.value = hra;
-  if (specialEl && !specialEl.value) specialEl.value = special;
+  if (basicEl) basicEl.value = basic;
+  if (daEl) daEl.value = da;
+  if (hraEl) hraEl.value = hra;
+  if (specialEl) specialEl.value = special;
+
+  // Auto-set ESIC defaults if gross <= 21,000
+  const esicEl = document.getElementById('comp-esic-pct');
+  const erEsicEl = document.getElementById('comp-er-esic');
+  if (gross <= 21000) {
+    if (esicEl && (!esicEl.value || Number(esicEl.value) === 0)) esicEl.value = '0.75';
+    if (erEsicEl && (!erEsicEl.value || Number(erEsicEl.value) === 0)) erEsicEl.value = '3.25';
+  } else {
+    if (esicEl && Number(esicEl.value) === 0.75) esicEl.value = '0';
+    if (erEsicEl && Number(erEsicEl.value) === 3.25) erEsicEl.value = '0';
+  }
+
+  // Compute Employer Contribution and Total CTC
+  const erPfVal = Number(document.getElementById('comp-er-pf')?.value) || 0;
+  const erEsicVal = Number(document.getElementById('comp-er-esic')?.value) || 0;
+  const erGratuity = Number(document.getElementById('comp-er-gratuity')?.value) || 0;
+
+  const erPfAmt = erPfVal <= 30 ? Math.round(basic * erPfVal / 100) : Math.round(erPfVal);
+  const erEsicAmt = erEsicVal <= 10 ? Math.round(gross * erEsicVal / 100) : Math.round(erEsicVal);
+  const ctc = gross + erPfAmt + erEsicAmt + erGratuity;
+
+  const ctcEl = document.getElementById('user-ctc');
+  if (ctcEl) ctcEl.value = ctc;
 
   updateSalaryPreview();
 }
 
-// ── Live Salary Preview ──
+// ── CTC Salary Input Handler ──
+function onCtcSalaryInput() {
+  const ctc = Number(document.getElementById('user-ctc')?.value) || 0;
+  if (!ctc) {
+    document.getElementById('user-gross').value = '';
+    ['comp-basic', 'comp-da', 'comp-hra', 'comp-special', 'comp-bonus', 'comp-other-earn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = (id === 'comp-bonus' || id === 'comp-other-earn' || id === 'comp-da') ? '0' : '';
+    });
+    updateSalaryPreview();
+    return;
+  }
+
+  // Reverse calculate Gross from CTC:
+  // Employer PF is 12% on Basic (Basic = 50% of Gross => 6% of Gross)
+  const isEsicEligible = (ctc / 1.0925) <= 21000;
+  const divisor = isEsicEligible ? 1.0925 : 1.06;
+  const gross = Math.round(ctc / divisor);
+
+  const basic = Math.round(gross * 0.50);
+  const da = 0;
+  const hra = Math.round(gross * 0.20);
+  const special = Math.max(0, gross - basic - da - hra);
+
+  const grossEl = document.getElementById('user-gross');
+  if (grossEl) grossEl.value = gross;
+
+  const basicEl = document.getElementById('comp-basic');
+  const daEl = document.getElementById('comp-da');
+  const hraEl = document.getElementById('comp-hra');
+  const specialEl = document.getElementById('comp-special');
+
+  if (basicEl) basicEl.value = basic;
+  if (daEl) daEl.value = da;
+  if (hraEl) hraEl.value = hra;
+  if (specialEl) specialEl.value = special;
+
+  const esicEl = document.getElementById('comp-esic-pct');
+  const erEsicEl = document.getElementById('comp-er-esic');
+  if (isEsicEligible) {
+    if (esicEl && (!esicEl.value || Number(esicEl.value) === 0)) esicEl.value = '0.75';
+    if (erEsicEl && (!erEsicEl.value || Number(erEsicEl.value) === 0)) erEsicEl.value = '3.25';
+  } else {
+    if (esicEl && Number(esicEl.value) === 0.75) esicEl.value = '0';
+    if (erEsicEl && Number(erEsicEl.value) === 3.25) erEsicEl.value = '0';
+  }
+
+  updateSalaryPreview();
+}
+
+// ── Component Input Handler ──
+function onComponentInput() {
+  const basic = Number(document.getElementById('comp-basic')?.value) || 0;
+  const da = Number(document.getElementById('comp-da')?.value) || 0;
+  const hra = Number(document.getElementById('comp-hra')?.value) || 0;
+  const special = Number(document.getElementById('comp-special')?.value) || 0;
+  const bonus = Number(document.getElementById('comp-bonus')?.value) || 0;
+  const otherEarn = Number(document.getElementById('comp-other-earn')?.value) || 0;
+
+  const gross = basic + da + hra + special + bonus + otherEarn;
+  const grossEl = document.getElementById('user-gross');
+  if (grossEl) grossEl.value = gross > 0 ? gross : '';
+
+  const erPfVal = Number(document.getElementById('comp-er-pf')?.value) || 0;
+  const erEsicVal = Number(document.getElementById('comp-er-esic')?.value) || 0;
+  const erGratuity = Number(document.getElementById('comp-er-gratuity')?.value) || 0;
+
+  const erPfAmt = erPfVal <= 30 ? Math.round(basic * erPfVal / 100) : Math.round(erPfVal);
+  const erEsicAmt = erEsicVal <= 10 ? Math.round(gross * erEsicVal / 100) : Math.round(erEsicVal);
+  const ctc = gross + erPfAmt + erEsicAmt + erGratuity;
+
+  const ctcEl = document.getElementById('user-ctc');
+  if (ctcEl) ctcEl.value = ctc > 0 ? ctc : '';
+
+  updateSalaryPreview();
+}
+
+// ── Backward-compatible alias ──
+function autoCalculateSalaryComponents() {
+  onGrossSalaryInput();
+}
+
+// ── Live Salary Architecture Preview ──
 function updateSalaryPreview() {
   const isCtc = document.getElementById('salary-mode-ctc')?.checked;
-  let gross = 0, deductions = 0;
+  let gross = 0, employeeDeductions = 0, employerContributions = 0, ctc = 0;
   let breakdownParts = [];
 
   if (isCtc) {
@@ -956,7 +1132,11 @@ function updateSalaryPreview() {
     const bonus = Number(document.getElementById('comp-bonus')?.value) || 0;
     const otherEarn = Number(document.getElementById('comp-other-earn')?.value) || 0;
     gross = basic + da + hra + special + bonus + otherEarn;
+    if (!gross && document.getElementById('user-gross')?.value) {
+      gross = Number(document.getElementById('user-gross').value) || 0;
+    }
 
+    // Employee Deductions
     const pfInput = Number(document.getElementById('comp-pf-pct')?.value) || 0;
     const esicInput = Number(document.getElementById('comp-esic-pct')?.value) || 0;
     const pt = Number(document.getElementById('comp-pt')?.value) || 0;
@@ -964,19 +1144,29 @@ function updateSalaryPreview() {
     const advance = Number(document.getElementById('comp-advance')?.value) || 0;
     const tds = Number(document.getElementById('comp-tds')?.value) || 0;
 
-    // Smart PF: <= 30 is treated as %, > 30 is treated as fixed ₹ amount (e.g. 1800)
     const pf = pfInput <= 30 ? Math.round(basic * pfInput / 100) : Math.round(pfInput);
-    // Smart ESIC: <= 10 is treated as %, > 10 is treated as fixed ₹ amount (e.g. 200)
     const esic = esicInput <= 10 ? Math.round(gross * esicInput / 100) : Math.round(esicInput);
-    deductions = pf + esic + pt + lic + advance + tds;
+    employeeDeductions = pf + esic + pt + lic + advance + tds;
+
+    // Employer Contributions
+    const erPfInput = Number(document.getElementById('comp-er-pf')?.value) || 0;
+    const erEsicInput = Number(document.getElementById('comp-er-esic')?.value) || 0;
+    const erGratuity = Number(document.getElementById('comp-er-gratuity')?.value) || 0;
+
+    const erPf = erPfInput <= 30 ? Math.round(basic * erPfInput / 100) : Math.round(erPfInput);
+    const erEsic = erEsicInput <= 10 ? Math.round(gross * erEsicInput / 100) : Math.round(erEsicInput);
+    employerContributions = erPf + erEsic + erGratuity;
+
+    ctc = gross + employerContributions;
 
     breakdownParts = [
-      basic ? `Basic ₹${basic.toLocaleString('en-IN')}` : '',
-      hra ? `HRA ₹${hra.toLocaleString('en-IN')}` : '',
-      special ? `Special ₹${special.toLocaleString('en-IN')}` : '',
-      pf ? `PF ₹${pf.toLocaleString('en-IN')} (${pfInput <= 30 ? pfInput + '%' : 'Fixed'})` : '',
-      esic ? `ESIC ₹${esic.toLocaleString('en-IN')} (${esicInput <= 10 ? esicInput + '%' : 'Fixed'})` : '',
-      pt ? `PT ₹${pt.toLocaleString('en-IN')}` : ''
+      basic ? `Basic: ₹${basic.toLocaleString('en-IN')}` : '',
+      hra ? `HRA: ₹${hra.toLocaleString('en-IN')}` : '',
+      special ? `Special: ₹${special.toLocaleString('en-IN')}` : '',
+      pf ? `EE PF: ₹${pf.toLocaleString('en-IN')}` : '',
+      pt ? `PT: ₹${pt.toLocaleString('en-IN')}` : '',
+      erPf ? `ER PF: ₹${erPf.toLocaleString('en-IN')}` : '',
+      erEsic ? `ER ESIC: ₹${erEsic.toLocaleString('en-IN')}` : ''
     ].filter(Boolean);
   } else {
     const basicPD = Number(document.getElementById('user-basicPerDay')?.value) || 0;
@@ -993,30 +1183,46 @@ function updateSalaryPreview() {
 
     const pf = pfInput <= 30 ? Math.round(basicPD * days * pfInput / 100) : Math.round(pfInput);
     const esic = esicInput <= 10 ? Math.round(gross * esicInput / 100) : Math.round(esicInput);
-    deductions = pf + esic + pt + lic + advance;
+    employeeDeductions = pf + esic + pt + lic + advance;
+
+    const erPfInput = Number(document.getElementById('comp-er-pf-daily')?.value) || 0;
+    const erEsicInput = Number(document.getElementById('comp-er-esic-daily')?.value) || 0;
+    const erPf = erPfInput <= 30 ? Math.round(basicPD * days * erPfInput / 100) : Math.round(erPfInput);
+    const erEsic = erEsicInput <= 10 ? Math.round(gross * erEsicInput / 100) : Math.round(erEsicInput);
+    employerContributions = erPf + erEsic;
+
+    ctc = gross + employerContributions;
 
     breakdownParts = [
-      basicPD ? `Basic/day ₹${basicPD.toLocaleString('en-IN')} × ${days}d` : '',
-      pf ? `PF ₹${pf.toLocaleString('en-IN')} (${pfInput <= 30 ? pfInput + '%' : 'Fixed'})` : '',
-      esic ? `ESIC ₹${esic.toLocaleString('en-IN')} (${esicInput <= 10 ? esicInput + '%' : 'Fixed'})` : '',
-      pt ? `PT ₹${pt.toLocaleString('en-IN')}` : ''
+      basicPD ? `Basic/day: ₹${basicPD.toFixed(2)} × ${days}d` : '',
+      pf ? `EE PF: ₹${pf.toLocaleString('en-IN')}` : '',
+      esic ? `EE ESIC: ₹${esic.toLocaleString('en-IN')}` : '',
+      pt ? `PT: ₹${pt.toLocaleString('en-IN')}` : '',
+      erPf ? `ER PF: ₹${erPf.toLocaleString('en-IN')}` : ''
     ].filter(Boolean);
   }
 
-  const net = Math.max(0, gross - deductions);
+  const net = Math.max(0, gross - employeeDeductions);
+  const annualCtc = ctc * 12;
   const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
   const grossEl = document.getElementById('preview-gross');
   const dedEl = document.getElementById('preview-deductions');
   const netEl = document.getElementById('preview-net');
+  const ctcEl = document.getElementById('preview-ctc');
+  const annualCtcEl = document.getElementById('preview-annual-ctc');
+  const grossBadgeEl = document.getElementById('components-gross-badge');
   const breakEl = document.getElementById('preview-breakdown-text');
 
   if (grossEl) grossEl.textContent = fmt(gross);
-  if (dedEl) dedEl.textContent = fmt(deductions);
+  if (dedEl) dedEl.textContent = fmt(employeeDeductions);
   if (netEl) netEl.textContent = fmt(net);
+  if (ctcEl) ctcEl.textContent = fmt(ctc);
+  if (annualCtcEl) annualCtcEl.textContent = `Annual CTC: ₹${Math.round(annualCtc).toLocaleString('en-IN')} / Year`;
+  if (grossBadgeEl) grossBadgeEl.textContent = `Gross: ${fmt(gross)}`;
   if (breakEl) breakEl.textContent = gross > 0
-    ? breakdownParts.join('  |  ')
-    : 'Enter CTC or daily wage above to see the live salary breakdown.';
+    ? `Gross: ${fmt(gross)}  |  EE Deductions: ${fmt(employeeDeductions)}  |  Net Pay: ${fmt(net)}  |  ER Contrib: ${fmt(employerContributions)}  |  Total CTC: ${fmt(ctc)}`
+    : 'Enter Gross Salary or CTC above to see the live salary breakdown.';
 }
 
 // 9. Vehicles Management Table
@@ -3634,10 +3840,11 @@ function initEventListeners() {
 
       // Salary mode & components
       const isCtcMode = document.getElementById('salary-mode-ctc').checked;
-      let ctc = null, basicPerDay = null, salaryComponents = {}, deductionRates = {}, otRate = null;
+      let ctc = null, grossSalary = null, basicPerDay = null, salaryComponents = {}, deductionRates = {}, employerContributions = {}, otRate = null;
 
       if (isCtcMode) {
-        ctc = document.getElementById('user-ctc').value ? Number(document.getElementById('user-ctc').value) : null;
+        grossSalary = Number(document.getElementById('user-gross').value) || 0;
+        ctc = Number(document.getElementById('user-ctc').value) || 0;
         otRate = document.getElementById('user-otRate').value ? Number(document.getElementById('user-otRate').value) : null;
         salaryComponents = {
           basic: Number(document.getElementById('comp-basic').value) || 0,
@@ -3647,10 +3854,14 @@ function initEventListeners() {
           bonus: Number(document.getElementById('comp-bonus').value) || 0,
           otherEarnings: Number(document.getElementById('comp-other-earn').value) || 0
         };
+        const sumGross = salaryComponents.basic + salaryComponents.da + salaryComponents.hra + salaryComponents.specialAllowance + salaryComponents.bonus + salaryComponents.otherEarnings;
+        if (!grossSalary && sumGross > 0) grossSalary = sumGross;
+
+        // Employee Deductions
         const rawPf = Number(document.getElementById('comp-pf-pct').value) || 0;
         const rawEsic = Number(document.getElementById('comp-esic-pct').value) || 0;
         const pfAmt = rawPf <= 30 ? Math.round((salaryComponents.basic || 0) * rawPf / 100) : Math.round(rawPf);
-        const esicAmt = rawEsic <= 10 ? Math.round((ctc || 0) * rawEsic / 100) : Math.round(rawEsic);
+        const esicAmt = rawEsic <= 10 ? Math.round((grossSalary || 0) * rawEsic / 100) : Math.round(rawEsic);
         deductionRates = {
           pfVal: rawPf,
           pfPct: rawPf <= 30 ? rawPf : 0,
@@ -3663,6 +3874,29 @@ function initEventListeners() {
           advance: Number(document.getElementById('comp-advance').value) || 0,
           tds: Number(document.getElementById('comp-tds').value) || 0
         };
+
+        // Employer Contributions
+        const rawErPf = Number(document.getElementById('comp-er-pf').value) || 0;
+        const rawErEsic = Number(document.getElementById('comp-er-esic').value) || 0;
+        const erGratuity = Number(document.getElementById('comp-er-gratuity').value) || 0;
+        const erPfAmt = rawErPf <= 30 ? Math.round((salaryComponents.basic || 0) * rawErPf / 100) : Math.round(rawErPf);
+        const erEsicAmt = rawErEsic <= 10 ? Math.round((grossSalary || 0) * rawErEsic / 100) : Math.round(rawErEsic);
+        const totalEr = erPfAmt + erEsicAmt + erGratuity;
+
+        employerContributions = {
+          pfVal: rawErPf,
+          pfPct: rawErPf <= 30 ? rawErPf : 0,
+          pfAmount: erPfAmt,
+          esicVal: rawErEsic,
+          esicPct: rawErEsic <= 10 ? rawErEsic : 0,
+          esicAmount: erEsicAmt,
+          gratuity: erGratuity,
+          totalEmployer: totalEr
+        };
+
+        if (!ctc) {
+          ctc = (grossSalary || 0) + totalEr;
+        }
       } else {
         basicPerDay = document.getElementById('user-basicPerDay').value ? Number(document.getElementById('user-basicPerDay').value) : null;
         otRate = document.getElementById('user-otRate-daily').value ? Number(document.getElementById('user-otRate-daily').value) : null;
@@ -3670,10 +3904,12 @@ function initEventListeners() {
           daPerDay: Number(document.getElementById('comp-da-perday').value) || 0,
           hraPerDay: Number(document.getElementById('comp-hra-perday').value) || 0
         };
+        const dailyGross = ((basicPerDay || 0) + (salaryComponents.daPerDay || 0) + (salaryComponents.hraPerDay || 0)) * 26;
+        grossSalary = Math.round(dailyGross);
+
         const rawPf = Number(document.getElementById('comp-pf-pct-daily').value) || 0;
         const rawEsic = Number(document.getElementById('comp-esic-pct-daily').value) || 0;
         const pfAmt = rawPf <= 30 ? Math.round((basicPerDay || 0) * 26 * rawPf / 100) : Math.round(rawPf);
-        const dailyGross = ((basicPerDay || 0) + (salaryComponents.daPerDay || 0) + (salaryComponents.hraPerDay || 0)) * 26;
         const esicAmt = rawEsic <= 10 ? Math.round(dailyGross * rawEsic / 100) : Math.round(rawEsic);
         deductionRates = {
           pfVal: rawPf,
@@ -3686,6 +3922,24 @@ function initEventListeners() {
           lic: Number(document.getElementById('comp-lic-daily').value) || 0,
           advance: Number(document.getElementById('comp-advance-daily').value) || 0
         };
+
+        const rawErPf = Number(document.getElementById('comp-er-pf-daily').value) || 0;
+        const rawErEsic = Number(document.getElementById('comp-er-esic-daily').value) || 0;
+        const erPfAmt = rawErPf <= 30 ? Math.round((basicPerDay || 0) * 26 * rawErPf / 100) : Math.round(rawErPf);
+        const erEsicAmt = rawErEsic <= 10 ? Math.round(dailyGross * rawErEsic / 100) : Math.round(rawErEsic);
+        const totalEr = erPfAmt + erEsicAmt;
+
+        employerContributions = {
+          pfVal: rawErPf,
+          pfPct: rawErPf <= 30 ? rawErPf : 0,
+          pfAmount: erPfAmt,
+          esicVal: rawErEsic,
+          esicPct: rawErEsic <= 10 ? rawErEsic : 0,
+          esicAmount: erEsicAmt,
+          totalEmployer: totalEr
+        };
+
+        ctc = Math.round(dailyGross + totalEr);
       }
 
       // Statutory & Bank
@@ -3704,8 +3958,9 @@ function initEventListeners() {
         email, designation, rank: designation,
         category, location, site: location, department,
         dob, doj,
-        ctc, basicPerDay, baseSalary: ctc || (basicPerDay ? basicPerDay * 26 : 0),
-        otRate, salaryComponents, deductionRates,
+        grossSalary, ctc, basicPerDay,
+        baseSalary: grossSalary || ctc || (basicPerDay ? basicPerDay * 26 : 0),
+        otRate, salaryComponents, deductionRates, employerContributions,
         bankAccount, ifsc, bankName,
         uan, pfNo, esicNo, aadhar, pan
       };
@@ -4969,128 +5224,196 @@ function updateLetterTemplate() {
     `;
   } else {
     // ──────── FIXED MONTHLY CTC SALARY STRUCTURE ────────
-    const ctc = ctcInput || Number(user.ctc) || Number(user.baseSalary) || 35000;
     const sc = user.salaryComponents || {};
     const dr = user.deductionRates || {};
+    const ec = user.employerContributions || {};
+
     let basic = 0, da = 0, hra = 0, special = 0, bonus = 0, other = 0;
+    let gross = 0;
 
     if (sc.basic && Number(sc.basic) > 0) {
-      if (!ctcInput || ctcInput === Number(user.ctc)) {
-        basic = Number(sc.basic);
-        da = Number(sc.da || 0);
-        hra = Number(sc.hra || 0);
-        special = Number(sc.specialAllowance || 0);
-        bonus = Number(sc.bonus || 0);
-        other = Number(sc.otherEarnings || 0);
-      } else {
-        const baseCtc = Number(user.ctc) || (Number(sc.basic) + Number(sc.da || 0) + Number(sc.hra || 0) + Number(sc.specialAllowance || 0));
-        const ratio = baseCtc > 0 ? ctcInput / baseCtc : 1;
-        basic = Math.round(Number(sc.basic) * ratio);
-        da = Math.round(Number(sc.da || 0) * ratio);
-        hra = Math.round(Number(sc.hra || 0) * ratio);
-        bonus = Math.round(Number(sc.bonus || 0) * ratio);
-        other = Math.round(Number(sc.otherEarnings || 0) * ratio);
-        special = Math.max(0, ctcInput - (basic + da + hra + bonus + other));
-      }
+      basic = Number(sc.basic);
+      da = Number(sc.da || 0);
+      hra = Number(sc.hra || 0);
+      special = Number(sc.specialAllowance || 0);
+      bonus = Number(sc.bonus || 0);
+      other = Number(sc.otherEarnings || 0);
+      gross = basic + da + hra + special + bonus + other;
     } else {
-      basic = Math.round(ctc * 0.50);
+      const targetCtc = ctcInput || Number(user.ctc) || Number(user.baseSalary) || 35000;
+      gross = Math.round(targetCtc / 1.06);
+      basic = Math.round(gross * 0.50);
       da = 0;
-      hra = Math.round(ctc * 0.20);
-      special = Math.max(0, ctc - basic - da - hra);
+      hra = Math.round(gross * 0.20);
+      special = Math.max(0, gross - basic - da - hra);
+    }
+    if (user.grossSalary && !sc.basic) {
+      gross = Number(user.grossSalary);
     }
 
+    // Employee Deductions
     const rawPf = dr.pfVal !== undefined ? dr.pfVal : (dr.pfPct !== undefined ? dr.pfPct : 12);
     const pf = dr.pfAmount || (rawPf > 30 ? rawPf : Math.round(basic * rawPf / 100));
-    const pfLabel = rawPf > 30 ? 'Fixed ₹' : `${rawPf}% of Basic`;
+    const pfLabel = rawPf > 30 ? 'Fixed ₹' : `${rawPf}%`;
 
-    const rawEsic = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : 0);
-    const esic = dr.esicAmount || (rawEsic > 10 ? rawEsic : Math.round(ctc * rawEsic / 100));
-    const esicLabel = rawEsic > 10 ? 'Fixed ₹' : (rawEsic > 0 ? `${rawEsic}% of Gross` : 'Exempt / N.A.');
+    const rawEsic = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : (gross <= 21000 ? 0.75 : 0));
+    const esic = dr.esicAmount || (rawEsic > 10 ? rawEsic : Math.round(gross * rawEsic / 100));
+    const esicLabel = rawEsic > 10 ? 'Fixed ₹' : (rawEsic > 0 ? `${rawEsic}%` : 'Exempt');
 
-    const pt = dr.pt !== undefined ? Number(dr.pt) : (ctc >= 10000 ? 200 : 0);
+    const pt = dr.pt !== undefined ? Number(dr.pt) : (gross >= 10000 ? 200 : 0);
     const lic = Number(dr.lic) || 0;
     const advance = Number(dr.advance) || 0;
     const tds = Number(dr.tds) || 0;
-    const totalDed = pf + esic + pt + lic + advance + tds;
-    const netTakeHome = Math.max(0, ctc - totalDed);
-    const annualCtc = ctc * 12;
+    const totalEmployeeDed = pf + esic + pt + lic + advance + tds;
+    const netTakeHome = Math.max(0, gross - totalEmployeeDed);
+
+    // Employer Contributions
+    const rawErPf = ec.pfVal !== undefined ? ec.pfVal : 12;
+    const erPf = ec.pfAmount || (rawErPf > 30 ? rawErPf : Math.round(basic * rawErPf / 100));
+    const erPfLabel = rawErPf > 30 ? 'Fixed ₹' : `${rawErPf}%`;
+
+    const rawErEsic = ec.esicVal !== undefined ? ec.esicVal : (gross <= 21000 ? 3.25 : 0);
+    const erEsic = ec.esicAmount || (rawErEsic > 10 ? rawErEsic : Math.round(gross * rawErEsic / 100));
+    const erEsicLabel = rawErEsic > 10 ? 'Fixed ₹' : (rawErEsic > 0 ? `${rawErEsic}%` : 'Exempt');
+
+    const erGratuity = Number(ec.gratuity) || 0;
+    const totalEmployerContrib = erPf + erEsic + erGratuity;
+
+    const monthlyCtc = gross + totalEmployerContrib;
+    const annualCtc = monthlyCtc * 12;
+    const annualGross = gross * 12;
     const annualNet = netTakeHome * 12;
 
-    remunerationClauseText = `Total Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month, Annual CTC ₹${annualCtc.toLocaleString('en-IN')}). EPF, ESIC, and PT deducted as applicable by statutory law. Detailed breakdown attached in <strong>Annexure-A</strong>.`;
-    offerPackageText = `<strong>• Monthly CTC Package:</strong> ₹${ctc.toLocaleString('en-IN')} / Month (Annual CTC: ₹${annualCtc.toLocaleString('en-IN')}) — Detailed Annexure-A attached below`;
-    incrementClauseText = `Effective from <strong>${escapeHtml(doj)}</strong>, your revised Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month, Annual CTC ₹${annualCtc.toLocaleString('en-IN')}).`;
+    remunerationClauseText = `Monthly Gross Salary will be <strong>₹${gross.toLocaleString('en-IN')}</strong>, and Total Cost to Company (CTC) will be <strong>₹${monthlyCtc.toLocaleString('en-IN')} per month</strong> (${numberToWordsIndian(monthlyCtc)} Rupees per month, Annual CTC ₹${annualCtc.toLocaleString('en-IN')}). Detailed earnings, employee deductions, and employer statutory contributions are set out in <strong>Annexure-A</strong>.`;
+    offerPackageText = `<strong>• Monthly Gross Salary:</strong> ₹${gross.toLocaleString('en-IN')} / Mo | <strong>Total Monthly CTC:</strong> ₹${monthlyCtc.toLocaleString('en-IN')} / Mo (Annual CTC: ₹${annualCtc.toLocaleString('en-IN')}) — Detailed Annexure-A attached below`;
+    incrementClauseText = `Effective from <strong>${escapeHtml(doj)}</strong>, your revised Monthly Gross Salary will be <strong>₹${gross.toLocaleString('en-IN')}</strong> and Total Monthly CTC will be <strong>₹${monthlyCtc.toLocaleString('en-IN')}</strong> (Annual CTC ₹${annualCtc.toLocaleString('en-IN')}).`;
 
     salaryTableHtml = `
       <div style="margin: 6px 0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;">
           <div style="font-weight: 800; font-size: 10px; color: #0B1936; text-transform: uppercase; letter-spacing: 0.02em;">
-            Annexure-A: Monthly &amp; Annual Remuneration Structure
+            Annexure-A: Comprehensive Salary &amp; CTC Architecture
           </div>
           <span style="font-size: 9px; font-weight: 700; color: #C2410C; background: #FFF7ED; border: 1px solid #FFEDD5; padding: 1px 6px; border-radius: 3px;">
-            Fixed Monthly CTC Structure
+            Gross vs CTC Compliant Structure
           </span>
         </div>
         <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; margin-bottom: 4px; border: 1px solid #CBD5E1;">
           <thead>
             <tr style="background: #FFF5EE; border-bottom: 1.5px solid #FF6B00; text-align: left;">
-              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0;">Earnings Components</th>
-              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Amount (₹ / Mo)</th>
-              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Annual (₹ / Year)</th>
-              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0;">Statutory Deductions</th>
-              <th style="padding: 3.5px 6px; text-align: right;">Amount (₹ / Mo)</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0;">Salary Components &amp; Contributions</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Monthly (₹)</th>
+              <th style="padding: 3.5px 6px; text-align: right;">Annual (₹)</th>
             </tr>
           </thead>
           <tbody>
+            <tr style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+              <td colspan="3" style="padding: 3px 6px; font-weight: 800; color: #1E3A8A; font-size: 9px; text-transform: uppercase;">
+                (A) Monthly Earnings / Allowances (Gross Salary)
+              </td>
+            </tr>
             <tr style="border-bottom: 1px solid #E2E8F0;">
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Basic Salary</td>
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${basic.toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(basic * 12).toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Provident Fund (PF @ ${pfLabel})</td>
-              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(basic * 12).toLocaleString('en-IN')}</td>
             </tr>
             <tr style="border-bottom: 1px solid #E2E8F0;">
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Dearness Allowance (DA)</td>
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${da.toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(da * 12).toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">ESIC Contribution (${esicLabel})</td>
-              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(da * 12).toLocaleString('en-IN')}</td>
             </tr>
             <tr style="border-bottom: 1px solid #E2E8F0;">
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">House Rent Allowance (HRA)</td>
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${hra.toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(hra * 12).toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
-              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pt.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(hra * 12).toLocaleString('en-IN')}</td>
             </tr>
             <tr style="border-bottom: 1px solid #E2E8F0;">
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Special / Plant Allowance</td>
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${special.toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(special * 12).toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Other Statutory / TDS</td>
-              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${(lic + advance + tds).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(special * 12).toLocaleString('en-IN')}</td>
             </tr>
             ${(bonus > 0 || other > 0) ? `
-            <tr style="border-bottom: 1px solid #E2E8F0; background: #FFFBF5;">
+            <tr style="border-bottom: 1px solid #E2E8F0;">
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Bonus / Other Earnings</td>
               <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${(bonus + other).toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${((bonus + other) * 12).toLocaleString('en-IN')}</td>
-              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; color: #64748B;">Total Monthly Deductions</td>
-              <td style="padding: 2.5px 6px; text-align: right; font-weight: 700; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${((bonus + other) * 12).toLocaleString('en-IN')}</td>
             </tr>` : ''}
-            <tr style="border-bottom: 1px solid #CBD5E1; background: #F8FAFC;">
-              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; font-weight: 800; color: #0B1936;">TOTAL GROSS (MONTHLY)</td>
-              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 800; color: #FF6B00;">₹${ctc.toLocaleString('en-IN')}</td>
-              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 700; color: #0B1936;">₹${annualCtc.toLocaleString('en-IN')}</td>
-              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; font-weight: 800; color: #0B1936;">TOTAL DEDUCTIONS</td>
-              <td style="padding: 3px 6px; text-align: right; font-weight: 800; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
+            <tr style="background: #ECFDF5; border-bottom: 1px solid #A7F3D0; font-weight: 800;">
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; color: #065F46;">TOTAL MONTHLY GROSS SALARY (A)</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #065F46;">₹${gross.toLocaleString('en-IN')}</td>
+              <td style="padding: 3px 6px; text-align: right; color: #065F46;">₹${annualGross.toLocaleString('en-IN')}</td>
+            </tr>
+
+            <tr style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0; border-top: 1px solid #CBD5E1;">
+              <td colspan="3" style="padding: 3px 6px; font-weight: 800; color: #1E3A8A; font-size: 9px; text-transform: uppercase;">
+                (B) Employer Statutory Contributions (Paid by Company over Gross to form CTC)
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Employer Provident Fund (PF @ ${erPfLabel})</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #1E40AF; font-weight: 600;">₹${erPf.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(erPf * 12).toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Employer ESIC Contribution (${erEsicLabel})</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #1E40AF; font-weight: 600;">₹${erEsic.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(erEsic * 12).toLocaleString('en-IN')}</td>
+            </tr>
+            ${erGratuity > 0 ? `
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Employer Gratuity / Insurance</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #1E40AF; font-weight: 600;">₹${erGratuity.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(erGratuity * 12).toLocaleString('en-IN')}</td>
+            </tr>` : ''}
+            <tr style="background: #EFF6FF; border-bottom: 1.5px solid #BFDBFE; font-weight: 800;">
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; color: #1E40AF;">TOTAL EMPLOYER CONTRIBUTIONS (B)</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #1E40AF;">₹${totalEmployerContrib.toLocaleString('en-IN')}</td>
+              <td style="padding: 3px 6px; text-align: right; color: #1E40AF;">₹${(totalEmployerContrib * 12).toLocaleString('en-IN')}</td>
+            </tr>
+
+            <tr style="background: #FFF7ED; border-top: 1.5px solid #FF6B00; border-bottom: 1.5px solid #FF6B00; font-weight: 900;">
+              <td style="padding: 4px 6px; border-right: 1px solid #E2E8F0; color: #C2410C; font-size: 10px;">TOTAL COST TO COMPANY — CTC (A + B)</td>
+              <td style="padding: 4px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #C2410C; font-size: 10.5px;">₹${monthlyCtc.toLocaleString('en-IN')}</td>
+              <td style="padding: 4px 6px; text-align: right; color: #C2410C; font-size: 10.5px;">₹${annualCtc.toLocaleString('en-IN')}</td>
+            </tr>
+
+            <tr style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0; border-top: 1px solid #CBD5E1;">
+              <td colspan="3" style="padding: 3px 6px; font-weight: 800; color: #991B1B; font-size: 9px; text-transform: uppercase;">
+                (C) Employee Deductions (Deducted from Monthly Gross to derive Take-Home)
+              </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Employee PF Contribution (@ ${pfLabel})</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(pf * 12).toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Employee ESIC Contribution (${esicLabel})</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(esic * 12).toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #DC2626;">₹${pt.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${(pt * 12).toLocaleString('en-IN')}</td>
+            </tr>
+            ${(lic + advance + tds) > 0 ? `
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Other Statutory / TDS / Advance</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #DC2626;">₹${(lic + advance + tds).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #475569;">₹${((lic + advance + tds) * 12).toLocaleString('en-IN')}</td>
+            </tr>` : ''}
+            <tr style="background: #FEF2F2; border-bottom: 1px solid #FCA5A5; font-weight: 700;">
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; color: #991B1B;">TOTAL EMPLOYEE DEDUCTIONS (C)</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #DC2626;">₹${totalEmployeeDed.toLocaleString('en-IN')}</td>
+              <td style="padding: 3px 6px; text-align: right; color: #DC2626;">₹${(totalEmployeeDed * 12).toLocaleString('en-IN')}</td>
             </tr>
           </tbody>
           <tfoot>
-            <tr style="background: #F1F5F9; font-weight: 800; border-top: 1.5px solid #0B1936;">
-              <td colspan="2" style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">ANNUAL COST TO COMPANY (CTC)</td>
-              <td style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #FF6B00; font-size: 10px;">₹${annualCtc.toLocaleString('en-IN')}</td>
-              <td style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">NET TAKE HOME (IN-HAND)</td>
-              <td style="padding: 3.5px 6px; text-align: right; color: #059669; font-size: 10.5px;">₹${netTakeHome.toLocaleString('en-IN')} / Mo</td>
+            <tr style="background: #F0FDF4; font-weight: 900; border-top: 2px solid #059669;">
+              <td style="padding: 4px 6px; border-right: 1px solid #E2E8F0; color: #065F46; font-size: 10.5px;">ESTIMATED NET TAKE HOME PAY (Gross - Deductions)</td>
+              <td style="padding: 4px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #059669; font-size: 11px;">₹${netTakeHome.toLocaleString('en-IN')} / Mo</td>
+              <td style="padding: 4px 6px; text-align: right; color: #059669; font-size: 10.5px;">₹${annualNet.toLocaleString('en-IN')} / Yr</td>
             </tr>
           </tfoot>
         </table>

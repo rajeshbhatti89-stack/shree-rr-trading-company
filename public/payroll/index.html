@@ -369,7 +369,8 @@
                   <th>Leave Balance</th>
                   <th>Mobile / WhatsApp</th>
                   <th>Bank & IFSC</th>
-                  <th>Rate / CTC</th>
+                  <th>Monthly Gross</th>
+                  <th>Total CTC</th>
                   <th class="text-right">Actions</th>
                 </tr>
               </thead>
@@ -1826,64 +1827,129 @@
               </div>
               <!-- Fixed CTC Block -->
               <div id="salary-section-ctc">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-                  <div class="form-group" style="margin-bottom:0;"><label style="font-weight:700; color:var(--logo-navy);">Monthly CTC / Gross (&#8377;) *</label><input type="number" id="user-ctc" placeholder="e.g. 35000" oninput="autoCalculateSalaryComponents()" style="font-weight:800; font-size:15px; color:var(--logo-navy); border-color:var(--logo-orange);"></div>
-                  <div class="form-group" style="margin-bottom:0;"><label>OT Hourly Rate (&#8377;) <small style="color:var(--text-muted);">Optional</small></label><input type="number" step="0.01" id="user-otRate" placeholder="e.g. 150.00"></div>
-                </div>
-                <div style="background:#F0FDF4; border:1.5px solid #86EFAC; border-radius:8px; padding:10px 12px; margin-bottom:8px;">
-                  <div style="font-size:11px; font-weight:800; color:#15803D; text-transform:uppercase; margin-bottom:8px;"><i class="fa-solid fa-circle-plus"></i> Earnings / Allowances Breakdown <span style="font-weight:400; color:#4ADE80; text-transform:none;">(Auto-filled — editable)</span></div>
-                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Basic Salary (&#8377;/mo)</label><input type="number" step="0.01" id="comp-basic" placeholder="Auto" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">DA — Dearness Allow. (&#8377;/mo)</label><input type="number" step="0.01" id="comp-da" placeholder="Auto / 0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">HRA — House Rent Allow. (&#8377;/mo)</label><input type="number" step="0.01" id="comp-hra" placeholder="Auto" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Special / Field Allowance (&#8377;/mo)</label><input type="number" step="0.01" id="comp-special" placeholder="e.g. 2000" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Bonus / Incentive (&#8377;/mo)</label><input type="number" step="0.01" id="comp-bonus" placeholder="e.g. 1500" value="0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Other Earnings (&#8377;/mo)</label><input type="number" step="0.01" id="comp-other-earn" placeholder="e.g. 500" value="0" oninput="updateSalaryPreview()"></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px;">
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-weight:700; color:var(--logo-navy);"><i class="fa-solid fa-money-bill-wave text-success"></i> Monthly Gross Salary (₹) *</label>
+                    <input type="number" id="user-gross" placeholder="e.g. 35000" oninput="onGrossSalaryInput()" style="font-weight:800; font-size:14px; color:var(--logo-navy); border-color:#86EFAC;">
+                    <small style="font-size:10px; color:var(--text-muted);">Earnings before employee deductions</small>
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-weight:700; color:var(--logo-navy);"><i class="fa-solid fa-briefcase text-orange"></i> Total Monthly CTC (₹) *</label>
+                    <input type="number" id="user-ctc" placeholder="e.g. 39688" oninput="onCtcSalaryInput()" style="font-weight:800; font-size:14px; color:var(--logo-orange); border-color:var(--logo-orange);">
+                    <small style="font-size:10px; color:var(--text-muted);">Gross + Employer PF + Employer ESIC</small>
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label>OT Hourly Rate (₹) <small style="color:var(--text-muted);">Optional</small></label>
+                    <input type="number" step="0.01" id="user-otRate" placeholder="e.g. 150.00">
                   </div>
                 </div>
-                <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
-                  <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:8px;"><i class="fa-solid fa-circle-minus"></i> Statutory Deductions Setup</div>
-                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employee <small>(12% or Fixed ₹)</small></label><input type="number" step="any" id="comp-pf-pct" value="12" min="0" placeholder="e.g. 12 or 1800" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC <small>(0.75% or Fixed ₹)</small></label><input type="number" step="any" id="comp-esic-pct" value="0" min="0" placeholder="e.g. 0.75 or 200" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Professional Tax — PT (₹/mo)</label><input type="number" step="1" id="comp-pt" value="200" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (₹/mo)</label><input type="number" step="0.01" id="comp-lic" value="0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (₹/mo)</label><input type="number" step="0.01" id="comp-advance" value="0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">TDS / Other Deduction (₹/mo)</label><input type="number" step="0.01" id="comp-tds" value="0" oninput="updateSalaryPreview()"></div>
+
+                <!-- Earnings / Allowances Breakdown -->
+                <div style="background:#F0FDF4; border:1.5px solid #86EFAC; border-radius:8px; padding:10px 12px; margin-bottom:10px;">
+                  <div style="font-size:11px; font-weight:800; color:#15803D; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><i class="fa-solid fa-circle-plus"></i> Earnings / Allowances Breakdown (Sum = Monthly Gross)</span>
+                    <span style="font-weight:700; font-size:11px; color:#166534;" id="components-gross-badge">Gross: ₹0.00</span>
                   </div>
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Basic Salary (₹/mo) *</label><input type="number" step="0.01" id="comp-basic" placeholder="Auto" oninput="onComponentInput()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">DA — Dearness Allow. (₹/mo)</label><input type="number" step="0.01" id="comp-da" placeholder="Auto / 0" value="0" oninput="onComponentInput()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">HRA — House Rent Allow. (₹/mo)</label><input type="number" step="0.01" id="comp-hra" placeholder="Auto" oninput="onComponentInput()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Special / Plant Allowance (₹/mo)</label><input type="number" step="0.01" id="comp-special" placeholder="e.g. 2000" oninput="onComponentInput()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Bonus / Incentive (₹/mo)</label><input type="number" step="0.01" id="comp-bonus" placeholder="e.g. 1500" value="0" oninput="onComponentInput()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Other Earnings (₹/mo)</label><input type="number" step="0.01" id="comp-other-earn" placeholder="e.g. 500" value="0" oninput="onComponentInput()"></div>
+                  </div>
+                </div>
+
+                <!-- Statutory Setup: 2 Columns for Employee Deductions & Employer Contributions -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+                  
+                  <!-- Employee Deductions -->
+                  <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
+                    <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:6px;">
+                      <i class="fa-solid fa-user-minus"></i> Employee Deductions <small style="text-transform:none; color:#991B1B;">(From Gross)</small>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employee <small>(12% or ₹)</small></label><input type="number" step="any" id="comp-pf-pct" value="12" min="0" placeholder="12% or 1800" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC Employee <small>(0.75% or ₹)</small></label><input type="number" step="any" id="comp-esic-pct" value="0" min="0" placeholder="0.75% or ₹" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Professional Tax — PT (₹)</label><input type="number" step="1" id="comp-pt" value="200" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (₹/mo)</label><input type="number" step="0.01" id="comp-lic" value="0" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (₹)</label><input type="number" step="0.01" id="comp-advance" value="0" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">TDS / Tax (₹/mo)</label><input type="number" step="0.01" id="comp-tds" value="0" oninput="updateSalaryPreview()"></div>
+                    </div>
+                  </div>
+
+                  <!-- Employer Contributions -->
+                  <div style="background:#EFF6FF; border:1.5px solid #BFDBFE; border-radius:8px; padding:10px 12px;">
+                    <div style="font-size:11px; font-weight:800; color:#1D4ED8; text-transform:uppercase; margin-bottom:6px;">
+                      <i class="fa-solid fa-building"></i> Employer Contributions <small style="text-transform:none; color:#1E40AF;">(Added to CTC)</small>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employer <small>(12% or ₹1800)</small></label><input type="number" step="any" id="comp-er-pf" value="12" min="0" placeholder="12% or 1800" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC Employer <small>(3.25% or ₹)</small></label><input type="number" step="any" id="comp-er-esic" value="0" min="0" placeholder="3.25% or ₹" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0; grid-column:span 2;"><label style="font-size:11px;">Employer Gratuity / Insurance (₹/mo)</label><input type="number" step="0.01" id="comp-er-gratuity" value="0" placeholder="0 or ₹/mo" oninput="updateSalaryPreview()"></div>
+                    </div>
+                    <div style="margin-top:8px; font-size:10px; color:#2563EB; line-height:1.3;">
+                      <i class="fa-solid fa-circle-info"></i> Employer PF &amp; ESIC are paid by company over and above gross salary to form the CTC.
+                    </div>
+                  </div>
+
                 </div>
               </div>
               <!-- Daily Wage Block -->
               <div id="salary-section-daily" style="display:none;">
                 <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px; margin-bottom:8px;">
                   <div style="font-size:11px; font-weight:800; color:var(--logo-navy); text-transform:uppercase; margin-bottom:8px;">Daily Wage Structure</div>
-                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px;">
                     <div class="form-group" style="margin-bottom:0;"><label>Basic Per Day (₹) *</label><input type="number" step="0.01" id="user-basicPerDay" placeholder="e.g. 444.62" oninput="updateSalaryPreview()"></div>
                     <div class="form-group" style="margin-bottom:0;"><label>DA Per Day (₹)</label><input type="number" step="0.01" id="comp-da-perday" placeholder="e.g. 289.38" oninput="updateSalaryPreview()"></div>
                     <div class="form-group" style="margin-bottom:0;"><label>HRA Per Day (₹)</label><input type="number" step="0.01" id="comp-hra-perday" placeholder="e.g. 62.70" oninput="updateSalaryPreview()"></div>
                     <div class="form-group" style="margin-bottom:0;"><label>OT Hourly Rate (₹)</label><input type="number" step="0.01" id="user-otRate-daily" placeholder="e.g. 150.00"></div>
                   </div>
                 </div>
-                <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
-                  <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:8px;">Deductions — Daily Wage</div>
-                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF <small>(12% or Fixed ₹)</small></label><input type="number" step="any" id="comp-pf-pct-daily" value="12" min="0" placeholder="e.g. 12 or 1800" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC <small>(0.75% or Fixed ₹)</small></label><input type="number" step="any" id="comp-esic-pct-daily" value="0.75" min="0" placeholder="e.g. 0.75 or 200" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PT (₹/mo)</label><input type="number" step="1" id="comp-pt-daily" value="200" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (₹/mo)</label><input type="number" step="0.01" id="comp-lic-daily" value="0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (₹/mo)</label><input type="number" step="0.01" id="comp-advance-daily" value="0" oninput="updateSalaryPreview()"></div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+                  <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
+                    <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:6px;">Employee Deductions (Daily Wage)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employee <small>(12% or ₹)</small></label><input type="number" step="any" id="comp-pf-pct-daily" value="12" min="0" placeholder="e.g. 12 or 1800" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC Employee <small>(0.75% or ₹)</small></label><input type="number" step="any" id="comp-esic-pct-daily" value="0.75" min="0" placeholder="e.g. 0.75 or 200" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PT (₹/mo)</label><input type="number" step="1" id="comp-pt-daily" value="200" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance (₹/mo)</label><input type="number" step="0.01" id="comp-advance-daily" value="0" oninput="updateSalaryPreview()"></div>
+                    </div>
+                  </div>
+                  <div style="background:#EFF6FF; border:1.5px solid #BFDBFE; border-radius:8px; padding:10px 12px;">
+                    <div style="font-size:11px; font-weight:800; color:#1D4ED8; text-transform:uppercase; margin-bottom:6px;">Employer Contributions (Daily Wage)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employer <small>(12% or ₹)</small></label><input type="number" step="any" id="comp-er-pf-daily" value="12" min="0" placeholder="12% or 1800" oninput="updateSalaryPreview()"></div>
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC Employer <small>(3.25% or ₹)</small></label><input type="number" step="any" id="comp-er-esic-daily" value="3.25" min="0" placeholder="3.25% or ₹" oninput="updateSalaryPreview()"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <!-- Live Preview -->
-              <div style="background:linear-gradient(135deg,#0B1936,#1a2f5e); border-radius:10px; padding:12px 16px; margin-top:10px; color:#FFF;">
-                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:8px; display:flex; align-items:center; gap:5px;"><i class="fa-solid fa-chart-bar" style="color:#FF6B00;"></i> Live Salary Preview — Full Month</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:6px;">
-                  <div><div style="font-size:10px; color:rgba(255,255,255,0.45); margin-bottom:2px;">Gross Earnings</div><div style="font-size:16px; font-weight:900; color:#4ADE80;" id="preview-gross">&#8377;0.00</div></div>
-                  <div><div style="font-size:10px; color:rgba(255,255,255,0.45); margin-bottom:2px;">Total Deductions</div><div style="font-size:16px; font-weight:900; color:#F87171;" id="preview-deductions">&#8377;0.00</div></div>
-                  <div><div style="font-size:10px; color:rgba(255,255,255,0.45); margin-bottom:2px;">Net Take Home</div><div style="font-size:20px; font-weight:900; color:#FF6B00;" id="preview-net">&#8377;0.00</div></div>
+              <!-- Live Preview: 4-Card Architecture (Gross, Deductions, Net In-Hand, Total CTC) -->
+              <div style="background:linear-gradient(135deg,#0B1936,#1a2f5e); border-radius:10px; padding:14px 18px; margin-top:10px; color:#FFF;">
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                  <span><i class="fa-solid fa-chart-pie" style="color:#FF6B00;"></i> Live Salary Architecture Preview — Full Month</span>
+                  <span id="preview-annual-ctc" style="color:#FDBA74; font-weight:700; font-size:11px;">Annual CTC: ₹0 / Year</span>
                 </div>
-                <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:5px; font-size:10px; color:rgba(255,255,255,0.4);" id="preview-breakdown-text">Enter CTC or daily wage above to see the live salary breakdown.</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; margin-bottom:8px;">
+                  <div style="background:rgba(255,255,255,0.06); padding:8px 10px; border-radius:7px; border-left:3.5px solid #4ADE80;">
+                    <div style="font-size:10px; color:rgba(255,255,255,0.6); margin-bottom:2px;">Gross Salary</div>
+                    <div style="font-size:16px; font-weight:900; color:#4ADE80;" id="preview-gross">₹0.00</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.06); padding:8px 10px; border-radius:7px; border-left:3.5px solid #F87171;">
+                    <div style="font-size:10px; color:rgba(255,255,255,0.6); margin-bottom:2px;">Employee Deductions</div>
+                    <div style="font-size:16px; font-weight:900; color:#F87171;" id="preview-deductions">₹0.00</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.06); padding:8px 10px; border-radius:7px; border-left:3.5px solid #38BDF8;">
+                    <div style="font-size:10px; color:rgba(255,255,255,0.6); margin-bottom:2px;">Net In-Hand Pay</div>
+                    <div style="font-size:16px; font-weight:900; color:#38BDF8;" id="preview-net">₹0.00</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.06); padding:8px 10px; border-radius:7px; border-left:3.5px solid #FF6B00;">
+                    <div style="font-size:10px; color:rgba(255,255,255,0.6); margin-bottom:2px;">Total Monthly CTC</div>
+                    <div style="font-size:17px; font-weight:900; color:#FF6B00;" id="preview-ctc">₹0.00</div>
+                  </div>
+                </div>
+                <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:6px; font-size:10px; color:rgba(255,255,255,0.5);" id="preview-breakdown-text">Enter Gross or CTC above to view the live salary breakdown.</div>
               </div>
             </div>
           </div>
