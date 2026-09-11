@@ -4783,9 +4783,42 @@ function handleLetterEmployeeChange() {
   document.getElementById('letter-doj-input').value = user.doj || '01/01/2026';
   document.getElementById('letter-designation-input').value = user.designation || user.rank || 'Operator';
   
-  const ctcVal = Number(user.ctc) || Number(user.baseSalary) || (Number(user.basicPerDay) ? Number(user.basicPerDay) * 30 : 35000);
+  const isDaily = (!user.ctc || Number(user.ctc) === 0) && !!user.basicPerDay;
+  let ctcVal = 0;
+  if (isDaily) {
+    const bpd = Number(user.basicPerDay) || 0;
+    const dapd = Number(user.salaryComponents?.daPerDay) || 0;
+    const hrapd = Number(user.salaryComponents?.hraPerDay) || 0;
+    ctcVal = Math.round((bpd + dapd + hrapd) * 26);
+  } else {
+    ctcVal = Number(user.ctc) || Number(user.baseSalary) || 35000;
+  }
   document.getElementById('letter-ctc-input').value = ctcVal;
   document.getElementById('letter-site-input').value = user.site || user.location || 'ACC Chanda Plant Site & Operations, Chandrapur';
+
+  // Update sidebar salary summary badge
+  const badgeEl = document.getElementById('letter-wage-type-badge');
+  const detailsEl = document.getElementById('letter-wage-details-text');
+  if (badgeEl && detailsEl) {
+    if (isDaily) {
+      const bpd = Number(user.basicPerDay) || 0;
+      const dapd = Number(user.salaryComponents?.daPerDay) || 0;
+      const hrapd = Number(user.salaryComponents?.hraPerDay) || 0;
+      const totalDaily = bpd + dapd + hrapd;
+      badgeEl.textContent = 'Daily Wage Rate';
+      badgeEl.style.background = '#2563EB';
+      detailsEl.innerHTML = `Daily Rate: <strong>₹${totalDaily.toFixed(2)}/day</strong> (Basic ₹${bpd.toFixed(2)} + DA ₹${dapd.toFixed(2)} + HRA ₹${hrapd.toFixed(2)}) • ~₹${ctcVal.toLocaleString('en-IN')}/mo (26d)`;
+    } else {
+      badgeEl.textContent = 'Fixed Monthly CTC';
+      badgeEl.style.background = 'var(--logo-orange)';
+      const sc = user.salaryComponents || {};
+      if (sc.basic) {
+        detailsEl.innerHTML = `Basic: ₹${Number(sc.basic).toLocaleString('en-IN')} | HRA: ₹${Number(sc.hra || 0).toLocaleString('en-IN')} | Special: ₹${Number(sc.specialAllowance || 0).toLocaleString('en-IN')}`;
+      } else {
+        detailsEl.innerHTML = `Standard Split: Basic 50%, HRA 20%, Special 30%`;
+      }
+    }
+  }
 
   updateLetterTemplate();
 }
@@ -4802,12 +4835,14 @@ function updateLetterTemplate() {
   const doj = document.getElementById('letter-doj-input')?.value || user.doj || '01/01/2026';
   const probation = document.getElementById('letter-probation-input')?.value || '3 Months';
   const designation = document.getElementById('letter-designation-input')?.value || user.designation || user.rank || 'Staff';
-  const ctc = Number(document.getElementById('letter-ctc-input')?.value || user.ctc || user.baseSalary || 35000);
+  const ctcInput = Number(document.getElementById('letter-ctc-input')?.value || user.ctc || user.baseSalary || 35000);
   const site = document.getElementById('letter-site-input')?.value || user.site || user.location || 'ACC Chanda Plant Site & Operations, Chandrapur';
   const notice = document.getElementById('letter-notice-input')?.value || '30 Days';
   const sigName = document.getElementById('letter-signatory-name')?.value || 'Managing Director / Authorized Signatory';
   const sigTitle = document.getElementById('letter-signatory-title')?.value || 'Shree RR Trading Company';
   const customNote = document.getElementById('letter-custom-note')?.value?.trim() || '';
+
+  const isDaily = (!user.ctc || Number(user.ctc) === 0) && !!user.basicPerDay;
 
   // Format Date (e.g. 04 September 2026)
   const dateObj = new Date(issueDateRaw);
@@ -4835,68 +4870,233 @@ function updateLetterTemplate() {
   const subjectEl = document.getElementById('view-letter-subject');
   const bodyEl = document.getElementById('view-letter-body-content');
 
-  // Salary calculations
-  const basic = Math.round(ctc * 0.50);
-  const da = Math.round(ctc * 0.20);
-  const hra = Math.round(ctc * 0.15);
-  const special = Math.round(ctc - (basic + da + hra));
-  const pf = Math.round((basic + da) * 0.12);
-  const esic = Math.round(ctc * 0.0075);
-  const pt = 200;
-  const totalDed = pf + esic + pt;
-  const netTakeHome = ctc - totalDed;
+  let salaryTableHtml = '';
+  let remunerationClauseText = '';
+  let offerPackageText = '';
+  let incrementClauseText = '';
 
-  const salaryTableHtml = `
-    <div style="margin: 6px 0;">
-      <div style="font-weight: 800; font-size: 10px; color: #0B1936; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.02em;">
-        Annexure-A: Monthly Remuneration & Compensation Breakup
+  if (isDaily) {
+    // ──────── DAILY WAGE REMUNERATION STRUCTURE ────────
+    const bpd = Number(user.basicPerDay) || 0;
+    const dapd = Number(user.salaryComponents?.daPerDay) || 0;
+    const hrapd = Number(user.salaryComponents?.hraPerDay) || 0;
+    const dailyTotal = bpd + dapd + hrapd;
+    const days = 26; // Standard statutory working days benchmark in plant operations
+    const grossMonth = Math.round(dailyTotal * days);
+    const dr = user.deductionRates || {};
+
+    const rawPf = dr.pfVal !== undefined ? dr.pfVal : (dr.pfPct !== undefined ? dr.pfPct : 12);
+    const pf = dr.pfAmount || (rawPf > 30 ? rawPf : Math.round(bpd * days * rawPf / 100));
+    const pfLabel = rawPf > 30 ? 'Fixed ₹' : `${rawPf}% of Basic`;
+
+    const rawEsic = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : 0.75);
+    const esic = dr.esicAmount || (rawEsic > 10 ? rawEsic : Math.round(grossMonth * rawEsic / 100));
+    const esicLabel = rawEsic > 10 ? 'Fixed ₹' : `${rawEsic}% of Gross`;
+
+    const pt = dr.pt !== undefined ? Number(dr.pt) : 200;
+    const lic = Number(dr.lic) || 0;
+    const advance = Number(dr.advance) || 0;
+    const totalDed = pf + esic + pt + lic + advance;
+    const netTakeHome = Math.max(0, grossMonth - totalDed);
+
+    remunerationClauseText = `You are appointed under the <strong>Daily Wage System</strong> at a wage rate of <strong>₹${dailyTotal.toFixed(2)} per working day</strong> (representing an estimated 26-day monthly remuneration benchmark of <strong>₹${grossMonth.toLocaleString('en-IN')}</strong>). Statutory EPF, ESIC, and PT shall be deducted as per applicable regulations. Detailed wage structure attached in <strong>Annexure-A</strong>.`;
+    offerPackageText = `<strong>• Daily Wage Rate:</strong> ₹${dailyTotal.toFixed(2)} / Day (Estimated 26-day monthly gross benchmark: ₹${grossMonth.toLocaleString('en-IN')}) — Detailed Annexure-A attached below`;
+    incrementClauseText = `Effective from <strong>${escapeHtml(doj)}</strong>, your revised Daily Wage Rate will be <strong>₹${dailyTotal.toFixed(2)} per working day</strong> (Estimated 26-day monthly remuneration benchmark: <strong>₹${grossMonth.toLocaleString('en-IN')}</strong>).`;
+
+    salaryTableHtml = `
+      <div style="margin: 6px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;">
+          <div style="font-weight: 800; font-size: 10px; color: #0B1936; text-transform: uppercase; letter-spacing: 0.02em;">
+            Annexure-A: Daily Wage Structure &amp; Compensation Breakup
+          </div>
+          <span style="font-size: 9px; font-weight: 700; color: #2563EB; background: #EFF6FF; border: 1px solid #BFDBFE; padding: 1px 6px; border-radius: 3px;">
+            Daily Wage System (26 Days Benchmark)
+          </span>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; margin-bottom: 4px; border: 1px solid #CBD5E1;">
+          <thead>
+            <tr style="background: #FFF5EE; border-bottom: 1.5px solid #FF6B00; text-align: left;">
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0;">Component / Allowance</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Rate (₹ / Day)</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Monthly (26 Days)</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0;">Statutory Deductions</th>
+              <th style="padding: 3.5px 6px; text-align: right;">Deduction (₹ / Mo)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Basic Wage</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${bpd.toFixed(2)}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${Math.round(bpd * days).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Provident Fund (PF @ ${pfLabel})</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Dearness Allowance (DA)</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${dapd.toFixed(2)}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${Math.round(dapd * days).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">ESIC Contribution (${esicLabel})</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">House Rent Allowance (HRA)</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${hrapd.toFixed(2)}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${Math.round(hrapd * days).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pt.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #CBD5E1; background: #FAFAFA;">
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; font-weight: 700;">TOTAL DAILY WAGE RATE</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 800; color: #FF6B00;">₹${dailyTotal.toFixed(2)} / Day</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 800; color: #0B1936;">₹${grossMonth.toLocaleString('en-IN')}</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; font-weight: 700;">Total Deductions</td>
+              <td style="padding: 3px 6px; text-align: right; font-weight: 700; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="background: #F8FAFC; font-weight: 800; border-top: 1.5px solid #0B1936;">
+              <td colspan="2" style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">GROSS ESTIMATED (26 DAYS)</td>
+              <td style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #FF6B00; font-size: 10px;">₹${grossMonth.toLocaleString('en-IN')}</td>
+              <td style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">NET ESTIMATED TAKE HOME PAY</td>
+              <td style="padding: 3.5px 6px; text-align: right; color: #059669; font-size: 10px;">₹${netTakeHome.toLocaleString('en-IN')} / Mo</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div style="font-size: 8.5px; color: #64748B; margin-top: 2px;">
+          * Daily wage payments are calculated on actual attendance muster roll. 26 payable days per month considered as standard industrial benchmark calculation.
+        </div>
       </div>
-      <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; margin-bottom: 4px; border: 1px solid #CBD5E1;">
-        <thead>
-          <tr style="background: #FFF5EE; border-bottom: 1.5px solid #FF6B00; text-align: left;">
-            <th style="padding: 3px 6px; border-right: 1px solid #E2E8F0;">Component / Allowance</th>
-            <th style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Amount (₹ / Mo)</th>
-            <th style="padding: 3px 6px; border-right: 1px solid #E2E8F0;">Statutory Deductions</th>
-            <th style="padding: 3px 6px; text-align: right;">Amount (₹ / Mo)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="border-bottom: 1px solid #E2E8F0;">
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Basic Salary</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${basic.toLocaleString('en-IN')}</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Provident Fund (PF @ 12%)</td>
-            <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #E2E8F0;">
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Dearness Allowance (DA)</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${da.toLocaleString('en-IN')}</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">ESIC Contribution (0.75%)</td>
-            <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #E2E8F0;">
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">House Rent Allowance (HRA)</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${hra.toLocaleString('en-IN')}</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
-            <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pt}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #CBD5E1;">
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Special Plant Allowance</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${special.toLocaleString('en-IN')}</td>
-            <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; font-weight: 700;">Total Deductions</td>
-            <td style="padding: 2.5px 6px; text-align: right; font-weight: 700; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr style="background: #F8FAFC; font-weight: 800; border-top: 1.5px solid #0B1936;">
-            <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">GROSS MONTHLY CTC</td>
-            <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #FF6B00; font-size: 10px;">₹${ctc.toLocaleString('en-IN')}</td>
-            <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">NET TAKE HOME PAY</td>
-            <td style="padding: 3px 6px; text-align: right; color: #059669; font-size: 10px;">₹${netTakeHome.toLocaleString('en-IN')}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  `;
+    `;
+  } else {
+    // ──────── FIXED MONTHLY CTC SALARY STRUCTURE ────────
+    const ctc = ctcInput || Number(user.ctc) || Number(user.baseSalary) || 35000;
+    const sc = user.salaryComponents || {};
+    const dr = user.deductionRates || {};
+    let basic = 0, da = 0, hra = 0, special = 0, bonus = 0, other = 0;
+
+    if (sc.basic && Number(sc.basic) > 0) {
+      if (!ctcInput || ctcInput === Number(user.ctc)) {
+        basic = Number(sc.basic);
+        da = Number(sc.da || 0);
+        hra = Number(sc.hra || 0);
+        special = Number(sc.specialAllowance || 0);
+        bonus = Number(sc.bonus || 0);
+        other = Number(sc.otherEarnings || 0);
+      } else {
+        const baseCtc = Number(user.ctc) || (Number(sc.basic) + Number(sc.da || 0) + Number(sc.hra || 0) + Number(sc.specialAllowance || 0));
+        const ratio = baseCtc > 0 ? ctcInput / baseCtc : 1;
+        basic = Math.round(Number(sc.basic) * ratio);
+        da = Math.round(Number(sc.da || 0) * ratio);
+        hra = Math.round(Number(sc.hra || 0) * ratio);
+        bonus = Math.round(Number(sc.bonus || 0) * ratio);
+        other = Math.round(Number(sc.otherEarnings || 0) * ratio);
+        special = Math.max(0, ctcInput - (basic + da + hra + bonus + other));
+      }
+    } else {
+      basic = Math.round(ctc * 0.50);
+      da = 0;
+      hra = Math.round(ctc * 0.20);
+      special = Math.max(0, ctc - basic - da - hra);
+    }
+
+    const rawPf = dr.pfVal !== undefined ? dr.pfVal : (dr.pfPct !== undefined ? dr.pfPct : 12);
+    const pf = dr.pfAmount || (rawPf > 30 ? rawPf : Math.round(basic * rawPf / 100));
+    const pfLabel = rawPf > 30 ? 'Fixed ₹' : `${rawPf}% of Basic`;
+
+    const rawEsic = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : 0);
+    const esic = dr.esicAmount || (rawEsic > 10 ? rawEsic : Math.round(ctc * rawEsic / 100));
+    const esicLabel = rawEsic > 10 ? 'Fixed ₹' : (rawEsic > 0 ? `${rawEsic}% of Gross` : 'Exempt / N.A.');
+
+    const pt = dr.pt !== undefined ? Number(dr.pt) : (ctc >= 10000 ? 200 : 0);
+    const lic = Number(dr.lic) || 0;
+    const advance = Number(dr.advance) || 0;
+    const tds = Number(dr.tds) || 0;
+    const totalDed = pf + esic + pt + lic + advance + tds;
+    const netTakeHome = Math.max(0, ctc - totalDed);
+    const annualCtc = ctc * 12;
+    const annualNet = netTakeHome * 12;
+
+    remunerationClauseText = `Total Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month, Annual CTC ₹${annualCtc.toLocaleString('en-IN')}). EPF, ESIC, and PT deducted as applicable by statutory law. Detailed breakdown attached in <strong>Annexure-A</strong>.`;
+    offerPackageText = `<strong>• Monthly CTC Package:</strong> ₹${ctc.toLocaleString('en-IN')} / Month (Annual CTC: ₹${annualCtc.toLocaleString('en-IN')}) — Detailed Annexure-A attached below`;
+    incrementClauseText = `Effective from <strong>${escapeHtml(doj)}</strong>, your revised Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month, Annual CTC ₹${annualCtc.toLocaleString('en-IN')}).`;
+
+    salaryTableHtml = `
+      <div style="margin: 6px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3px;">
+          <div style="font-weight: 800; font-size: 10px; color: #0B1936; text-transform: uppercase; letter-spacing: 0.02em;">
+            Annexure-A: Monthly &amp; Annual Remuneration Structure
+          </div>
+          <span style="font-size: 9px; font-weight: 700; color: #C2410C; background: #FFF7ED; border: 1px solid #FFEDD5; padding: 1px 6px; border-radius: 3px;">
+            Fixed Monthly CTC Structure
+          </span>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; margin-bottom: 4px; border: 1px solid #CBD5E1;">
+          <thead>
+            <tr style="background: #FFF5EE; border-bottom: 1.5px solid #FF6B00; text-align: left;">
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0;">Earnings Components</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Amount (₹ / Mo)</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right;">Annual (₹ / Year)</th>
+              <th style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0;">Statutory Deductions</th>
+              <th style="padding: 3.5px 6px; text-align: right;">Amount (₹ / Mo)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Basic Salary</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${basic.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(basic * 12).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Provident Fund (PF @ ${pfLabel})</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pf.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Dearness Allowance (DA)</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${da.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(da * 12).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">ESIC Contribution (${esicLabel})</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${esic.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">House Rent Allowance (HRA)</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${hra.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(hra * 12).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Professional Tax (PT)</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${pt.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #E2E8F0;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Special / Plant Allowance</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${special.toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${(special * 12).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Other Statutory / TDS</td>
+              <td style="padding: 2.5px 6px; text-align: right; color: #DC2626;">₹${(lic + advance + tds).toLocaleString('en-IN')}</td>
+            </tr>
+            ${(bonus > 0 || other > 0) ? `
+            <tr style="border-bottom: 1px solid #E2E8F0; background: #FFFBF5;">
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0;">Bonus / Other Earnings</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 600;">₹${(bonus + other).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #475569;">₹${((bonus + other) * 12).toLocaleString('en-IN')}</td>
+              <td style="padding: 2.5px 6px; border-right: 1px solid #E2E8F0; color: #64748B;">Total Monthly Deductions</td>
+              <td style="padding: 2.5px 6px; text-align: right; font-weight: 700; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
+            </tr>` : ''}
+            <tr style="border-bottom: 1px solid #CBD5E1; background: #F8FAFC;">
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; font-weight: 800; color: #0B1936;">TOTAL GROSS (MONTHLY)</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 800; color: #FF6B00;">₹${ctc.toLocaleString('en-IN')}</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; text-align: right; font-weight: 700; color: #0B1936;">₹${annualCtc.toLocaleString('en-IN')}</td>
+              <td style="padding: 3px 6px; border-right: 1px solid #E2E8F0; font-weight: 800; color: #0B1936;">TOTAL DEDUCTIONS</td>
+              <td style="padding: 3px 6px; text-align: right; font-weight: 800; color: #DC2626;">₹${totalDed.toLocaleString('en-IN')}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="background: #F1F5F9; font-weight: 800; border-top: 1.5px solid #0B1936;">
+              <td colspan="2" style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">ANNUAL COST TO COMPANY (CTC)</td>
+              <td style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; text-align: right; color: #FF6B00; font-size: 10px;">₹${annualCtc.toLocaleString('en-IN')}</td>
+              <td style="padding: 3.5px 6px; border-right: 1px solid #E2E8F0; color: #0B1936;">NET TAKE HOME (IN-HAND)</td>
+              <td style="padding: 3.5px 6px; text-align: right; color: #059669; font-size: 10.5px;">₹${netTakeHome.toLocaleString('en-IN')} / Mo</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    `;
+  }
 
   if (letterType === 'appointment') {
     if (acceptanceBox) acceptanceBox.style.display = 'block';
@@ -4904,20 +5104,20 @@ function updateLetterTemplate() {
     bodyEl.innerHTML = `
       <p style="margin-bottom: 5px;">Dear <strong>${escapeHtml(user.name)}</strong>,</p>
       <p style="margin-bottom: 5px;">
-        With reference to your application, technical interview, and subsequent discussions, the management of <strong>Shree RR Trading Company</strong> is pleased to appoint you as <strong>${escapeHtml(designation)}</strong> in our Plant Fleet & Operations Division on the following terms:
+        With reference to your application, technical interview, and subsequent discussions, the management of <strong>Shree RR Trading Company</strong> is pleased to appoint you as <strong>${escapeHtml(designation)}</strong> in our Plant Fleet &amp; Operations Division on the following terms:
       </p>
 
-      <div style="margin-bottom: 3.5px;"><strong>1. Date of Joining & Site:</strong> Effective from <strong>${escapeHtml(doj)}</strong>. Posted at <strong>${escapeHtml(site)}</strong>. Transferable across company plant sites & crushing units as operational requirements dictate.</div>
+      <div style="margin-bottom: 3.5px;"><strong>1. Date of Joining &amp; Site:</strong> Effective from <strong>${escapeHtml(doj)}</strong>. Posted at <strong>${escapeHtml(site)}</strong>. Transferable across company plant sites &amp; crushing units as operational requirements dictate.</div>
 
       <div style="margin-bottom: 3.5px;"><strong>2. Probation Period:</strong> Initial probation of <strong>${escapeHtml(probation)}</strong> from joining date. Confirmed in writing upon satisfactory performance.</div>
 
-      <div style="margin-bottom: 3.5px;"><strong>3. Remuneration:</strong> Total Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees). EPF, ESIC, and PT deducted as applicable by statutory law. Breakdown attached in <strong>Annexure-A</strong>.</div>
+      <div style="margin-bottom: 3.5px;"><strong>3. Remuneration:</strong> ${remunerationClauseText}</div>
 
       ${salaryTableHtml}
 
       <div style="margin-bottom: 3.5px;"><strong>4. Plant Shifts:</strong> Roster covers 24/7 plant operations (G Shift: 08:30 AM – 05:30 PM, A Shift: 06:00 AM – 02:00 PM, B Shift: 02:00 PM – 10:00 PM, C Shift: 10:00 PM – 06:00 AM) as scheduled by Shift In-Charge.</div>
 
-      <div style="margin-bottom: 3.5px;"><strong>5. Safety & PPE:</strong> Mandatory wearing of prescribed Personal Protective Equipment (Helmet, Steel-Toe Shoes, High-Vis Vest). Zero-tolerance policy applies to plant safety violations.</div>
+      <div style="margin-bottom: 3.5px;"><strong>5. Safety &amp; PPE:</strong> Mandatory wearing of prescribed Personal Protective Equipment (Helmet, Steel-Toe Shoes, High-Vis Vest). Zero-tolerance policy applies to plant safety violations.</div>
 
       <div style="margin-bottom: 3.5px;"><strong>6. Notice Period:</strong> Either party may terminate employment by giving <strong>${escapeHtml(notice)}</strong> prior notice in writing or payment in lieu thereof.</div>
 
@@ -4941,7 +5141,7 @@ function updateLetterTemplate() {
       <div style="margin-bottom: 4px;"><strong>• Proposed Designation:</strong> ${escapeHtml(designation)}</div>
       <div style="margin-bottom: 4px;"><strong>• Plant Deployment Location:</strong> ${escapeHtml(site)}</div>
       <div style="margin-bottom: 4px;"><strong>• Expected Joining Date:</strong> ${escapeHtml(doj)}</div>
-      <div style="margin-bottom: 4px;"><strong>• Monthly CTC Package:</strong> ₹${ctc.toLocaleString('en-IN')} / Month (Detailed Annexure-A attached below)</div>
+      <div style="margin-bottom: 4px;">${offerPackageText}</div>
       <div style="margin-bottom: 4px;"><strong>• Probationary Period:</strong> ${escapeHtml(probation)}</div>
 
       ${salaryTableHtml}
@@ -4951,7 +5151,7 @@ function updateLetterTemplate() {
         <ol style="margin-left: 18px; margin-top: 2px; margin-bottom: 0; padding-left: 0;">
           <li>Original and self-attested copies of Aadhaar Card and PAN Card</li>
           <li>Bank Account Passbook / Cancelled Cheque (with IFSC)</li>
-          <li>4 Passport Size Color Photographs & License (for Equipment Operators)</li>
+          <li>4 Passport Size Color Photographs &amp; Heavy Vehicle License (if applicable)</li>
         </ol>
       </div>
 
@@ -5015,7 +5215,7 @@ function updateLetterTemplate() {
         In recognition of your exceptional performance, machine uptime, dedication, and valuable contributions to the plant fleet operations at <strong>${escapeHtml(site)}</strong>, the management of <strong>Shree RR Trading Company</strong> is pleased to revise your monthly compensation package.
       </p>
       <p style="margin-bottom: 8px; font-size: 11px; line-height: 1.5;">
-        Effective from <strong>${escapeHtml(doj)}</strong>, your revised Gross Monthly CTC will be <strong>₹${ctc.toLocaleString('en-IN')}</strong> (${numberToWordsIndian(ctc)} Rupees per month).
+        ${incrementClauseText}
       </p>
 
       ${salaryTableHtml}

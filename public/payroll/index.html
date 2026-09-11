@@ -2161,11 +2161,22 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
               <div class="form-group" style="margin-bottom: 0;">
                 <label style="font-size: 11px;">Monthly Gross / CTC (₹)</label>
-                <input type="number" id="letter-ctc-input" placeholder="38000" style="font-size: 12px; font-weight: 700; color: var(--logo-orange);">
+                <input type="number" id="letter-ctc-input" placeholder="38000" style="font-size: 12px; font-weight: 700; color: var(--logo-orange);" oninput="updateLetterTemplate()">
               </div>
               <div class="form-group" style="margin-bottom: 0;">
                 <label style="font-size: 11px;">Notice Period</label>
-                <input type="text" id="letter-notice-input" value="30 Days" style="font-size: 12px;">
+                <input type="text" id="letter-notice-input" value="30 Days" style="font-size: 12px;" oninput="updateLetterTemplate()">
+              </div>
+            </div>
+
+            <!-- Salary Structure Info Box -->
+            <div id="letter-salary-summary-box" style="background:#FFF5EE; border:1px solid var(--border-orange); border-radius:6px; padding:8px 10px; font-size:11px;">
+              <div style="font-weight:800; color:var(--logo-navy); display:flex; justify-content:space-between; align-items:center;">
+                <span><i class="fa-solid fa-calculator text-orange"></i> Salary Structure</span>
+                <span id="letter-wage-type-badge" style="font-size:9.5px; background:var(--logo-orange); color:#FFF; padding:1px 6px; border-radius:10px; font-weight:700;">Fixed CTC</span>
+              </div>
+              <div id="letter-wage-details-text" style="color:#64748B; font-size:10px; margin-top:3px; line-height:1.3;">
+                Basic + DA + HRA + Allowances
               </div>
             </div>
 
