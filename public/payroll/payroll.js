@@ -820,8 +820,8 @@ function editUser(userId) {
     document.getElementById('comp-bonus').value = sc.bonus || '0';
     document.getElementById('comp-other-earn').value = sc.otherEarnings || '0';
     const dr = user.deductionRates || {};
-    document.getElementById('comp-pf-pct').value = dr.pfPct !== undefined ? dr.pfPct : 12;
-    document.getElementById('comp-esic-pct').value = dr.esicPct !== undefined ? dr.esicPct : 0;
+    document.getElementById('comp-pf-pct').value = dr.pfVal !== undefined ? dr.pfVal : (dr.pfPct !== undefined ? dr.pfPct : 12);
+    document.getElementById('comp-esic-pct').value = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : 0);
     document.getElementById('comp-pt').value = dr.pt !== undefined ? dr.pt : 200;
     document.getElementById('comp-lic').value = dr.lic || 0;
     document.getElementById('comp-advance').value = dr.advance || 0;
@@ -833,8 +833,8 @@ function editUser(userId) {
     document.getElementById('comp-da-perday').value = sc.daPerDay || '';
     document.getElementById('comp-hra-perday').value = sc.hraPerDay || '';
     const dr = user.deductionRates || {};
-    document.getElementById('comp-pf-pct-daily').value = dr.pfPct !== undefined ? dr.pfPct : 12;
-    document.getElementById('comp-esic-pct-daily').value = dr.esicPct !== undefined ? dr.esicPct : 0.75;
+    document.getElementById('comp-pf-pct-daily').value = dr.pfVal !== undefined ? dr.pfVal : (dr.pfPct !== undefined ? dr.pfPct : 12);
+    document.getElementById('comp-esic-pct-daily').value = dr.esicVal !== undefined ? dr.esicVal : (dr.esicPct !== undefined ? dr.esicPct : 0.75);
     document.getElementById('comp-pt-daily').value = dr.pt !== undefined ? dr.pt : 200;
     document.getElementById('comp-lic-daily').value = dr.lic || 0;
     document.getElementById('comp-advance-daily').value = dr.advance || 0;
@@ -860,7 +860,16 @@ function openAddUserModal() {
   document.getElementById('form-user').reset();
   document.getElementById('user-id').value = '';
   document.getElementById('user-empId').readOnly = false;
-  const nextId = `SRR${String(allUsers.length + 1).padStart(3, '0')}`;
+  let maxEmpNum = 0;
+  (allUsers || []).forEach(u => {
+    const m = String(u.empId || '').match(/SRR(\d+)/i);
+    if (m) {
+      const n = parseInt(m[1], 10);
+      if (n > maxEmpNum) maxEmpNum = n;
+    }
+  });
+  const nextNum = Math.max(maxEmpNum + 1, (allUsers ? allUsers.length + 1 : 1));
+  const nextId = `SRR${String(nextNum).padStart(3, '0')}`;
   document.getElementById('user-empId').value = nextId;
   // Reset salary mode to CTC
   document.getElementById('salary-mode-ctc').checked = true;
@@ -948,22 +957,25 @@ function updateSalaryPreview() {
     const otherEarn = Number(document.getElementById('comp-other-earn')?.value) || 0;
     gross = basic + da + hra + special + bonus + otherEarn;
 
-    const pfPct = Number(document.getElementById('comp-pf-pct')?.value) || 0;
-    const esicPct = Number(document.getElementById('comp-esic-pct')?.value) || 0;
+    const pfInput = Number(document.getElementById('comp-pf-pct')?.value) || 0;
+    const esicInput = Number(document.getElementById('comp-esic-pct')?.value) || 0;
     const pt = Number(document.getElementById('comp-pt')?.value) || 0;
     const lic = Number(document.getElementById('comp-lic')?.value) || 0;
     const advance = Number(document.getElementById('comp-advance')?.value) || 0;
     const tds = Number(document.getElementById('comp-tds')?.value) || 0;
-    const pf = Math.round(basic * pfPct / 100);
-    const esic = Math.round(gross * esicPct / 100);
+
+    // Smart PF: <= 30 is treated as %, > 30 is treated as fixed ₹ amount (e.g. 1800)
+    const pf = pfInput <= 30 ? Math.round(basic * pfInput / 100) : Math.round(pfInput);
+    // Smart ESIC: <= 10 is treated as %, > 10 is treated as fixed ₹ amount (e.g. 200)
+    const esic = esicInput <= 10 ? Math.round(gross * esicInput / 100) : Math.round(esicInput);
     deductions = pf + esic + pt + lic + advance + tds;
 
     breakdownParts = [
       basic ? `Basic ₹${basic.toLocaleString('en-IN')}` : '',
       hra ? `HRA ₹${hra.toLocaleString('en-IN')}` : '',
       special ? `Special ₹${special.toLocaleString('en-IN')}` : '',
-      pf ? `PF ₹${pf.toLocaleString('en-IN')}` : '',
-      esic ? `ESIC ₹${esic.toLocaleString('en-IN')}` : '',
+      pf ? `PF ₹${pf.toLocaleString('en-IN')} (${pfInput <= 30 ? pfInput + '%' : 'Fixed'})` : '',
+      esic ? `ESIC ₹${esic.toLocaleString('en-IN')} (${esicInput <= 10 ? esicInput + '%' : 'Fixed'})` : '',
       pt ? `PT ₹${pt.toLocaleString('en-IN')}` : ''
     ].filter(Boolean);
   } else {
@@ -973,19 +985,20 @@ function updateSalaryPreview() {
     const days = 26; // Standard payable days
     gross = (basicPD + daPD + hraPD) * days;
 
-    const pfPct = Number(document.getElementById('comp-pf-pct-daily')?.value) || 0;
-    const esicPct = Number(document.getElementById('comp-esic-pct-daily')?.value) || 0;
+    const pfInput = Number(document.getElementById('comp-pf-pct-daily')?.value) || 0;
+    const esicInput = Number(document.getElementById('comp-esic-pct-daily')?.value) || 0;
     const pt = Number(document.getElementById('comp-pt-daily')?.value) || 0;
     const lic = Number(document.getElementById('comp-lic-daily')?.value) || 0;
     const advance = Number(document.getElementById('comp-advance-daily')?.value) || 0;
-    const pf = Math.round(basicPD * days * pfPct / 100);
-    const esic = Math.round(gross * esicPct / 100);
+
+    const pf = pfInput <= 30 ? Math.round(basicPD * days * pfInput / 100) : Math.round(pfInput);
+    const esic = esicInput <= 10 ? Math.round(gross * esicInput / 100) : Math.round(esicInput);
     deductions = pf + esic + pt + lic + advance;
 
     breakdownParts = [
       basicPD ? `Basic/day ₹${basicPD.toLocaleString('en-IN')} × ${days}d` : '',
-      pf ? `PF ₹${pf.toLocaleString('en-IN')}` : '',
-      esic ? `ESIC ₹${esic.toLocaleString('en-IN')}` : '',
+      pf ? `PF ₹${pf.toLocaleString('en-IN')} (${pfInput <= 30 ? pfInput + '%' : 'Fixed'})` : '',
+      esic ? `ESIC ₹${esic.toLocaleString('en-IN')} (${esicInput <= 10 ? esicInput + '%' : 'Fixed'})` : '',
       pt ? `PT ₹${pt.toLocaleString('en-IN')}` : ''
     ].filter(Boolean);
   }
@@ -3634,10 +3647,18 @@ function initEventListeners() {
           bonus: Number(document.getElementById('comp-bonus').value) || 0,
           otherEarnings: Number(document.getElementById('comp-other-earn').value) || 0
         };
+        const rawPf = Number(document.getElementById('comp-pf-pct').value) || 0;
+        const rawEsic = Number(document.getElementById('comp-esic-pct').value) || 0;
+        const pfAmt = rawPf <= 30 ? Math.round((salaryComponents.basic || 0) * rawPf / 100) : Math.round(rawPf);
+        const esicAmt = rawEsic <= 10 ? Math.round((ctc || 0) * rawEsic / 100) : Math.round(rawEsic);
         deductionRates = {
-          pfPct: Number(document.getElementById('comp-pf-pct').value) || 12,
-          esicPct: Number(document.getElementById('comp-esic-pct').value) || 0,
-          pt: Number(document.getElementById('comp-pt').value) || 200,
+          pfVal: rawPf,
+          pfPct: rawPf <= 30 ? rawPf : 0,
+          pfAmount: pfAmt,
+          esicVal: rawEsic,
+          esicPct: rawEsic <= 10 ? rawEsic : 0,
+          esicAmount: esicAmt,
+          pt: Number(document.getElementById('comp-pt').value) || 0,
           lic: Number(document.getElementById('comp-lic').value) || 0,
           advance: Number(document.getElementById('comp-advance').value) || 0,
           tds: Number(document.getElementById('comp-tds').value) || 0
@@ -3649,10 +3670,19 @@ function initEventListeners() {
           daPerDay: Number(document.getElementById('comp-da-perday').value) || 0,
           hraPerDay: Number(document.getElementById('comp-hra-perday').value) || 0
         };
+        const rawPf = Number(document.getElementById('comp-pf-pct-daily').value) || 0;
+        const rawEsic = Number(document.getElementById('comp-esic-pct-daily').value) || 0;
+        const pfAmt = rawPf <= 30 ? Math.round((basicPerDay || 0) * 26 * rawPf / 100) : Math.round(rawPf);
+        const dailyGross = ((basicPerDay || 0) + (salaryComponents.daPerDay || 0) + (salaryComponents.hraPerDay || 0)) * 26;
+        const esicAmt = rawEsic <= 10 ? Math.round(dailyGross * rawEsic / 100) : Math.round(rawEsic);
         deductionRates = {
-          pfPct: Number(document.getElementById('comp-pf-pct-daily').value) || 12,
-          esicPct: Number(document.getElementById('comp-esic-pct-daily').value) || 0.75,
-          pt: Number(document.getElementById('comp-pt-daily').value) || 200,
+          pfVal: rawPf,
+          pfPct: rawPf <= 30 ? rawPf : 0,
+          pfAmount: pfAmt,
+          esicVal: rawEsic,
+          esicPct: rawEsic <= 10 ? rawEsic : 0,
+          esicAmount: esicAmt,
+          pt: Number(document.getElementById('comp-pt-daily').value) || 0,
           lic: Number(document.getElementById('comp-lic-daily').value) || 0,
           advance: Number(document.getElementById('comp-advance-daily').value) || 0
         };
@@ -3687,12 +3717,15 @@ function initEventListeners() {
       try {
         if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
         const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (data.success) {
           showToast(data.message || (isEdit ? `Employee record updated!` : `${name} onboarded successfully!`));
           closeModal('modal-user');
           await fetchUsers();
           updateDashboardMetrics();
+        } else {
+          showToast(data.message || 'Failed to onboard employee. Please verify details.', 'error');
+          alert('Onboarding Notice: ' + (data.message || 'Server rejected the request. Please check inputs.'));
         }
       } catch (err) {
         // Offline local fallback

@@ -1844,12 +1844,12 @@
                 <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
                   <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:8px;"><i class="fa-solid fa-circle-minus"></i> Statutory Deductions Setup</div>
                   <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employee % <small>(default 12%)</small></label><input type="number" step="0.01" id="comp-pf-pct" value="12" min="0" max="20" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC % <small>(0.75% if applicable)</small></label><input type="number" step="0.01" id="comp-esic-pct" value="0" min="0" max="5" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Professional Tax — PT (&#8377;/mo)</label><input type="number" step="1" id="comp-pt" value="200" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (&#8377;/mo)</label><input type="number" step="0.01" id="comp-lic" value="0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (&#8377;/mo)</label><input type="number" step="0.01" id="comp-advance" value="0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">TDS / Other Deduction (&#8377;/mo)</label><input type="number" step="0.01" id="comp-tds" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF Employee <small>(12% or Fixed ₹)</small></label><input type="number" step="any" id="comp-pf-pct" value="12" min="0" placeholder="e.g. 12 or 1800" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC <small>(0.75% or Fixed ₹)</small></label><input type="number" step="any" id="comp-esic-pct" value="0" min="0" placeholder="e.g. 0.75 or 200" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Professional Tax — PT (₹/mo)</label><input type="number" step="1" id="comp-pt" value="200" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (₹/mo)</label><input type="number" step="0.01" id="comp-lic" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (₹/mo)</label><input type="number" step="0.01" id="comp-advance" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">TDS / Other Deduction (₹/mo)</label><input type="number" step="0.01" id="comp-tds" value="0" oninput="updateSalaryPreview()"></div>
                   </div>
                 </div>
               </div>
@@ -1858,20 +1858,20 @@
                 <div style="background:#FFF; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px; margin-bottom:8px;">
                   <div style="font-size:11px; font-weight:800; color:var(--logo-navy); text-transform:uppercase; margin-bottom:8px;">Daily Wage Structure</div>
                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div class="form-group" style="margin-bottom:0;"><label>Basic Per Day (&#8377;) *</label><input type="number" step="0.01" id="user-basicPerDay" placeholder="e.g. 444.62" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>DA Per Day (&#8377;)</label><input type="number" step="0.01" id="comp-da-perday" placeholder="e.g. 289.38" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>HRA Per Day (&#8377;)</label><input type="number" step="0.01" id="comp-hra-perday" placeholder="e.g. 62.70" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>OT Hourly Rate (&#8377;)</label><input type="number" step="0.01" id="user-otRate-daily" placeholder="e.g. 150.00"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Basic Per Day (₹) *</label><input type="number" step="0.01" id="user-basicPerDay" placeholder="e.g. 444.62" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>DA Per Day (₹)</label><input type="number" step="0.01" id="comp-da-perday" placeholder="e.g. 289.38" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>HRA Per Day (₹)</label><input type="number" step="0.01" id="comp-hra-perday" placeholder="e.g. 62.70" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>OT Hourly Rate (₹)</label><input type="number" step="0.01" id="user-otRate-daily" placeholder="e.g. 150.00"></div>
                   </div>
                 </div>
                 <div style="background:#FEF2F2; border:1.5px solid #FCA5A5; border-radius:8px; padding:10px 12px;">
                   <div style="font-size:11px; font-weight:800; color:#B91C1C; text-transform:uppercase; margin-bottom:8px;">Deductions — Daily Wage</div>
                   <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF % (default 12%)</label><input type="number" step="0.01" id="comp-pf-pct-daily" value="12" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC % (0.75%)</label><input type="number" step="0.01" id="comp-esic-pct-daily" value="0.75" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PT (&#8377;/mo)</label><input type="number" step="1" id="comp-pt-daily" value="200" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (&#8377;/mo)</label><input type="number" step="0.01" id="comp-lic-daily" value="0" oninput="updateSalaryPreview()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (&#8377;/mo)</label><input type="number" step="0.01" id="comp-advance-daily" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PF <small>(12% or Fixed ₹)</small></label><input type="number" step="any" id="comp-pf-pct-daily" value="12" min="0" placeholder="e.g. 12 or 1800" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC <small>(0.75% or Fixed ₹)</small></label><input type="number" step="any" id="comp-esic-pct-daily" value="0.75" min="0" placeholder="e.g. 0.75 or 200" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">PT (₹/mo)</label><input type="number" step="1" id="comp-pt-daily" value="200" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium (₹/mo)</label><input type="number" step="0.01" id="comp-lic-daily" value="0" oninput="updateSalaryPreview()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Advance Deduction (₹/mo)</label><input type="number" step="0.01" id="comp-advance-daily" value="0" oninput="updateSalaryPreview()"></div>
                   </div>
                 </div>
               </div>
