@@ -223,6 +223,12 @@ body {
   border: 1px solid #CBD5E1;
 }
 
+.shift-ph {
+  background: #F3E8FF;
+  color: #7E22CE;
+  border: 1px solid #D8B4FE;
+}
+
 .shift-leave {
   background: #FEF3C7;
   color: #92400E;
@@ -1082,6 +1088,16 @@ body {
 .day-pill.pill-hd {
   background: #E0F2FE;
   color: #075985;
+}
+
+.day-pill.pill-ph {
+  background: #F3E8FF;
+  color: #7E22CE;
+  border: 1px solid #D8B4FE;
+}
+
+.text-purple {
+  color: #7E22CE !important;
 }
 
 /* ==================== REPORTS CENTER ==================== */

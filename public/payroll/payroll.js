@@ -482,7 +482,7 @@ function generateClientSalarySlips(mYear = 'August 2026', userSubset = null) {
 
   return activeEmployees.map((u) => {
     const dim = defaultDim;
-    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0)));
+    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0) + Number(u.publicHoliday || 0)));
     const ctc = Number(u.ctc);
     const bpd = Number(u.basicPerDay);
 
@@ -541,6 +541,7 @@ function generateClientSalarySlips(mYear = 'August 2026', userSubset = null) {
       phone: u.phone || (u.mobile ? `+91 ${String(u.mobile).replace(/[^0-9]/g, '').slice(-10)}` : ''),
       workedDays: pdays,
       totalDays: dim,
+      publicHolidays: Number(u.publicHoliday || 0),
       otHours: 0,
       otWage: 0,
       earnings: { basic, da, hra, specialAllowance, bonus: 0, otWage: 0 },
@@ -1830,7 +1831,7 @@ function renderMusterRollTable() {
       const existing = allAttendance.find((a) => (a.userId === u.id || a.empId === u.empId) && a.date === selectedDate);
       const defaultShift = existing ? existing.shift : (idx % 4 === 1 ? 'A Shift (06:00 AM - 02:00 PM)' : (idx % 4 === 2 ? 'B Shift (02:00 PM - 10:00 PM)' : (idx % 4 === 3 ? 'C Shift (10:00 PM - 06:00 AM)' : 'G Shift (08:30 AM - 05:30 PM)')));
       const defaultStatus = existing ? existing.status : 'Present';
-      const isAbsentOrOff = defaultStatus === 'Absent' || defaultStatus === 'Weekly Off' || defaultStatus === 'Leave';
+      const isAbsentOrOff = defaultStatus === 'Absent' || defaultStatus === 'Weekly Off' || defaultStatus === 'Leave' || defaultStatus === 'Public Holiday';
       const clockIn = existing ? existing.clockIn : (isAbsentOrOff ? '-' : (defaultShift.includes('A Shift') ? '06:00 AM' : (defaultShift.includes('B Shift') ? '02:00 PM' : (defaultShift.includes('C Shift') ? '10:00 PM' : '08:30 AM'))));
       const clockOut = existing ? existing.clockOut : (isAbsentOrOff ? '-' : (defaultShift.includes('A Shift') ? '02:00 PM' : (defaultShift.includes('B Shift') ? '10:00 PM' : (defaultShift.includes('C Shift') ? '06:00 AM' : '05:30 PM'))));
 
@@ -1853,13 +1854,15 @@ function renderMusterRollTable() {
             <option value="B Shift (02:00 PM - 10:00 PM)" ${defaultShift.includes('B Shift') ? 'selected' : ''}>B Shift - Evening (2p-10p)</option>
             <option value="C Shift (10:00 PM - 06:00 AM)" ${defaultShift.includes('C Shift') ? 'selected' : ''}>C Shift - Night (10p-6a)</option>
             <option value="WO - Weekly Off" ${defaultShift.includes('WO') ? 'selected' : ''}>WO - Weekly Off</option>
+            <option value="PH - Public Holiday" ${defaultShift.includes('PH') ? 'selected' : ''}>PH - Public Holiday</option>
           </select>
         </td>
-        <td style="min-width: 130px;">
+        <td style="min-width: 140px;">
           <select class="muster-select muster-status-select" onchange="handleMusterStatusChange(this)">
             <option value="Present" ${defaultStatus === 'Present' ? 'selected' : ''}>✅ Present</option>
             <option value="Absent" ${defaultStatus === 'Absent' ? 'selected' : ''}>❌ Absent</option>
             <option value="Weekly Off" ${defaultStatus === 'Weekly Off' ? 'selected' : ''}>☕ Weekly Off</option>
+            <option value="Public Holiday" ${defaultStatus === 'Public Holiday' ? 'selected' : ''}>🎉 Public Holiday</option>
             <option value="Leave" ${defaultStatus === 'Leave' ? 'selected' : ''}>🏖 Leave</option>
             <option value="Half Day" ${defaultStatus === 'Half Day' ? 'selected' : ''}>⏱ Half Day</option>
             <option value="Overtime" ${defaultStatus === 'Overtime' ? 'selected' : ''}>⚡ Overtime</option>
@@ -1875,7 +1878,7 @@ function renderMusterRollTable() {
           <input type="text" class="muster-select muster-site-input" value="${escapeHtml(u.location || 'ACC Chanda')}">
         </td>
         <td style="width: 150px;">
-          <input type="text" class="muster-select muster-notes-input" placeholder="Notes" value="${escapeHtml(existing?.notes || (defaultStatus === 'Absent' ? 'Muster Roll: Absent' : (defaultStatus === 'Weekly Off' ? 'Muster Roll: Weekly Off' : (defaultStatus === 'Leave' ? 'Muster Roll: On Leave' : 'Biometric Punch'))))}">
+          <input type="text" class="muster-select muster-notes-input" placeholder="Notes" value="${escapeHtml(existing?.notes || (defaultStatus === 'Absent' ? 'Muster Roll: Absent' : (defaultStatus === 'Weekly Off' ? 'Muster Roll: Weekly Off' : (defaultStatus === 'Public Holiday' ? 'Muster Roll: Public Holiday' : (defaultStatus === 'Leave' ? 'Muster Roll: On Leave' : 'Biometric Punch')))))}">
         </td>
       </tr>
     `;
@@ -1907,6 +1910,15 @@ function handleMusterStatusChange(selectEl) {
     if (notes && (!notes.value || notes.value === 'Biometric Punch' || notes.value.startsWith('Muster Roll:'))) {
       notes.value = 'Muster Roll: Weekly Off';
     }
+  } else if (statusVal === 'Public Holiday') {
+    if (clockIn) clockIn.value = '-';
+    if (clockOut) clockOut.value = '-';
+    if (shiftSelect && !shiftSelect.value.includes('PH')) {
+      shiftSelect.value = 'PH - Public Holiday';
+    }
+    if (notes && (!notes.value || notes.value === 'Biometric Punch' || notes.value.startsWith('Muster Roll:'))) {
+      notes.value = 'Muster Roll: Public Holiday';
+    }
   } else if (statusVal === 'Leave') {
     if (clockIn) clockIn.value = '-';
     if (clockOut) clockOut.value = '-';
@@ -1934,7 +1946,7 @@ function handleMusterStatusChange(selectEl) {
   } else {
     // Present or Overtime
     const shiftVal = shiftSelect ? shiftSelect.value : 'G Shift';
-    if (shiftSelect && shiftSelect.value.includes('WO')) {
+    if (shiftSelect && (shiftSelect.value.includes('WO') || shiftSelect.value.includes('PH'))) {
       shiftSelect.value = 'G Shift (08:30 AM - 05:30 PM)';
     }
     if (shiftVal.includes('A Shift')) {
@@ -1963,11 +1975,25 @@ function handleMusterShiftChange(selectEl) {
   const statusSelect = row.querySelector('.muster-status-select');
   const clockIn = row.querySelector('.muster-clockin-input');
   const clockOut = row.querySelector('.muster-clockout-input');
+  const notes = row.querySelector('.muster-notes-input');
 
   if (shiftVal.includes('WO')) {
     if (statusSelect) statusSelect.value = 'Weekly Off';
     if (clockIn) clockIn.value = '-';
     if (clockOut) clockOut.value = '-';
+    if (notes && (!notes.value || notes.value === 'Biometric Punch' || notes.value.startsWith('Muster Roll:'))) {
+      notes.value = 'Muster Roll: Weekly Off';
+    }
+    return;
+  }
+
+  if (shiftVal.includes('PH')) {
+    if (statusSelect) statusSelect.value = 'Public Holiday';
+    if (clockIn) clockIn.value = '-';
+    if (clockOut) clockOut.value = '-';
+    if (notes && (!notes.value || notes.value === 'Biometric Punch' || notes.value.startsWith('Muster Roll:'))) {
+      notes.value = 'Muster Roll: Public Holiday';
+    }
     return;
   }
 
@@ -1976,8 +2002,8 @@ function handleMusterShiftChange(selectEl) {
     return;
   }
 
-  // If status was Weekly Off, reset status to Present
-  if (statusSelect && statusSelect.value === 'Weekly Off') {
+  // If status was Weekly Off or Public Holiday, reset status to Present
+  if (statusSelect && (statusSelect.value === 'Weekly Off' || statusSelect.value === 'Public Holiday')) {
     statusSelect.value = 'Present';
   }
 
@@ -2046,6 +2072,7 @@ function isTomorrowShiftMatch(defaultShift, type) {
   if (type === 'B') return s.startsWith('b shift') || s === 'b';
   if (type === 'C') return s.startsWith('c shift') || s === 'c';
   if (type === 'WO') return s.startsWith('wo') || s.includes('weekly off') || s.includes('week off');
+  if (type === 'PH') return s.startsWith('ph') || s.includes('public holiday') || s.includes('holiday');
   if (type === 'Leave') return s.includes('leave');
   if (type === 'Absent') return s.includes('absent') || s === 'ab';
   return false;
@@ -2060,12 +2087,14 @@ function handleTomorrowShiftSelectChange(selectElem) {
   if (vehicleSelect) {
     if (shiftVal.includes('WO')) {
       vehicleSelect.value = 'Weekly Off (WO)';
+    } else if (shiftVal.includes('PH')) {
+      vehicleSelect.value = 'Public Holiday (PH)';
     } else if (shiftVal.includes('Leave')) {
       vehicleSelect.value = 'Leave (Approved Leave)';
     } else if (shiftVal.includes('Absent')) {
       vehicleSelect.value = 'Absent (Not Available / Absent)';
     } else {
-      if (vehicleSelect.value === 'Weekly Off (WO)' || vehicleSelect.value === 'Leave (Approved Leave)' || vehicleSelect.value === 'Absent (Not Available / Absent)' || vehicleSelect.value.startsWith('No Machinery')) {
+      if (vehicleSelect.value === 'Weekly Off (WO)' || vehicleSelect.value === 'Public Holiday (PH)' || vehicleSelect.value === 'Leave (Approved Leave)' || vehicleSelect.value === 'Absent (Not Available / Absent)' || vehicleSelect.value.startsWith('No Machinery')) {
         vehicleSelect.value = 'General Plant Duty';
       }
     }
@@ -2081,6 +2110,8 @@ function handleTomorrowVehicleSelectChange(selectElem) {
   if (shiftSelect) {
     if (vehVal === 'Weekly Off (WO)') {
       shiftSelect.value = 'WO (Weekly Off)';
+    } else if (vehVal === 'Public Holiday (PH)') {
+      shiftSelect.value = 'PH (Public Holiday)';
     } else if (vehVal === 'Leave (Approved Leave)') {
       shiftSelect.value = 'Leave (Approved Leave)';
     } else if (vehVal === 'Absent (Not Available / Absent)') {
@@ -2112,9 +2143,11 @@ function renderTomorrowScheduleTable() {
       const defaultShift = existingRoster ? existingRoster.shift : (idx % 4 === 1 ? 'A Shift (06:00 AM - 02:00 PM)' : (idx % 4 === 2 ? 'B Shift (02:00 PM - 10:00 PM)' : (idx % 4 === 3 ? 'C Shift (10:00 PM - 06:00 AM)' : 'G Shift (08:30 AM - 05:30 PM)')));
       const selectedEquip = existingRoster && existingRoster.equipment ? existingRoster.equipment : (
         isTomorrowShiftMatch(defaultShift, 'WO') ? 'Weekly Off (WO)' : (
-          isTomorrowShiftMatch(defaultShift, 'Leave') ? 'Leave (Approved Leave)' : (
-            isTomorrowShiftMatch(defaultShift, 'Absent') ? 'Absent (Not Available / Absent)' : (
-              allVehicles[idx % allVehicles.length] ? `${allVehicles[idx % allVehicles.length].vehicleNo} - ${allVehicles[idx % allVehicles.length].name}` : 'General Plant Duty'
+          isTomorrowShiftMatch(defaultShift, 'PH') ? 'Public Holiday (PH)' : (
+            isTomorrowShiftMatch(defaultShift, 'Leave') ? 'Leave (Approved Leave)' : (
+              isTomorrowShiftMatch(defaultShift, 'Absent') ? 'Absent (Not Available / Absent)' : (
+                allVehicles[idx % allVehicles.length] ? `${allVehicles[idx % allVehicles.length].vehicleNo} - ${allVehicles[idx % allVehicles.length].name}` : 'General Plant Duty'
+              )
             )
           )
         )
@@ -2127,6 +2160,7 @@ function renderTomorrowScheduleTable() {
         `<option value="Heavy Fleet Maintenance Bay" ${selectedEquip === 'Heavy Fleet Maintenance Bay' ? 'selected' : ''}>Heavy Fleet Maintenance Bay</option>`,
         `<option value="No Machinery (Standby / Off)" ${selectedEquip === 'No Machinery (Standby / Off)' ? 'selected' : ''}>No Machinery (Standby / Off)</option>`,
         `<option value="Weekly Off (WO)" ${selectedEquip === 'Weekly Off (WO)' ? 'selected' : ''}>Weekly Off (WO)</option>`,
+        `<option value="Public Holiday (PH)" ${selectedEquip === 'Public Holiday (PH)' ? 'selected' : ''}>Public Holiday (PH)</option>`,
         `<option value="Leave (Approved Leave)" ${selectedEquip === 'Leave (Approved Leave)' ? 'selected' : ''}>Leave (Approved Leave)</option>`,
         `<option value="Absent (Not Available / Absent)" ${selectedEquip === 'Absent (Not Available / Absent)' ? 'selected' : ''}>Absent (Not Available / Absent)</option>`
       ].concat(
@@ -2153,6 +2187,7 @@ function renderTomorrowScheduleTable() {
             <option value="B Shift (02:00 PM - 10:00 PM)" ${isTomorrowShiftMatch(defaultShift, 'B') ? 'selected' : ''}>B Shift (02:00 PM - 10:00 PM)</option>
             <option value="C Shift (10:00 PM - 06:00 AM)" ${isTomorrowShiftMatch(defaultShift, 'C') ? 'selected' : ''}>C Shift (10:00 PM - 06:00 AM)</option>
             <option value="WO (Weekly Off)" ${isTomorrowShiftMatch(defaultShift, 'WO') ? 'selected' : ''}>WO (Weekly Off)</option>
+            <option value="PH (Public Holiday)" ${isTomorrowShiftMatch(defaultShift, 'PH') ? 'selected' : ''}>PH (Public Holiday)</option>
             <option value="Leave (Approved Leave)" ${isTomorrowShiftMatch(defaultShift, 'Leave') ? 'selected' : ''}>Leave (Approved Leave)</option>
             <option value="Absent (Not Available / Absent)" ${isTomorrowShiftMatch(defaultShift, 'Absent') ? 'selected' : ''}>Absent (Not Available / Absent)</option>
           </select>
@@ -2281,6 +2316,7 @@ function renderAttendanceGlassCards() {
 
       let markedPresentCount = 0;
       let markedWOCount = 0;
+      let markedPHCount = 0;
       let markedLeaveCount = 0;
       let markedAbsentCount = 0;
       let markedHalfDayCount = 0;
@@ -2311,12 +2347,12 @@ function renderAttendanceGlassCards() {
           hasAnyMusterRecords = true;
           const status = attRecord.status || 'Present';
           const shift = attRecord.shift || 'G Shift';
-          const shiftCode = attRecord.shiftCode || (shift.includes('A') ? 'A' : (shift.includes('B') ? 'B' : (shift.includes('C') ? 'C' : 'G')));
+          const shiftCode = attRecord.shiftCode || (shift.includes('A') ? 'A' : (shift.includes('B') ? 'B' : (shift.includes('C') ? 'C' : (shift.includes('PH') ? 'PH' : 'G'))));
 
           if (status === 'Present' || status === 'Overtime') {
             markedPresentCount++;
             pClass = 'pill-p';
-            pText = shiftCode === 'WO' ? 'P' : shiftCode;
+            pText = shiftCode === 'WO' ? 'P' : (shiftCode === 'PH' ? 'P' : shiftCode);
             tooltip += `: Present [Shift ${shiftCode}] - ${shift}${attRecord.notes ? ' | ' + attRecord.notes : ''}`;
           } else if (status === 'Half Day') {
             markedHalfDayCount++;
@@ -2329,6 +2365,11 @@ function renderAttendanceGlassCards() {
             pClass = 'pill-wo';
             pText = 'WO';
             tooltip += `: Weekly Off (Muster Marked)`;
+          } else if (status === 'Public Holiday' || status === 'Holiday') {
+            markedPHCount++;
+            pClass = 'pill-ph';
+            pText = 'PH';
+            tooltip += `: Public Holiday [${attRecord.notes || 'Gazetted Holiday'}]`;
           } else if (status === 'Leave') {
             markedLeaveCount++;
             pClass = 'pill-l';
@@ -2377,6 +2418,9 @@ function renderAttendanceGlassCards() {
       const woDisplay = hasAnyMusterRecords
         ? markedWOCount
         : (Number(u.weakOff) || 4);
+      const phDisplay = hasAnyMusterRecords
+        ? markedPHCount
+        : (Number(u.publicHoliday) || 0);
       const lDisplay = markedLeaveCount > 0 ? markedLeaveCount : (Number(u.leave) || 0);
 
       return `
@@ -2389,7 +2433,7 @@ function renderAttendanceGlassCards() {
           <span class="role-badge ${u.role === 'Worker' ? 'role-worker' : (u.role === 'Supervisor' ? 'role-supervisor' : 'role-employee')}">${escapeHtml(u.role || 'Worker')}</span>
         </div>
 
-        <div class="leave-gauge-box">
+        <div class="leave-gauge-box" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
           <div class="gauge-item">
             <span class="g-val text-success">${pDisplay}</span>
             <span class="g-lbl">Present (P)</span>
@@ -2397,6 +2441,10 @@ function renderAttendanceGlassCards() {
           <div class="gauge-item">
             <span class="g-val text-navy">${woDisplay}</span>
             <span class="g-lbl">Weekly Off (WO)</span>
+          </div>
+          <div class="gauge-item">
+            <span class="g-val text-purple">${phDisplay}</span>
+            <span class="g-lbl">Holiday (PH)</span>
           </div>
           <div class="gauge-item">
             <span class="g-val text-orange"><strong>${leaveBal}</strong> / ${totalLeaves}</span>
@@ -2407,7 +2455,7 @@ function renderAttendanceGlassCards() {
         <div>
           <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 6px; color: var(--text-muted);">
             <span>${selectedMonth} Live Muster Matrix (Day 1 - ${daysInMonth})</span>
-            <span><span class="text-success">● P: ${pDisplay}</span> | <span class="text-navy">● WO: ${woDisplay}</span> | <span class="text-warning">● L: ${lDisplay}</span>${markedAbsentCount > 0 ? ` | <span class="text-danger">● A: ${markedAbsentCount}</span>` : ''}</span>
+            <span><span class="text-success">● P: ${pDisplay}</span> | <span class="text-navy">● WO: ${woDisplay}</span> | <span class="text-purple">● PH: ${phDisplay}</span> | <span class="text-warning">● L: ${lDisplay}</span>${markedAbsentCount > 0 ? ` | <span class="text-danger">● A: ${markedAbsentCount}</span>` : ''}</span>
           </div>
           <div class="day-pill-trail">
             ${dayPills}
@@ -2467,6 +2515,9 @@ function exportTomorrowScheduleExcel() {
     } else if (shift.includes('WO') || shift.toLowerCase().includes('week')) {
       shiftCode = 'WO (Weekly Off)';
       timings = 'Weekly Off';
+    } else if (shift.includes('PH') || shift.toLowerCase().includes('holiday')) {
+      shiftCode = 'PH (Public Holiday)';
+      timings = 'Public Holiday (Paid)';
     } else if (shift.toLowerCase().includes('leave')) {
       shiftCode = 'Leave (Approved)';
       timings = 'Approved Leave';
@@ -2512,6 +2563,7 @@ function exportMonthlyPayrollExcel() {
       'Site Location',
       'Days in Month',
       'Payable Working Days',
+      'Public Holidays (PH)',
       'Basic Salary (₹)',
       'DA (₹)',
       'HRA (₹)',
@@ -2544,6 +2596,7 @@ function exportMonthlyPayrollExcel() {
       s.location || 'ACC Chanda',
       s.totalDays || 31,
       s.workedDays || 31,
+      s.publicHolidays !== undefined ? s.publicHolidays : 0,
       Number(s.earnings?.basic || 0).toFixed(2),
       Number(s.earnings?.da || 0).toFixed(2),
       Number(s.earnings?.hra || 0).toFixed(2),
@@ -3628,6 +3681,8 @@ function viewSalarySlip(slipId) {
 
   document.getElementById('slip-val-totalDays').textContent = slip.totalDays || 31;
   document.getElementById('slip-val-workedDays').textContent = slip.workedDays || 31;
+  const phEl = document.getElementById('slip-val-publicHolidays');
+  if (phEl) phEl.textContent = slip.publicHolidays !== undefined ? slip.publicHolidays : 0;
   document.getElementById('slip-val-mobile').textContent = slip.mobile ? `+91 ${slip.mobile}` : 'N/A';
 
   const basic = Number(slip.earnings?.basic || 0);
@@ -3702,6 +3757,18 @@ function initEventListeners() {
     });
   }
 
+  const fillAllPHBtn = document.getElementById('btn-muster-mark-all-ph');
+  if (fillAllPHBtn) {
+    fillAllPHBtn.addEventListener('click', () => {
+      document.querySelectorAll('.muster-shift-select').forEach((s) => (s.value = 'PH - Public Holiday'));
+      document.querySelectorAll('.muster-status-select').forEach((s) => (s.value = 'Public Holiday'));
+      document.querySelectorAll('.muster-clockin-input').forEach((c) => (c.value = '-'));
+      document.querySelectorAll('.muster-clockout-input').forEach((c) => (c.value = '-'));
+      document.querySelectorAll('.muster-notes-input').forEach((n) => (n.value = 'Muster Roll: Public Holiday'));
+      showToast('Workforce set to Public Holiday (Paid)!');
+    });
+  }
+
   const saveMusterBtn = document.getElementById('btn-save-daily-muster');
   if (saveMusterBtn) {
     saveMusterBtn.addEventListener('click', async () => {
@@ -3714,13 +3781,13 @@ function initEventListeners() {
         const empId = r.getAttribute('data-empid');
         const userName = r.getAttribute('data-username');
         const shift = r.querySelector('.muster-shift-select')?.value || 'G Shift (08:30 AM - 05:30 PM)';
-        const shiftCode = shift.includes('G Shift') ? 'G' : (shift.includes('A Shift') ? 'A' : (shift.includes('B Shift') ? 'B' : (shift.includes('C Shift') ? 'C' : 'WO')));
+        const shiftCode = shift.includes('G Shift') ? 'G' : (shift.includes('A Shift') ? 'A' : (shift.includes('B Shift') ? 'B' : (shift.includes('C Shift') ? 'C' : (shift.includes('PH') ? 'PH' : 'WO'))));
         const status = r.querySelector('.muster-status-select')?.value || 'Present';
-        const isAbsentOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave';
+        const isAbsentOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave' || status === 'Public Holiday';
         const clockIn = r.querySelector('.muster-clockin-input')?.value || (isAbsentOrOff ? '-' : (shiftCode === 'G' ? '08:30 AM' : '08:00 AM'));
         const clockOut = r.querySelector('.muster-clockout-input')?.value || (isAbsentOrOff ? '-' : (shiftCode === 'G' ? '05:30 PM' : '05:00 PM'));
         const site = r.querySelector('.muster-site-input')?.value || 'ACC Chanda';
-        const notes = r.querySelector('.muster-notes-input')?.value || (status === 'Absent' ? 'Daily Muster Roll: Absent' : (status === 'Weekly Off' ? 'Muster Roll: Weekly Off' : (status === 'Leave' ? 'Muster Roll: On Leave' : `Muster Roll: Shift ${shiftCode} Marked`)));
+        const notes = r.querySelector('.muster-notes-input')?.value || (status === 'Absent' ? 'Daily Muster Roll: Absent' : (status === 'Weekly Off' ? 'Muster Roll: Weekly Off' : (status === 'Public Holiday' ? 'Muster Roll: Public Holiday' : (status === 'Leave' ? 'Muster Roll: On Leave' : `Muster Roll: Shift ${shiftCode} Marked`))));
 
         musterRecords.push({ userId, empId, userName, date, shift, shiftCode, clockIn, clockOut, status, site, notes });
       });
@@ -5773,6 +5840,11 @@ function loadCorrectionFormData(slip, user) {
   const totalDaysEl = document.getElementById('correction-total-days');
   if (totalDaysEl) totalDaysEl.value = slip ? (slip.totalDays || dim) : dim;
 
+  const phEl = document.getElementById('correction-public-holidays');
+  if (phEl) {
+    phEl.value = slip ? (slip.publicHolidays !== undefined ? slip.publicHolidays : (user ? (user.publicHoliday || 0) : 0)) : (user ? (user.publicHoliday || 0) : 0);
+  }
+
   const workedDaysEl = document.getElementById('correction-worked-days');
   if (workedDaysEl) {
     workedDaysEl.value = slip ? (slip.workedDays !== undefined ? slip.workedDays : (user ? (user.payableDays || dim) : dim)) : (user ? (user.payableDays || dim) : dim);
@@ -5828,6 +5900,14 @@ function recalculateCorrectionSlip(useStandardFormula = false) {
   const user = allUsers.find((u) => u.id === userId || u.empId === userId);
 
   const dim = Math.max(1, Number(document.getElementById('correction-total-days')?.value) || 31);
+  const phDays = Math.max(0, Number(document.getElementById('correction-public-holidays')?.value) || 0);
+
+  if (useStandardFormula && user) {
+    const computedPdays = Math.min(dim, (Number(user.presentDays || 26) + Number(user.weakOff || 4) + Number(user.leave || 0) + phDays));
+    const workedDaysInput = document.getElementById('correction-worked-days');
+    if (workedDaysInput) workedDaysInput.value = computedPdays;
+  }
+
   const workedDays = Math.max(0, Number(document.getElementById('correction-worked-days')?.value) || 0);
   const otHours = Math.max(0, Number(document.getElementById('correction-ot-hours')?.value) || 0);
   const otRate = Math.max(0, Number(document.getElementById('correction-ot-rate')?.value) || 0);
@@ -5937,6 +6017,7 @@ async function saveSalaryCorrection() {
 
   const slipId = document.getElementById('correction-slip-id')?.value;
   const totalDays = Number(document.getElementById('correction-total-days')?.value) || 31;
+  const publicHolidays = Number(document.getElementById('correction-public-holidays')?.value) || 0;
   const workedDays = Number(document.getElementById('correction-worked-days')?.value) || 31;
   const otHours = Number(document.getElementById('correction-ot-hours')?.value) || 0;
   const otWage = Number(document.getElementById('correction-earn-ot')?.value) || 0;
@@ -5994,6 +6075,7 @@ async function saveSalaryCorrection() {
     phone: user.phone || user.mobile || '',
     workedDays,
     totalDays,
+    publicHolidays,
     otHours,
     otWage,
     earnings: { basic, da, hra, specialAllowance, bonus, otWage },

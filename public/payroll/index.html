@@ -629,6 +629,7 @@
                 <span class="legend-badge shift-b"><strong>B:</strong> Afternoon (2p-10p)</span>
                 <span class="legend-badge shift-c"><strong>C:</strong> Night (10p-6a)</span>
                 <span class="legend-badge shift-wo"><strong>WO:</strong> Off</span>
+                <span class="legend-badge shift-ph"><strong>PH:</strong> Holiday</span>
                 <span class="legend-badge shift-ab"><strong>AB:</strong> Absent</span>
               </div>
             </div>
@@ -636,6 +637,9 @@
             <div class="action-buttons-group">
               <button class="btn btn-secondary btn-sm" id="btn-muster-mark-all-g">
                 <i class="fa-solid fa-check-double text-orange"></i> Fill All G Shift (8:30-5:30)
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-muster-mark-all-ph">
+                <i class="fa-solid fa-umbrella-beach text-purple"></i> Mark All Public Holiday
               </button>
               <button class="btn btn-outline-success btn-sm" id="btn-export-muster-excel">
                 <i class="fa-solid fa-file-excel"></i> 1-Click Excel Export
@@ -1320,6 +1324,7 @@
                 <option value="Sick Leave">Sick Leave (SL)</option>
                 <option value="Earned Leave">Earned Leave (EL)</option>
                 <option value="Compensatory Off">Compensatory Off (CO)</option>
+                <option value="Public Holiday">Public Holiday / National Festival (PH)</option>
               </select>
             </div>
 
@@ -1342,6 +1347,7 @@
               <select id="leave-adjust-reason-select" class="custom-select">
                 <option value="Compensatory Overtime Quota">Compensatory Overtime Quota</option>
                 <option value="Annual Leave Quota Adjustment">Annual Leave Quota Adjustment</option>
+                <option value="Public Holiday / Festival Credit">Public Holiday / Festival Credit (+)</option>
                 <option value="Performance / Festival Incentive Quota">Performance / Festival Incentive Quota</option>
                 <option value="Unapproved Absence Deduction">Unapproved Absence Deduction (-)</option>
                 <option value="Administrative Leave Correction">Administrative Leave Correction</option>
@@ -2355,6 +2361,7 @@
           <div class="slip-attendance-row">
             <div><strong>Total Days in Month:</strong> <span id="slip-val-totalDays">31</span></div>
             <div><strong>Payable Working Days:</strong> <span id="slip-val-workedDays">31</span></div>
+            <div><strong>Public Holidays:</strong> <span id="slip-val-publicHolidays">0</span></div>
             <div><strong>Mobile Number:</strong> <span id="slip-val-mobile">-</span></div>
           </div>
 
@@ -2860,11 +2867,16 @@
               style="font-size: 13px; font-weight: 800; color: var(--logo-navy); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
               <i class="fa-solid fa-calendar-week text-orange"></i> Attendance & Overtime Parameters
             </h4>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
               <div class="form-group" style="margin-bottom: 0;">
                 <label style="font-size: 11.5px; font-weight: 700;">Days in Month</label>
                 <input type="number" id="correction-total-days" value="31" min="1" max="31"
                   oninput="recalculateCorrectionSlip()" style="font-weight: 700;">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 11.5px; font-weight: 700; color: #7C3AED;">Public Holidays (PH)</label>
+                <input type="number" step="1" id="correction-public-holidays" value="0" min="0" max="15"
+                  oninput="recalculateCorrectionSlip()" style="font-weight: 700; color: #7C3AED;">
               </div>
               <div class="form-group" style="margin-bottom: 0;">
                 <label style="font-size: 11.5px; font-weight: 700; color: var(--logo-orange);">Payable / Worked Days

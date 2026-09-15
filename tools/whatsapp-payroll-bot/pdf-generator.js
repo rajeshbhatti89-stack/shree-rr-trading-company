@@ -321,6 +321,7 @@ function buildScreenshot1Html(slip) {
     <div class="slip-attendance-row">
       <div><strong>Total Days in Month:</strong> <span>${slip.totalDays || 31}</span></div>
       <div><strong>Payable Working Days:</strong> <span>${slip.workedDays || 31}</span></div>
+      <div><strong>Public Holidays:</strong> <span>${slip.publicHolidays !== undefined ? slip.publicHolidays : 0}</span></div>
       <div><strong>Mobile Number:</strong> <span>${slip.mobile ? `+91 ${slip.mobile}` : (slip.phone || '-')}</span></div>
     </div>
 

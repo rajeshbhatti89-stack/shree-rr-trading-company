@@ -4033,7 +4033,7 @@ function generateDefaultSalarySlips(users, mYear = 'August 2026') {
   const slips = []
   for (const u of activeEmployees) {
     const dim = defaultDim
-    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0)))
+    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0) + Number(u.publicHoliday || 0)))
     const ctc = Number(u.ctc)
     const bpd = Number(u.basicPerDay)
 
@@ -4092,6 +4092,7 @@ function generateDefaultSalarySlips(users, mYear = 'August 2026') {
       phone: u.phone || '',
       workedDays: pdays,
       totalDays: dim,
+      publicHolidays: Number(u.publicHoliday || 0),
       otHours: 0,
       otWage: 0,
       earnings: { basic, da, hra, specialAllowance, bonus: 0, otWage: 0 },
@@ -4363,10 +4364,11 @@ app.post('/api/payroll/users', async (c) => {
     presentDays: sanitizeNumber(body.presentDays, 26, 0, 31),
     weakOff: sanitizeNumber(body.weakOff, 4, 0, 10),
     leave: sanitizeNumber(body.leave, 0, 0, 31),
+    publicHoliday: sanitizeNumber(body.publicHoliday, 0, 0, 31),
     totalLeaves: sanitizeNumber(body.totalLeaves, 10, 0, 100),
     leavesTaken: sanitizeNumber(body.leave, 0, 0, 100),
     leaveBalance: Math.max(0, sanitizeNumber(body.totalLeaves, 10) - sanitizeNumber(body.leave, 0)),
-    payableDays: sanitizeNumber(body.presentDays, 26) + sanitizeNumber(body.weakOff, 4) + sanitizeNumber(body.leave, 0),
+    payableDays: sanitizeNumber(body.presentDays, 26) + sanitizeNumber(body.weakOff, 4) + sanitizeNumber(body.leave, 0) + sanitizeNumber(body.publicHoliday, 0),
     daysInMonth: sanitizeNumber(body.daysInMonth, 30, 28, 31),
     status: 'Active',
     createdAt: new Date().toISOString()
@@ -4739,7 +4741,7 @@ app.post('/api/payroll/attendance', async (c) => {
   const user = (db.users || []).find((u) => u.id === userId || u.empId === userId)
 
   const status = sanitizeString(body.status, 30) || 'Present'
-  const isAbsentOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave'
+  const isAbsentOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave' || status === 'Public Holiday' || status === 'Holiday'
 
   const newRecord = {
     id: `att-${Date.now()}`,
@@ -4753,7 +4755,7 @@ app.post('/api/payroll/attendance', async (c) => {
     clockOut: sanitizeString(body.clockOut, 30) || (isAbsentOrOff ? '-' : '05:30 PM'),
     status,
     site: sanitizeString(body.site || (user ? user.site : 'ACC Chanda'), 80),
-    notes: sanitizeString(body.notes, 200) || (status === 'Absent' ? 'Muster Roll: Absent' : 'Muster Roll Entry')
+    notes: sanitizeString(body.notes, 200) || (status === 'Absent' ? 'Muster Roll: Absent' : (status === 'Public Holiday' ? 'Muster Roll: Public Holiday' : 'Muster Roll Entry'))
   }
 
   if (!db.attendance) db.attendance = []
@@ -4780,7 +4782,7 @@ app.post('/api/payroll/attendance/muster-roll-bulk', async (c) => {
   for (const r of musterRecords) {
     const user = (db.users || []).find((u) => u.id === r.userId || u.empId === r.empId)
     const status = sanitizeString(r.status, 30) || 'Present'
-    const isAbOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave'
+    const isAbOrOff = status === 'Absent' || status === 'Weekly Off' || status === 'Leave' || status === 'Public Holiday' || status === 'Holiday'
     const shiftCode = sanitizeAlphanumeric(r.shiftCode, 10) || 'G'
 
     db.attendance.push({
@@ -4795,7 +4797,7 @@ app.post('/api/payroll/attendance/muster-roll-bulk', async (c) => {
       clockOut: sanitizeString(r.clockOut, 30) || (isAbOrOff ? '-' : (shiftCode === 'A' ? '02:00 PM' : (shiftCode === 'B' ? '10:00 PM' : (shiftCode === 'C' ? '06:00 AM' : '05:30 PM')))),
       status,
       site: sanitizeString(r.site || (user ? user.site : 'ACC Chanda'), 80),
-      notes: sanitizeString(r.notes, 200) || (status === 'Absent' ? 'Daily Muster Roll: Absent' : `Daily Muster Roll: Shift ${shiftCode} Marked`)
+      notes: sanitizeString(r.notes, 200) || (status === 'Absent' ? 'Daily Muster Roll: Absent' : (status === 'Public Holiday' ? 'Daily Muster Roll: Public Holiday' : `Daily Muster Roll: Shift ${shiftCode} Marked`))
     })
   }
 
@@ -5116,7 +5118,7 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
     }
 
     const dim = defaultDim
-    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0)))
+    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0) + Number(u.publicHoliday || 0)))
     const ctc = Number(u.ctc)
     const bpd = Number(u.basicPerDay)
 
@@ -5175,6 +5177,7 @@ app.post('/api/payroll/salary-slips/bulk-generate', async (c) => {
       phone: u.phone || (u.mobile ? `+91 ${String(u.mobile).replace(/[^0-9]/g, '').slice(-10)}` : ''),
       workedDays: pdays,
       totalDays: dim,
+      publicHolidays: Number(u.publicHoliday || 0),
       otHours: 0,
       otWage: 0,
       earnings: { basic, da, hra, specialAllowance, bonus: 0, otWage: 0 },
@@ -5296,6 +5299,7 @@ app.post('/api/payroll/salary-slips/update', async (c) => {
     phone: user ? (user.phone || user.mobile) : sanitizeString(body.phone, 30),
     workedDays: sanitizeNumber(workedDays, 31, 0, 31),
     totalDays: sanitizeNumber(totalDays, 31, 28, 31),
+    publicHolidays: sanitizeNumber(body.publicHolidays, 0, 0, 31),
     otHours: sanitizeNumber(otHours, 0, 0, 300),
     otWage: safeOtWage,
     earnings: {
