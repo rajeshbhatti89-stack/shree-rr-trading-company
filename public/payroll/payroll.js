@@ -482,7 +482,25 @@ function generateClientSalarySlips(mYear = 'August 2026', userSubset = null) {
 
   return activeEmployees.map((u) => {
     const dim = defaultDim;
-    const pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0) + Number(u.publicHoliday || 0)));
+    let pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0) + Number(u.publicHoliday || 0)));
+    
+    // Prorate salary based on Date of Joining (DOJ) if joined in current month
+    if (u.doj) {
+      const parts = u.doj.split('/');
+      if (parts.length === 3) {
+        const joinDay = parseInt(parts[0], 10);
+        const joinMonth = parseInt(parts[1], 10) - 1;
+        const joinYear = parseInt(parts[2], 10);
+        const targetMonthIdx = monthNames.indexOf((mYear.split(' ')[0] || '').toLowerCase());
+        const targetYear = parseInt(mYear.split(' ')[1]) || 2026;
+        
+        if (joinYear === targetYear && joinMonth === targetMonthIdx) {
+          const maxDays = dim - joinDay + 1;
+          pdays = Math.min(pdays, maxDays);
+        }
+      }
+    }
+
     const ctc = Number(u.ctc);
     const bpd = Number(u.basicPerDay);
 
@@ -641,6 +659,12 @@ function renderUsersTable() {
 
   const filtered = allUsers.filter((u) => {
     if (u.role === 'Super Admin') return false;
+    
+    // ACC Chanda (or other branch) users should only see their own branch users
+    if (currentUser && currentUser.role !== 'Super Admin' && currentUser.site !== 'Headquarters / All Sites') {
+      if (u.site !== currentUser.site && u.location !== currentUser.location) return false;
+    }
+    
     const matchSearch =
       !search ||
       (u.name && u.name.toLowerCase().includes(search)) ||
@@ -707,6 +731,14 @@ function renderUsersTable() {
         ? `<span class="badge-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; border-color: rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-lock-open"></i> Active</span>`
         : `<span class="badge-pill" style="background: #F1F5F9; color: #64748B; border-color: #CBD5E1;"><i class="fa-solid fa-lock"></i> Locked</span>`;
 
+      const canViewSalary = currentUser && (currentUser.role === 'Super Admin' || (currentUser.permissions && (currentUser.permissions['payroll.salary_structure.view'] || currentUser.permissions['payroll.manage_all'])));
+      
+      const finalGrossHtml = canViewSalary ? grossHtml : `<span class="text-dim"><i class="fa-solid fa-lock"></i> Restricted</span>`;
+      const finalCtcHtml = canViewSalary ? ctcHtml : `<span class="text-dim"><i class="fa-solid fa-lock"></i> Restricted</span>`;
+      const letterBtn = canViewSalary ? `<button class="btn-icon-only text-orange" title="Generate Official Appointment / Offer Letter" onclick="openAppointmentLetterModal('${u.id || u.empId}')">
+              <i class="fa-solid fa-file-signature"></i>
+            </button>` : '';
+
       return `
       <tr>
         <td class="emp-cell-id">${u.empId || 'SRR'}</td>
@@ -742,13 +774,11 @@ function renderUsersTable() {
           <strong>${escapeHtml(u.bankAccount || 'N/A')}</strong>
           <span class="emp-cell-sub">IFSC: ${escapeHtml(u.ifsc || 'N/A')}</span>
         </td>
-        <td>${grossHtml}</td>
-        <td>${ctcHtml}</td>
+        <td>${finalGrossHtml}</td>
+        <td>${finalCtcHtml}</td>
         <td class="text-right">
           <div style="display: inline-flex; gap: 6px;">
-            <button class="btn-icon-only text-orange" title="Generate Official Appointment / Offer Letter" onclick="openAppointmentLetterModal('${u.id || u.empId}')">
-              <i class="fa-solid fa-file-signature"></i>
-            </button>
+            ${letterBtn}
             <button class="btn-icon-only text-navy" title="Edit Record" onclick="editUser('${u.id || u.empId}')">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
@@ -2933,6 +2963,16 @@ function renderSalaryTable() {
   const selectedMonth = document.getElementById('payroll-month-select')?.value || 'August 2026';
 
   const filtered = allSalarySlips.filter((s) => {
+    // Role-based visibility: Normal users only see their own slips (if they somehow access this view)
+    if (currentUser && currentUser.role !== 'Super Admin' && !currentUser.permissions?.['payroll.manage_all'] && !currentUser.permissions?.['payroll.salary_structure.view']) {
+      if (s.empId !== currentUser.empId && s.userId !== currentUser.id) return false;
+    }
+    
+    // Branch filtering: ACC Chanda managers shouldn't see HQ slips
+    if (currentUser && currentUser.role !== 'Super Admin' && currentUser.site !== 'Headquarters / All Sites') {
+      if (s.location !== currentUser.site && s.location !== currentUser.location) return false;
+    }
+
     const matchMonth = !selectedMonth || s.monthYear === selectedMonth;
     const matchSearch =
       !search ||
