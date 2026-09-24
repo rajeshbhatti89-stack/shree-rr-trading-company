@@ -128,6 +128,19 @@ function switchTab(tabId) {
   document.querySelectorAll('.sidebar-menu .nav-item').forEach((i) => i.classList.remove('active'));
   document.querySelectorAll('.tab-pane').forEach((p) => p.classList.remove('active'));
 
+  if (tabId === 'users') {
+    if (currentUser) {
+      const isSuper = currentUser.role === 'Super Admin';
+      const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
+      const perms = currentUser.permissions || {};
+      const canManageUsers = isSuper || isHO || (perms['hr.users.manage'] === true);
+      if (!canManageUsers) {
+        showToast('Unauthorized: You do not have permission to view HR Employee data.', 'error');
+        tabId = 'dashboard';
+      }
+    }
+  }
+
   const navItem = document.querySelector(`.sidebar-menu .nav-item[data-tab="${tabId}"]`);
   const tabPane = document.getElementById(`tab-${tabId}`);
 
@@ -259,10 +272,32 @@ function applyDynamicRBACPermissions() {
     return perms[permKey] === true;
   };
 
+  const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
+  const canManageUsers = isSuper || isHO || (perms['hr.users.manage'] === true);
+  
   const navUsers = document.getElementById('nav-users');
   if (navUsers) {
-    if (checkPerm('hr.users.manage')) navUsers.classList.remove('hidden');
+    if (canManageUsers) navUsers.classList.remove('hidden');
     else navUsers.classList.add('hidden');
+  }
+
+  const navLetters = document.getElementById('nav-letters');
+  const btnTopHrLetter = document.getElementById('btn-top-hr-letter');
+  const btnUsersHrLetter = document.getElementById('btn-users-hr-letter');
+  
+  const canGenerateLetters = isSuper || isHO || (perms['hr.appointment_letter.generate'] === true);
+  
+  if (navLetters) {
+    if (canGenerateLetters) navLetters.classList.remove('hidden');
+    else navLetters.classList.add('hidden');
+  }
+  if (btnTopHrLetter) {
+    if (canGenerateLetters) btnTopHrLetter.classList.remove('hidden');
+    else btnTopHrLetter.classList.add('hidden');
+  }
+  if (btnUsersHrLetter) {
+    if (canGenerateLetters) btnUsersHrLetter.classList.remove('hidden');
+    else btnUsersHrLetter.classList.add('hidden');
   }
 
   const navVehicles = document.getElementById('nav-vehicles');
@@ -657,8 +692,12 @@ function renderUsersTable() {
   const roleFilter = document.getElementById('user-role-filter')?.value || 'ALL';
   const catFilter = document.getElementById('user-category-filter')?.value || 'ALL';
 
+  const excludedLocations = ['ho', 'filter plant', 'shr letter', 'offer'];
   const filtered = allUsers.filter((u) => {
     if (u.role === 'Super Admin') return false;
+    const loc = (u.location || '').toLowerCase();
+    const site = (u.site || '').toLowerCase();
+    if (excludedLocations.some(ex => loc.includes(ex) || site.includes(ex))) return false;
     
     // ACC Chanda (or other branch) users should only see their own branch users
     if (currentUser && currentUser.role !== 'Super Admin' && currentUser.site !== 'Headquarters / All Sites') {
@@ -1840,7 +1879,14 @@ function renderMusterRollTable() {
   const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
   const search = (document.getElementById('muster-search-input')?.value || '').toLowerCase().trim();
 
-  let workers = allUsers.filter((u) => u.role !== 'Super Admin' && u.status === 'Active');
+  const excludedLocations = ['ho', 'filter plant', 'shr letter', 'offer'];
+  let workers = allUsers.filter((u) => {
+    if (u.role === 'Super Admin' || u.status !== 'Active') return false;
+    const loc = (u.location || '').toLowerCase();
+    const site = (u.site || '').toLowerCase();
+    if (excludedLocations.some(ex => loc.includes(ex) || site.includes(ex))) return false;
+    return true;
+  });
   if (search) {
     workers = workers.filter((u) => 
       (u.name && u.name.toLowerCase().includes(search)) || 
@@ -2161,7 +2207,14 @@ function renderTomorrowScheduleTable() {
     displayEl.textContent = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
   }
 
-  const workers = allUsers.filter((u) => u.role !== 'Super Admin' && u.status === 'Active');
+  const excludedLocations = ['ho', 'filter plant', 'shr letter', 'offer'];
+  const workers = allUsers.filter((u) => {
+    if (u.role === 'Super Admin' || u.status !== 'Active') return false;
+    const loc = (u.location || '').toLowerCase();
+    const site = (u.site || '').toLowerCase();
+    if (excludedLocations.some(ex => loc.includes(ex) || site.includes(ex))) return false;
+    return true;
+  });
   if (workers.length === 0) {
     tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding: 30px; color: var(--text-dim);">No active workforce found.</td></tr>`;
     return;
@@ -2321,8 +2374,12 @@ function renderAttendanceGlassCards() {
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate(); // 30 for September
   const monthNumStr = String(monthIndex + 1).padStart(2, '0');
 
+  const excludedLocations = ['ho', 'filter plant', 'shr letter', 'offer'];
   const workers = allUsers.filter((u) => {
     if (u.role === 'Super Admin') return false;
+    const loc = (u.location || '').toLowerCase();
+    const site = (u.site || '').toLowerCase();
+    if (excludedLocations.some(ex => loc.includes(ex) || site.includes(ex))) return false;
     return (
       !search ||
       (u.name && u.name.toLowerCase().includes(search)) ||
@@ -5113,6 +5170,15 @@ function numberToWordsIndian(num) {
 
 // 25. SYSTEM-GENERATED HR LETTERS & APPOINTMENT ENGINE
 function openAppointmentLetterModal(targetUserId) {
+  if (!currentUser) return;
+  const isSuper = currentUser.role === 'Super Admin';
+  const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
+  const perms = currentUser.permissions || {};
+  if (!isSuper && !isHO && perms['hr.appointment_letter.generate'] !== true) {
+    showToast('Unauthorized: You do not have permission to view or generate HR letters.', 'error');
+    return;
+  }
+
   const empSelect = document.getElementById('letter-select-emp');
   if (!empSelect) return;
 
