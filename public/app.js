@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SHREE RR TRADING COMPANY - MAIN WEB APPLICATION LOGIC
  * Theme: Official Logo Palette (#FF7A00 Excavator Orange & Deep Navy)
  * Interactivity: Ambuja Cement Darlaghat Fleet Showcase, Lease Calculator & PeachWeb Tilt Effects
@@ -56,7 +56,7 @@ const RENTAL_FLEET_DATA = [
     rate: "₹8,500 / Shift",
     badge: "AMBUJA DARLAGHAT PLANT",
     img: "images/excavator.png",
-    specs: ["48 Tonne Class", "3.2 m³ Rock Bucket", "High Hydro Output"]
+    specs: ["48 Tonne Class", "3.2 mÂ³ Rock Bucket", "High Hydro Output"]
   },
   {
     id: 3,
@@ -74,7 +74,7 @@ const RENTAL_FLEET_DATA = [
     rate: "₹3,200 / Shift",
     badge: "VERSATILE UTILITY",
     img: "images/jcb.png",
-    specs: ["4.77m Dig Depth", "1.1 m³ Loader Bucket", "76 HP Turbo Engine"]
+    specs: ["4.77m Dig Depth", "1.1 mÂ³ Loader Bucket", "76 HP Turbo Engine"]
   },
   {
     id: 5,
@@ -87,7 +87,7 @@ const RENTAL_FLEET_DATA = [
   },
   {
     id: 6,
-    name: "Vögele Super 1800 Asphalt Paver",
+    name: "VÃ¶gele Super 1800 Asphalt Paver",
     category: "road",
     rate: "₹12,000 / Shift",
     badge: "HIGHWAY PAVING CONTRACT",
@@ -476,7 +476,7 @@ function processChatbotQuery(query) {
   if (q.includes("ambuja") || q.includes("plant") || q.includes("darlaghat")) {
     reply = "Shree RR Trading Company operates flagship <strong>Plant O&M & Tipper Fleet contracts at Ambuja Cement Darlaghat</strong> (Himachal Pradesh). We handle raw material logistics, crushing feed handling, and overburden haulage.";
   } else if (q.includes("rate") || q.includes("rental") || q.includes("cost") || q.includes("price")) {
-    reply = "Machinery rental shift rates:<br>• <strong>Tata Tipper Truck (35T):</strong> ₹4,500/Shift<br>• <strong>CAT/Komatsu Excavator (48T):</strong> ₹8,500/Shift<br>• <strong>Bobcat S450:</strong> ₹2,800/Shift<br>• <strong>JCB 3CX:</strong> ₹3,200/Shift<br><br>Use our <a href='#calculator' onclick='toggleChatbot()'>Cost Estimator</a> for instant bulk discounts!";
+    reply = "Machinery rental shift rates:<br>â€¢ <strong>Tata Tipper Truck (35T):</strong> ₹4,500/Shift<br>â€¢ <strong>CAT/Komatsu Excavator (48T):</strong> ₹8,500/Shift<br>â€¢ <strong>Bobcat S450:</strong> ₹2,800/Shift<br>â€¢ <strong>JCB 3CX:</strong> ₹3,200/Shift<br><br>Use our <a href='#calculator' onclick='toggleChatbot()'>Cost Estimator</a> for instant bulk discounts!";
   } else if (q.includes("garage") || q.includes("maintenance") || q.includes("repair")) {
     reply = "We establish on-site <strong>Heavy Plant Fleet Garage Facilities</strong> staffed 24/7 with hydraulic, mechanical, and electrical engineers to maintain 100% equipment availability.";
   } else if (q.includes("road") || q.includes("govt") || q.includes("highway") || q.includes("pwd")) {
@@ -531,4 +531,5 @@ function closeOpeningWelcomePopup() {
     modal.style.display = "none";
   }
 }
+
 

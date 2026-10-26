@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
@@ -98,8 +98,8 @@ app.get('/api/status', (req, res) => {
     success: true,
     status: whatsappService.status,
     user: whatsappService.user,
-    qrDataUrl: whatsappService.status === 'qr_ready' ? whatsappService.qrDataUrl : null,
-    qrString: whatsappService.status === 'qr_ready' ? whatsappService.qrString : null
+    qrDataUrl: whatsappService.status === 'qr_rea💰 ? whatsappService.qrDataUrl : null,
+    qrString: whatsappService.status === 'qr_rea💰 ? whatsappService.qrString : null
   });
 });
 
@@ -337,11 +337,11 @@ app.post('/api/send-single', async (req, res) => {
   try {
     const pdfBuf = await generateSalarySlipPdf(slip);
     const fileName = `Salary_Slip_${(slip.monthYear || 'Month').replace(/\s+/g, '_')}_${slip.empId || 'EMP'}.pdf`;
-    const caption = `📄 *SHREE RR TRADING COMPANY*\nOfficial Salary Slip for *${slip.monthYear || '2026'}*\n\n` +
-      `👤 *Employee:* ${slip.userName || 'Staff'} (${slip.empId || 'SRR'})\n` +
-      `🏢 *Designation:* ${slip.designation || 'Staff'}\n` +
-      `🗓️ *Payable Days:* ${slip.workedDays || 31} / ${slip.totalDays || 31} Days\n` +
-      `💰 *Net Take Home Pay:* ₹${Number(slip.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n` +
+    const caption = `ðŸ“„ *SHREE RR TRADING COMPANY*\nOfficial Salary Slip for *${slip.monthYear || '2026'}*\n\n` +
+      `ðŸ‘¤ *Employee:* ${slip.userName || 'Staff'} (${slip.empId || 'SRR'})\n` +
+      `ðŸ¢ *Designation:* ${slip.designation || 'Staff'}\n` +
+      `ðŸ—“ï¸ *Payable Days:* ${slip.workedDays || 31} / ${slip.totalDays || 31} Days\n` +
+      `ðŸ’° *Net Take Home Pay:* ₹${Number(slip.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n` +
       `_Aapki official stamped PDF salary slip upar attach kar di gayi hai. Ise khol kar check karein._\n\n` +
       `*Shree RR Trading Company* | ACC Chanda Plant Site`;
 
@@ -401,7 +401,7 @@ app.post('/api/send-batch', async (req, res) => {
         batchState.logs.unshift({
           time: new Date().toLocaleTimeString(),
           status: 'error',
-          text: `${logPrefix} ❌ Skipped: Invalid mobile number.`
+          text: `${logPrefix} âŒ Skipped: Invalid mobile number.`
         });
         continue;
       }
@@ -409,11 +409,11 @@ app.post('/api/send-batch', async (req, res) => {
       try {
         const pdfBuf = await generateSalarySlipPdf(slip);
         const fileName = `Salary_Slip_${(slip.monthYear || 'Month').replace(/\s+/g, '_')}_${slip.empId || 'EMP'}.pdf`;
-        const caption = `📄 *SHREE RR TRADING COMPANY*\nOfficial Salary Slip for *${slip.monthYear || '2026'}*\n\n` +
-          `👤 *Employee:* ${slip.userName || 'Staff'} (${slip.empId || 'SRR'})\n` +
-          `🏢 *Designation:* ${slip.designation || 'Staff'}\n` +
-          `🗓️ *Payable Days:* ${slip.workedDays || 31} / ${slip.totalDays || 31} Days\n` +
-          `💰 *Net Take Home Pay:* ₹${Number(slip.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n` +
+        const caption = `ðŸ“„ *SHREE RR TRADING COMPANY*\nOfficial Salary Slip for *${slip.monthYear || '2026'}*\n\n` +
+          `ðŸ‘¤ *Employee:* ${slip.userName || 'Staff'} (${slip.empId || 'SRR'})\n` +
+          `ðŸ¢ *Designation:* ${slip.designation || 'Staff'}\n` +
+          `ðŸ—“ï¸ *Payable Days:* ${slip.workedDays || 31} / ${slip.totalDays || 31} Days\n` +
+          `ðŸ’° *Net Take Home Pay:* ₹${Number(slip.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n` +
           `_Aapki official stamped PDF salary slip upar attach kar di gayi hai. Ise khol kar check karein._\n\n` +
           `*Shree RR Trading Company* | ACC Chanda Plant Site`;
 
@@ -429,7 +429,7 @@ app.post('/api/send-batch', async (req, res) => {
         batchState.logs.unshift({
           time: new Date().toLocaleTimeString(),
           status: 'success',
-          text: `${logPrefix} ✅ PDF Sent Successfully via WhatsApp!`
+          text: `${logPrefix} âœ… PDF Sent Successfully via WhatsApp!`
         });
 
       } catch (sendErr) {
@@ -437,7 +437,7 @@ app.post('/api/send-batch', async (req, res) => {
         batchState.logs.unshift({
           time: new Date().toLocaleTimeString(),
           status: 'error',
-          text: `${logPrefix} ❌ Failed: ${sendErr.message}`
+          text: `${logPrefix} âŒ Failed: ${sendErr.message}`
         });
       }
 
@@ -449,7 +449,7 @@ app.post('/api/send-batch', async (req, res) => {
         batchState.logs.unshift({
           time: new Date().toLocaleTimeString(),
           status: 'waiting',
-          text: `⏳ Anti-Ban Safe Delay: Waiting ${(actualDelay / 1000).toFixed(0)}s before next employee...`
+          text: `â³ Anti-Ban Safe Delay: Waiting ${(actualDelay / 1000).toFixed(0)}s before next employee...`
         });
 
         await new Promise(r => setTimeout(r, actualDelay));
@@ -461,7 +461,7 @@ app.post('/api/send-batch', async (req, res) => {
     batchState.logs.unshift({
       time: new Date().toLocaleTimeString(),
       status: 'complete',
-      text: `🎉 Batch Completed! Sent: ${batchState.sent}, Failed: ${batchState.failed}`
+      text: `ðŸŽ‰ Batch Completed! Sent: ${batchState.sent}, Failed: ${batchState.failed}`
     });
   })().catch(err => {
     console.error('Batch loop error:', err);
@@ -498,8 +498,10 @@ if (!fs.existsSync(path.join(__dirname, 'uploads/'))) {
 // Start Server
 app.listen(PORT, () => {
   console.log(`=======================================================`);
-  console.log(`🚀 Shree RR Trading - WhatsApp PDF Auto-Sender Ready!`);
-  console.log(`🌐 Local Web Dashboard: http://localhost:${PORT}`);
+  console.log(`ðŸš€ Shree RR Trading - WhatsApp PDF Auto-Sender Ready!`);
+  console.log(`ðŸŒ Local Web Dashboard: http://localhost:${PORT}`);
   console.log(`=======================================================`);
   whatsappService.init();
 });
+
+

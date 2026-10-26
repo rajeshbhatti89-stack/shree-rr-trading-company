@@ -37,64 +37,99 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- Payroll Theme Stylesheet -->
-  <link rel="stylesheet" href="/payroll/payroll.css?v=2.4.0">
+  <link rel="stylesheet" href="/payroll/payroll.css?v=2.5.0">
 </head>
 
 <body>
 
   <!-- ==================== LOGIN CONTAINER ==================== -->
   <div id="login-container" class="login-wrapper">
-    <div class="login-card peach-glass">
-      <div class="brand-header">
-        <div class="logo-hero-badge">
-          <img src="/images/logo.png" alt="Shree RR Trading Company Logo" class="brand-logo-img">
+    <div class="login-split-card">
+      <!-- Left Showcase: Dedicated On-Site Operations Team -->
+      <div class="login-showcase">
+        <div class="login-showcase-bg" style="background-image: url('/payroll/images/our-team.jpg');"></div>
+        <div class="login-showcase-overlay"></div>
+        <div class="login-showcase-content">
+          <div class="showcase-top-badge">
+            <i class="fa-solid fa-users-gear"></i> On-Site Operations Team
+          </div>
+          <div class="showcase-middle">
+            <span class="showcase-plant-tag"><i class="fa-solid fa-industry"></i> ACC Chanda Cement Works &bull; Ambuja Darlaghat</span>
+            <h2 class="showcase-heading">Field Excellence &amp; Plant Uptime</h2>
+            <p class="showcase-desc">
+              Dedicated field operators, fleet mechanics, safety supervisors, and site engineers powering 24/7 continuous operations with zero downtime.
+            </p>
+          </div>
+          <div class="showcase-stats-row">
+            <div class="showcase-stat-pill">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>Zero-Accident Culture</span>
+            </div>
+            <div class="showcase-stat-pill">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>24/7 Fleet O&amp;M</span>
+            </div>
+            <div class="showcase-stat-pill">
+              <i class="fa-solid fa-award"></i>
+              <span>40+ Yrs Legacy</span>
+            </div>
+          </div>
         </div>
-        <div class="badge-pill">
-          <i class="fa-solid fa-shield-halved"></i> SECURE ENTERPRISE PORTAL
-        </div>
-        <h1 class="company-title">SHREE RR TRADING COMPANY</h1>
-        <p class="portal-subtitle">PLANT FLEET O&M • PAYROLL & MUSTER ROLL SYSTEM</p>
       </div>
 
-      <form id="login-form" class="login-form">
-        <div class="form-group">
-          <label for="login-email"><i class="fa-solid fa-envelope"></i> Email or Employee ID</label>
-          <input type="text" id="login-email" required placeholder="admin@srijandev.in or SRR001"
-            autocomplete="username">
+      <!-- Right Card: Portal Authentication -->
+      <div class="login-card peach-glass">
+        <div class="brand-header">
+          <div class="logo-hero-badge">
+            <img src="/images/logo.png" alt="Shree RR Trading Company Logo" class="brand-logo-img">
+          </div>
+          <div class="badge-pill">
+            <i class="fa-solid fa-shield-halved"></i> SECURE ENTERPRISE PORTAL
+          </div>
+          <h1 class="company-title">SHREE RR TRADING COMPANY</h1>
+          <p class="portal-subtitle">PLANT FLEET O&amp;M &bull; PAYROLL &amp; MUSTER ROLL SYSTEM</p>
         </div>
 
-        <div class="form-group">
-          <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
-          <input type="password" id="login-password" required placeholder="Enter password"
-            autocomplete="current-password">
-        </div>
+        <form id="login-form" class="login-form">
+          <div class="form-group">
+            <label for="login-email"><i class="fa-solid fa-envelope"></i> Email or Employee ID</label>
+            <input type="text" id="login-email" required placeholder="admin@srijandev.in or SRR001"
+              autocomplete="username">
+          </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">
-            <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
-          </button>
-        </div>
+          <div class="form-group">
+            <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+            <input type="password" id="login-password" required placeholder="Enter password"
+              autocomplete="current-password">
+          </div>
 
-        <div class="login-help">
-          <p class="text-muted"><i class="fa-solid fa-lock text-orange"></i> Role-based login. Access permissions
-            managed by Super Admin.</p>
-        </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">
+              <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+            </button>
+          </div>
 
-        <div class="login-branding"
-          style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
-          <a href="https://srijandev.in" target="_blank" rel="noopener noreferrer"
-            style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
-            <img src="/images/srijandev_logo.png" alt="SrijanDev Logo"
-              style="height: 28px; width: auto; object-fit: contain;">
-          </a>
-          <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">
-            Designed &amp; Developed by <strong><a href="https://srijandev.in" target="_blank"
-                style="color: var(--logo-orange); text-decoration: none;">SrijanDev</a></strong> • Powered by <strong><a
-                href="https://srijandev.in" target="_blank"
-                style="color: #6366f1; text-decoration: none;">SrijanDev</a></strong>
-          </span>
-        </div>
-      </form>
+          <div class="login-help">
+            <p class="text-muted"><i class="fa-solid fa-lock text-orange"></i> Role-based login. Access permissions
+              managed by Super Admin.</p>
+          </div>
+
+          <div class="login-branding"
+            style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+            <a href="https://srijandev.in" target="_blank" rel="noopener noreferrer"
+              style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+              <img src="/images/srijandev_logo.png" alt="SrijanDev Logo"
+                style="height: 28px; width: auto; object-fit: contain;">
+            </a>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">
+              Designed &amp; Developed by <strong><a href="https://srijandev.in" target="_blank"
+                  style="color: var(--logo-orange); text-decoration: none;">SrijanDev</a></strong> &bull; Powered by <strong><a
+                  href="https://srijandev.in" target="_blank"
+                  style="color: #6366f1; text-decoration: none;">SrijanDev</a></strong>
+            </span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -398,6 +433,36 @@
 
         <!-- ==================== TAB 2: PLANT VEHICLES & FLEETS ==================== -->
         <section id="tab-vehicles" class="tab-pane">
+          <!-- Vehicle Section Sub-Navigation Bar -->
+          <div class="vehicle-subnav-container" style="margin-bottom: 20px;">
+            <div class="vehicle-subnav-bar">
+              <button class="v-subnav-btn active" data-vtab="fleet-master">
+                <i class="fa-solid fa-truck-monster text-orange"></i> Plant Fleet Master
+                <span class="v-badge" id="vsub-fleet-count">0</span>
+              </button>
+              <button class="v-subnav-btn" data-vtab="job-cards">
+                <i class="fa-solid fa-clipboard-check text-orange"></i> Maintenance Job Cards
+                <span class="v-badge" id="vsub-jc-count">0</span>
+              </button>
+              <button class="v-subnav-btn" data-vtab="challans">
+                <i class="fa-solid fa-receipt text-orange"></i> Material Delivery Challans
+                <span class="v-badge" id="vsub-chl-count">0</span>
+              </button>
+              <button class="v-subnav-btn" data-vtab="inventory">
+                <i class="fa-solid fa-boxes-stacked text-orange"></i> Spares & Inventory
+                <span class="v-badge" id="vsub-inv-count">0</span>
+              </button>
+              <button class="v-subnav-btn" data-vtab="consumption">
+                <i class="fa-solid fa-chart-pie text-orange"></i> Vehicle Consumption & Cost
+              </button>
+              <button class="v-subnav-btn" data-vtab="mttr">
+                <i class="fa-solid fa-chart-line text-orange"></i> Availability & MTTR
+              </button>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 1: Plant Machinery & Fleet Master -->
+          <div id="vview-fleet-master" class="vehicle-subview">
           <div class="section-top-actions">
             <div class="search-filter-box">
               <div class="search-input-wrap">
@@ -467,7 +532,373 @@
               </tbody>
             </table>
           </div>
+          </div> <!-- /#vview-fleet-master -->
 
+          <!-- SUB-VIEW 2: Maintenance Job Cards (With Crew Assignment) -->
+          <div id="vview-job-cards" class="vehicle-subview hidden">
+            <div class="section-top-actions">
+              <div class="search-filter-box">
+                <div class="search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="jc-search-input" placeholder="Search Job Cards by JC #, Vehicle, Issue, Mechanic...">
+                </div>
+                <select id="jc-status-filter" class="custom-select">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Open">Open</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Waiting for Parts">Waiting for Parts</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Closed">Closed</option>
+                </select>
+                <select id="jc-priority-filter" class="custom-select">
+                  <option value="ALL">All Priorities</option>
+                  <option value="Emergency">Emergency</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+                <select id="filter-jc-mechanic" class="custom-select">
+                  <option value="ALL">All Technicians / Mechanics</option>
+                </select>
+              </div>
+
+              <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm" id="btn-open-create-job-card">
+                  <i class="fa-solid fa-clipboard-check"></i> + Create Maintenance Job Card
+                </button>
+                <button class="btn btn-outline-success btn-sm" id="btn-export-job-cards-excel" title="Download Maintenance Job Cards Excel Report">
+                  <i class="fa-solid fa-file-excel"></i> Export Job Cards (Excel)
+                </button>
+              </div>
+            </div>
+
+            <!-- Job Cards Reliability & Crew KPIs -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Job Cards</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-navy); margin-top: 4px;" id="kpi-jc-total">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">All recorded work orders</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Active / In Progress</div>
+                <div style="font-size: 22px; font-weight: 800; color: #2563EB; margin-top: 4px;" id="kpi-jc-in-progress">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Crew actively servicing</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Waiting for Parts</div>
+                <div style="font-size: 22px; font-weight: 800; color: #D97706; margin-top: 4px;" id="kpi-jc-waiting-parts">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Needs material challan</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Completed Work Orders</div>
+                <div style="font-size: 22px; font-weight: 800; color: #059669; margin-top: 4px;" id="kpi-jc-completed">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Signed off & operational</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Spares Consumed</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-orange); margin-top: 4px;" id="kpi-jc-material-cost">₹0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Cost linked via challans</div>
+              </div>
+            </div>
+
+            <!-- Job Cards Table -->
+            <div class="table-container peach-glass" style="margin-bottom: 28px;">
+              <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-clipboard-check text-orange"></i> Plant Fleet Maintenance Job Cards & Crew Assignments
+                </h3>
+                <span class="badge-pill" style="font-weight: 700; background: #EEF2FF; color: #4338CA;">Technicians • Mechanics • Helpers</span>
+              </div>
+              <table class="data-table" id="job-cards-table">
+                <thead>
+                  <tr>
+                    <th>Job Card # & Date</th>
+                    <th>Vehicle & Location</th>
+                    <th>Maintenance Type</th>
+                    <th>Assigned Crew (Lead, Asst, Helper)</th>
+                    <th>Issue Reported & Progress</th>
+                    <th>Spares Cost</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="job-cards-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 3: Material Delivery Challans (With Auto Part Saving) -->
+          <div id="vview-challans" class="vehicle-subview hidden">
+            <div class="section-top-actions">
+              <div class="search-filter-box">
+                <div class="search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="chl-search-input" placeholder="Search Challan #, Vehicle, Spares, Mechanic...">
+                </div>
+                <select id="chl-vehicle-filter" class="custom-select">
+                  <option value="ALL">All Plant Vehicles</option>
+                </select>
+              </div>
+
+              <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm" id="btn-open-issue-challan">
+                  <i class="fa-solid fa-receipt"></i> + Issue Material Challan
+                </button>
+                <button class="btn btn-outline-success btn-sm" id="btn-export-challans-excel" title="Download Delivery Challans Excel Report">
+                  <i class="fa-solid fa-file-excel"></i> Export Challans (Excel)
+                </button>
+              </div>
+            </div>
+
+            <!-- Challans KPIs -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Challans Issued</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-navy); margin-top: 4px;" id="kpi-chl-total">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Official store dispatches</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Spares Dispatched</div>
+                <div style="font-size: 22px; font-weight: 800; color: #2563EB; margin-top: 4px;" id="kpi-chl-items-count">0 Items</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Deducted from stock</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Material Value Issued</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-orange); margin-top: 4px;" id="kpi-chl-total-val">₹0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Cumulative spare costs</div>
+              </div>
+            </div>
+
+            <!-- Challans Table -->
+            <div class="table-container peach-glass" style="margin-bottom: 28px;">
+              <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-receipt text-orange"></i> Material Delivery & Store Issue Challans
+                </h3>
+                <span class="badge-pill badge-success" style="font-weight: 700;">
+                  <i class="fa-solid fa-arrows-rotate"></i> Auto-Stock Sync Enabled
+                </span>
+              </div>
+              <table class="data-table" id="challans-table">
+                <thead>
+                  <tr>
+                    <th>Challan No & Date</th>
+                    <th>Vehicle / Equipment</th>
+                    <th>Job Card Ref</th>
+                    <th>Issued To (Mechanic / Helper)</th>
+                    <th>Spares & Quantities</th>
+                    <th>Total Value (₹)</th>
+                    <th>Storekeeper / Remarks</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="challans-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 4: Spares & Materials Inventory List (With Wty & Price) -->
+          <div id="vview-inventory" class="vehicle-subview hidden">
+            <div class="section-top-actions">
+              <div class="search-filter-box">
+                <div class="search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="inv-search-input" placeholder="Search by part code, spare name, supplier, warranty...">
+                </div>
+                <select id="inv-category-filter" class="custom-select">
+                  <option value="ALL">All Categories</option>
+                </select>
+                <select id="inv-status-filter" class="custom-select">
+                  <option value="ALL">All Stock Statuses</option>
+                  <option value="IN_STOCK">In Stock</option>
+                  <option value="LOW_STOCK">Low Stock (≤ Reorder)</option>
+                  <option value="OUT_OF_STOCK">Out of Stock</option>
+                </select>
+              </div>
+
+              <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm" id="btn-open-add-inventory-modal">
+                  <i class="fa-solid fa-plus"></i> + Add Spare Part
+                </button>
+                <button class="btn btn-outline-success btn-sm" id="btn-export-inventory-excel" title="Download Spare Parts Inventory Master Excel Report">
+                  <i class="fa-solid fa-file-excel"></i> Export Inventory (Excel)
+                </button>
+              </div>
+            </div>
+
+            <!-- Inventory KPIs -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Active SKUs</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-navy); margin-top: 4px;" id="kpi-inv-total-items">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Catalogued plant spares</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Inventory Value</div>
+                <div style="font-size: 22px; font-weight: 800; color: #059669; margin-top: 4px;" id="kpi-inv-total-valuation">₹0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Stock on hand valuation</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Low Stock Warning</div>
+                <div style="font-size: 22px; font-weight: 800; color: #D97706; margin-top: 4px;" id="kpi-inv-low-stock">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Below reorder threshold</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Out of Stock</div>
+                <div style="font-size: 22px; font-weight: 800; color: #DC2626; margin-top: 4px;" id="kpi-inv-out-of-stock">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Urgent procurement needed</div>
+              </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="table-container peach-glass" style="margin-bottom: 28px;">
+              <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-boxes-stacked text-orange"></i> Workshop Spare Parts Master Inventory (Wty & Price)
+                </h3>
+                <span class="badge-pill" style="font-weight: 700; background: #FFF5EE; color: var(--logo-orange);">
+                  <i class="fa-solid fa-shield-halved"></i> OEM & Replacement Spares
+                </span>
+              </div>
+              <table class="data-table" id="inventory-table">
+                <thead>
+                  <tr>
+                    <th>Part Code</th>
+                    <th>Spare Part Name & Loc</th>
+                    <th>Category</th>
+                    <th>Stock on Hand</th>
+                    <th>Unit Price (₹)</th>
+                    <th>Warranty (Wty)</th>
+                    <th>Total Valuation</th>
+                    <th>Stock Status</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 5: Vehicle Material Consumption & Cost Analytics -->
+          <div id="vview-consumption" class="vehicle-subview hidden">
+            <div class="section-top-actions">
+              <div class="search-filter-box">
+                <select id="vcost-vehicle-filter" class="custom-select" style="min-width: 200px;">
+                  <option value="ALL">All Plant Vehicles</option>
+                </select>
+                <select id="vcost-month-filter" class="custom-select">
+                  <option value="ALL">All Time</option>
+                  <option value="2026-10">October 2026</option>
+                  <option value="2026-09">September 2026</option>
+                  <option value="2026-08">August 2026</option>
+                </select>
+              </div>
+
+              <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-outline-success btn-sm" id="btn-export-consumption-excel" title="Download Material Consumption Excel Report">
+                  <i class="fa-solid fa-file-excel"></i> Export Consumption & Cost (Excel)
+                </button>
+              </div>
+            </div>
+
+            <!-- Consumption KPIs -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Fleet Material Cost</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-orange); margin-top: 4px;" id="kpi-vcost-total-amount">₹0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Cumulative spare parts expense</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Spares Consumed</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--logo-navy); margin-top: 4px;" id="kpi-vcost-total-parts">0</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Units installed across fleet</div>
+              </div>
+
+              <div class="kpi-mini-card" style="background: #FFF; border: 1px solid var(--border-light); padding: 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Highest Consuming Machine</div>
+                <div style="font-size: 18px; font-weight: 800; color: #DC2626; margin-top: 6px; word-break: break-word;" id="kpi-vcost-top-vehicle">None</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Top maintenance cost vehicle</div>
+              </div>
+            </div>
+
+            <!-- Vehicle-Wise Cost Summary Table -->
+            <div class="table-container peach-glass" style="margin-bottom: 28px;">
+              <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-chart-pie text-orange"></i> Vehicle-Wise Material & Spares Cost Summary
+                </h3>
+                <span class="badge-pill" style="font-weight: 700; background: #ECFDF5; color: #047857;">
+                  <i class="fa-solid fa-calculator"></i> Ranked by Material Expense
+                </span>
+              </div>
+              <table class="data-table" id="vehicle-cost-summary-table">
+                <thead>
+                  <tr>
+                    <th>Vehicle Reg No</th>
+                    <th>Equipment Name & Model</th>
+                    <th>Site Location</th>
+                    <th>Material Challans</th>
+                    <th>Parts Replaced</th>
+                    <th>Total Material Cost (₹)</th>
+                    <th>Last Issue Date</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="vehicle-cost-summary-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Itemized Material Issue Log Table -->
+            <div class="table-container peach-glass" style="margin-bottom: 28px;">
+              <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-list-check text-orange"></i> Itemized Fleet Material Issue & Spares Consumption Log
+                </h3>
+              </div>
+              <table class="data-table" id="vehicle-consumption-logs-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Challan No</th>
+                    <th>Vehicle Reg No</th>
+                    <th>Job Card</th>
+                    <th>Spare Part / Material</th>
+                    <th>Category</th>
+                    <th>Warranty</th>
+                    <th>Qty</th>
+                    <th>Unit Rate (₹)</th>
+                    <th>Total (₹)</th>
+                    <th>Issued To (Crew)</th>
+                  </tr>
+                </thead>
+                <tbody id="vehicle-consumption-items-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW 6: Heavy Plant Equipment Availability & MTTR Reliability Analytics -->
+          <div id="vview-mttr" class="vehicle-subview hidden">
           <!-- Vehicle Availability & MTTR Reliability Analytics Section -->
           <div class="peach-glass" style="padding: 24px; margin-bottom: 28px; border-radius: var(--radius-lg);">
             <div
@@ -483,7 +914,16 @@
                     Time to Repair)</strong>, and <strong>MTBF (Mean Time Between Failures)</strong>.
                 </p>
               </div>
-              <div style="display: flex; gap: 10px;">
+              </div>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <label for="fleet-mttr-month-filter" style="font-size: 13px; font-weight: 600; color: var(--logo-navy);">Month:</label>
+                <select id="fleet-mttr-month-filter" class="custom-select" style="min-width: 140px; height: 32px; font-size: 13px;" onchange="renderFleetMTTRMatrix(); renderVehicleBreakdownLogs();">
+                  <option value="ALL">All Time</option>
+                  <option value="2026-10">October 2026</option>
+                  <option value="2026-09">September 2026</option>
+                  <option value="2026-08">August 2026</option>
+                  <option value="2026-07">July 2026</option>
+                </select>
                 <button class="btn btn-primary btn-sm" id="btn-open-breakdown-modal">
                   <i class="fa-solid fa-screwdriver-wrench"></i> + Log Breakdown (B/D) & Service Hours
                 </button>
@@ -609,6 +1049,7 @@
               </table>
             </div>
           </div>
+          </div> <!-- /#vview-mttr -->
         </section>
 
         <!-- ==================== TAB 4: DAILY MUSTER ROLL (TODAY) ==================== -->
@@ -743,6 +1184,9 @@
               <button class="btn btn-secondary btn-sm" id="btn-open-leave-history-modal">
                 <i class="fa-solid fa-list-check"></i> Manage / Delete Leaves
               </button>
+              <button class="btn btn-outline-success btn-sm" id="btn-export-attendance-excel">
+                <i class="fa-solid fa-file-excel"></i> Export Monthly Attendance
+              </button>
             </div>
           </div>
 
@@ -819,6 +1263,19 @@
                 <p>Generate and download verified Excel spreadsheets for payroll processing, bank salary NEFT deposits,
                   and shift fleet scheduling.</p>
               </div>
+            </div>
+          </div>
+
+          <div class="section-top-actions" style="margin-bottom: 20px;">
+            <div class="search-filter-box">
+              <label style="font-weight: 600; margin-right: 10px; color: var(--logo-navy);">Select Month for Reports:</label>
+              <select id="report-month-select" class="custom-select">
+                <option value="August 2026" selected>August 2026</option>
+                <option value="September 2026">September 2026</option>
+                <option value="July 2026">July 2026</option>
+                <option value="June 2026">June 2026</option>
+                <option value="May 2026">May 2026</option>
+              </select>
             </div>
           </div>
 
@@ -1123,6 +1580,439 @@
           </button>
         </div>
       </form>
+    </div>
+  <!-- ==================== MODAL: MAINTENANCE JOB CARD (CREW ASSIGNMENT) ==================== -->
+  <div id="modal-job-card" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 850px;">
+      <div class="modal-header">
+        <h3 id="modal-job-card-title"><i class="fa-solid fa-clipboard-check text-orange"></i> Create Maintenance Job Card</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-job-card')">&times;</button>
+      </div>
+      <form id="form-job-card">
+        <input type="hidden" id="jc-id">
+        <div class="modal-body">
+          <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label>Job Card # *</label>
+              <input type="text" id="jc-card-no" class="custom-input" required readonly style="font-family: var(--font-mono); font-weight: 700; background: #F8FAFC;">
+            </div>
+            <div class="form-group">
+              <label>Plant Vehicle / Equipment *</label>
+              <select id="jc-vehicle-select" class="custom-select" required></select>
+            </div>
+            <div class="form-group">
+              <label>Job Date *</label>
+              <input type="date" id="jc-date" class="custom-input" required>
+            </div>
+            <div class="form-group">
+              <label>Time In (Pit / Workshop)</label>
+              <input type="text" id="jc-in-time" class="custom-input" placeholder="e.g. 08:30 AM">
+            </div>
+            <div class="form-group">
+              <label>Meter Reading (Hrs / Km)</label>
+              <input type="number" id="jc-meter-reading" class="custom-input" placeholder="e.g. 4850">
+            </div>
+            <div class="form-group">
+              <label>Maintenance Category *</label>
+              <select id="jc-maintenance-type" class="custom-select">
+                <option value="Breakdown Repair">Breakdown Repair</option>
+                <option value="Preventive Maintenance">Preventive Maintenance (PM)</option>
+                <option value="Major Overhaul">Major Overhaul</option>
+                <option value="Hydraulic System Service">Hydraulic System Service</option>
+                <option value="Engine & Transmission">Engine & Transmission</option>
+                <option value="Tyre Replacement & Fitting">Tyre Replacement & Fitting</option>
+                <option value="Electrical & Sensors">Electrical & Sensors</option>
+                <option value="Under-carriage & Track">Under-carriage & Track</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Priority Level *</label>
+              <select id="jc-priority" class="custom-select">
+                <option value="Emergency">Emergency (Immediate Pit Halt)</option>
+                <option value="High" selected>High Priority</option>
+                <option value="Medium">Medium Priority</option>
+                <option value="Low">Low / Scheduled Routine</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status *</label>
+              <select id="jc-status" class="custom-select">
+                <option value="Open">Open</option>
+                <option value="In Progress" selected>In Progress</option>
+                <option value="Waiting for Parts">Waiting for Parts</option>
+                <option value="Completed">Completed</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Labor Hours Logged</label>
+              <input type="number" step="0.5" id="jc-labor-hours" class="custom-input" placeholder="e.g. 4.0">
+            </div>
+          </div>
+
+          <!-- Feature 5: Assignment of Technician / Mechanic / Helper -->
+          <div class="crew-assignment-card" style="background: #F8FAFC; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
+            <h4 style="font-size: 13px; font-weight: 800; color: var(--logo-navy); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-users-gear text-orange"></i> Workshop Crew Assignment (Technician / Mechanic / Helper)
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+              <div class="form-group">
+                <label>Lead Mechanic / Senior Technician *</label>
+                <select id="jc-lead-mechanic" class="custom-select" required></select>
+                <div style="font-size: 10px; color: var(--text-dim); margin-top: 3px;">Primary responsibility for repair</div>
+              </div>
+              <div class="form-group">
+                <label>Assistant Mechanic / Welder</label>
+                <select id="jc-asst-mechanic" class="custom-select"></select>
+                <div style="font-size: 10px; color: var(--text-dim); margin-top: 3px;">Secondary maintenance technician</div>
+              </div>
+              <div class="form-group">
+                <label>Maintenance Helper</label>
+                <select id="jc-helper" class="custom-select"></select>
+                <div style="font-size: 10px; color: var(--text-dim); margin-top: 3px;">Assigned workshop helper</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>Reported Defect / Breakdown Symptom *</label>
+            <textarea id="jc-issue-reported" class="custom-input" rows="2" placeholder="Describe the mechanical fault, oil leakage, heating, warning lamp, or service scope..." required></textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>Corrective Action Taken & Work Performed</label>
+            <textarea id="jc-work-carried-out" class="custom-input" rows="2" placeholder="Record parts swapped, hydraulic line flushed, torque tightened, test drive observations..."></textarea>
+          </div>
+
+          <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+            <div class="form-group">
+              <label>Completion Date</label>
+              <input type="date" id="jc-completed-date" class="custom-input">
+            </div>
+            <div class="form-group">
+              <label>Time Out (Handover to Mining)</label>
+              <input type="text" id="jc-out-time" class="custom-input" placeholder="e.g. 05:30 PM">
+            </div>
+            <div class="form-group">
+              <label>Next Service / Inspection Note</label>
+              <input type="text" id="jc-notes" class="custom-input" placeholder="e.g. Check hydraulic filter after 100 hrs">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-job-card')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-job-card">
+            <i class="fa-solid fa-check"></i> Save Job Card
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: MATERIAL DELIVERY CHALLAN (AUTO PART SAVING) ==================== -->
+  <div id="modal-challan" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 950px;">
+      <div class="modal-header">
+        <h3 id="modal-challan-title"><i class="fa-solid fa-receipt text-orange"></i> Issue Material Delivery Challan</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-challan')">&times;</button>
+      </div>
+      <form id="form-material-challan">
+        <input type="hidden" id="chl-id">
+        <div class="modal-body">
+          <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
+            <div class="form-group">
+              <label>Challan No *</label>
+              <input type="text" id="chl-number" class="custom-input" required readonly style="font-family: var(--font-mono); font-weight: 700; background: #F8FAFC;">
+            </div>
+            <div class="form-group">
+              <label>Challan Issue Date *</label>
+              <input type="date" id="chl-date" class="custom-input" required>
+            </div>
+            <div class="form-group">
+              <label>Vehicle / Equipment Reg No *</label>
+              <select id="chl-vehicle-select" class="custom-select" required></select>
+            </div>
+            <div class="form-group">
+              <label>Job Card Reference</label>
+              <select id="chl-job-card-select" class="custom-select">
+                <option value="">-- No Vehicle Selected --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Issued To (Mechanic / Receiver) *</label>
+              <select id="chl-issued-to" class="custom-select" required></select>
+            </div>
+            <div class="form-group">
+              <label>Issued By (Storekeeper / Supervisor)</label>
+              <input type="text" id="chl-issued-by" class="custom-input" value="Workshop Storekeeper">
+            </div>
+          </div>
+
+          <!-- Feature 1: Automatic Part Saving Switch & Line Items -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+            <h4 style="font-size: 14px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-cart-flatbed text-orange"></i> Spares & Materials Dispatched
+            </h4>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #047857; cursor: pointer; background: #ECFDF5; padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid #A7F3D0;">
+              <input type="checkbox" id="chl-auto-save-parts" checked style="accent-color: #059669; width: 16px; height: 16px;">
+              <span>Automatic Part Saving (Auto-add new parts to Inventory with Vehicle link)</span>
+            </label>
+          </div>
+
+          <div class="table-container" style="border: 1px solid var(--border-light); border-radius: var(--radius-md); overflow-x: auto; margin-bottom: 12px;">
+            <table class="data-table" style="font-size: 13px; min-width: 800px;">
+              <thead>
+                <tr>
+                  <th style="min-width: 250px;">Select from Inventory OR Type Custom Part *</th>
+                  <th style="width: 85px; text-align: center;">Qty *</th>
+                  <th style="width: 85px;">Unit</th>
+                  <th style="width: 105px; text-align: right;">Unit Rate ₹ *</th>
+                  <th style="width: 110px;">Warranty</th>
+                  <th style="width: 115px; text-align: right;">Total Amount ₹</th>
+                  <th style="width: 50px; text-align: center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="challan-items-tbody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 14px;">
+            <button type="button" class="btn btn-outline btn-sm" id="btn-challan-add-item-row">
+              <i class="fa-solid fa-plus"></i> + Add Another Spare Item
+            </button>
+            <div style="text-align: right;">
+              <div style="font-size: 12px; color: var(--text-dim);" id="chl-summary-items-count">0 Items</div>
+              <div style="font-size: 20px; font-weight: 800; color: var(--logo-navy);" id="chl-summary-total-amount">₹0</div>
+              <div style="font-size: 11px; color: var(--text-muted); font-style: italic;" id="chl-summary-amount-in-words">Zero Rupees Only</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Challan Remarks / Work Order Purpose</label>
+            <input type="text" id="chl-remarks" class="custom-input" placeholder="e.g. Issued for 250-hour hydraulic oil servicing and hose replacement">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-challan')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-challan">
+            <i class="fa-solid fa-check-double"></i> Issue Challan & Deduct Stock
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD / EDIT SPARE PART INVENTORY ==================== -->
+  <div id="modal-inventory-item" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 750px;">
+      <div class="modal-header">
+        <h3 id="modal-inventory-title"><i class="fa-solid fa-boxes-stacked text-orange"></i> Add Spare Part / Material</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-inventory-item')">&times;</button>
+      </div>
+      <form id="form-inventory-item">
+        <input type="hidden" id="inv-item-id">
+        <div class="modal-body">
+          <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label>Part Number / Code *</label>
+              <input type="text" id="inv-part-no" class="custom-input" required style="font-family: var(--font-mono); font-weight: 700;">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Part / Item Name *</label>
+              <input type="text" id="inv-part-name" class="custom-input" placeholder="e.g. Hydraulic Pump Seal Kit" required>
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="inv-category" class="custom-select" required>
+                <option value="Hydraulic System">Hydraulic System</option>
+                <option value="Filters & Elements">Filters & Elements</option>
+                <option value="Lubricants & Oils">Lubricants & Oils</option>
+                <option value="Engine & Fuel">Engine & Fuel</option>
+                <option value="Transmission & Drive">Transmission & Drive</option>
+                <option value="Tyres & Tubes">Tyres & Tubes</option>
+                <option value="Electrical & Sensors">Electrical & Sensors</option>
+                <option value="Under-carriage & Track">Under-carriage & Track</option>
+                <option value="Fasteners & Hardware">Fasteners & Hardware</option>
+                <option value="General Spares">General Spares</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Unit of Measure *</label>
+              <select id="inv-unit" class="custom-select">
+                <option value="Nos">Nos</option>
+                <option value="Ltrs">Ltrs</option>
+                <option value="Sets">Sets</option>
+                <option value="Mtrs">Mtrs</option>
+                <option value="Kgs">Kgs</option>
+                <option value="Pcs">Pcs</option>
+                <option value="Barrels">Barrels</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Unit Price (₹) *</label>
+              <input type="number" step="any" min="0" id="inv-unit-price" class="custom-input" placeholder="e.g. 4500" required>
+            </div>
+            <div class="form-group">
+              <label>Opening / Current Stock *</label>
+              <input type="number" step="any" min="0" id="inv-stock-qty" class="custom-input" placeholder="e.g. 5" required>
+            </div>
+            <div class="form-group">
+              <label>Min Reorder Threshold</label>
+              <input type="number" step="any" min="0" id="inv-min-stock" class="custom-input" value="2">
+            </div>
+            <div class="form-group">
+              <label>Warranty Terms (Wty) *</label>
+              <input type="text" id="inv-warranty" class="custom-input" placeholder="e.g. 6 Months / 1000 Operating Hrs">
+            </div>
+            <div class="form-group">
+              <label>OEM / Supplier Brand</label>
+              <input type="text" id="inv-supplier" class="custom-input" placeholder="e.g. Komatsu Genuine / Castrol">
+            </div>
+            <div class="form-group">
+              <label>Store Rack / Bin Location</label>
+              <input type="text" id="inv-location" class="custom-input" placeholder="e.g. Bin B-04 (Pit Store)">
+            </div>
+            <div class="form-group">
+              <label>Compatible Plant Vehicles</label>
+              <input type="text" id="inv-compatible-vehicles" class="custom-input" placeholder="e.g. MH34-BG-1122, PC210, CAT 320D">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Technical Notes / Specifications</label>
+            <input type="text" id="inv-notes" class="custom-input" placeholder="e.g. For hydraulic boom cylinder only">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-inventory-item')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-inventory">
+            <i class="fa-solid fa-check"></i> Save Spare Part
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: STOCK INWARD (GRN) ==================== -->
+  <div id="modal-stock-inward" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-arrow-down-to-bracket text-orange"></i> Inward Spare Parts Stock (GRN)</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-stock-inward')">&times;</button>
+      </div>
+      <form id="form-stock-inward">
+        <input type="hidden" id="inward-item-id">
+        <div class="modal-body">
+          <div id="inward-part-display" style="padding: 12px 16px; background: #FFF5EE; border: 1px solid #FFEDD5; border-radius: var(--radius-md); font-weight: 700; color: var(--logo-navy); margin-bottom: 16px;"></div>
+          <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label>Inward Quantity *</label>
+              <input type="number" step="any" min="0.01" id="inward-quantity" class="custom-input" placeholder="Qty received" required>
+            </div>
+            <div class="form-group">
+              <label>Purchase Unit Price (₹)</label>
+              <input type="number" step="any" min="0" id="inward-unit-price" class="custom-input" placeholder="Rate per unit">
+            </div>
+            <div class="form-group">
+              <label>Inward Date *</label>
+              <input type="date" id="inward-date" class="custom-input" required>
+            </div>
+            <div class="form-group">
+              <label>Invoice / PO / DC No</label>
+              <input type="text" id="inward-invoice-no" class="custom-input" placeholder="Supplier Bill Ref">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label>Supplier / Vendor Name</label>
+            <input type="text" id="inward-supplier" class="custom-input" placeholder="e.g. Shree Ram Industrial Spares">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-stock-inward')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-confirm-stock-inward">
+            <i class="fa-solid fa-plus"></i> Inward Stock & Update Inventory
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: OFFICIAL PRINTABLE DELIVERY CHALLAN ==================== -->
+  <div id="modal-print-challan" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 850px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-receipt text-orange"></i> Official Material Delivery Challan</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-print-challan')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; background: #FFF; border-radius: var(--radius-md);">
+        <div id="print-challan-content">
+          <!-- Dynamically populated official printable challan document -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-print-challan')">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+          <i class="fa-solid fa-print"></i> Print Official Challan Slip
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: OFFICIAL PRINTABLE JOB CARD ==================== -->
+  <div id="modal-print-job-card" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 850px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-clipboard-check text-orange"></i> Official Maintenance Job Card & Work Order</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-print-job-card')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; background: #FFF; border-radius: var(--radius-md);">
+        <div id="print-job-card-content">
+          <!-- Dynamically populated official printable job card document -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-print-job-card')">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+          <i class="fa-solid fa-print"></i> Print Work Order Slip
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: VEHICLE CONSUMPTION & SPARES DETAIL ==================== -->
+  <div id="modal-vehicle-consumption-details" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 950px;">
+      <div class="modal-header">
+        <h3 id="vehicle-consumption-modal-title"><i class="fa-solid fa-truck-monster text-orange"></i> Spares Consumption & Cost History</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-vehicle-consumption-details')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="vehicle-consumption-modal-sub" class="text-muted" style="margin-bottom: 16px; font-size: 14px;"></p>
+        <div class="table-container" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: var(--radius-md);">
+          <table class="data-table" style="font-size: 12px;">
+            <thead>
+              <tr>
+                <th style="width: 40px; text-align: center;">#</th>
+                <th>Date</th>
+                <th>Challan No</th>
+                <th>Spare Part Name & Code</th>
+                <th>Category</th>
+                <th>Warranty</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Rate (₹)</th>
+                <th style="text-align: right;">Total (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="vehicle-detail-spares-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-vehicle-consumption-details')">Close</button>
+      </div>
     </div>
   </div>
 
@@ -1443,7 +2333,7 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-credit')">Cancel</button>
           <button type="submit" class="btn btn-success" id="btn-submit-quick-adjust">
-            <i class="fa-solid fa-floppy-disk"></i> ⚡ Apply Adjustment
+            <i class="fa-solid fa-floppy-disk"></i> âš¡ Apply Adjustment
           </button>
         </div>
       </form>
@@ -1587,9 +2477,9 @@
             </div>
             <select id="compliance-priority-filter" class="custom-select" style="min-width: 160px;">
               <option value="ALL">All Notification Priorities</option>
-              <option value="CRITICAL">🚨 Critical / Expired Only</option>
-              <option value="WARNING">⚠️ Expiring Soon (&lt; 30 Days)</option>
-              <option value="COMPLIANT">🟢 Compliant / Valid Only</option>
+              <option value="CRITICAL">ðŸš¨ Critical / Expired Only</option>
+              <option value="WARNING">âš ï¸ Expiring Soon (&lt; 30 Days)</option>
+              <option value="COMPLIANT">ðŸŸ¢ Compliant / Valid Only</option>
             </select>
           </div>
 
@@ -1838,7 +2728,7 @@
           style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
           <img src="/images/srijandev_logo.png" alt="SrijanDev" style="height: 24px; width: auto; object-fit: contain;">
           <span style="font-size: 12px; color: var(--text-muted);">
-            Designed & Developed by <strong style="color: var(--logo-orange);">SrijanDev</strong> • Powered by <strong
+            Designed & Developed by <strong style="color: var(--logo-orange);">SrijanDev</strong> â€¢ Powered by <strong
               style="color: #6366f1;">SrijanDev</strong>
           </span>
         </div>
@@ -2078,10 +2968,10 @@
                     <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Basic Salary (₹/mo)
                         *</label><input type="number" step="0.01" id="comp-basic" placeholder="Auto"
                         oninput="onComponentInput()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">DA — Dearness Allow.
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">DA â€” Dearness Allow.
                         (₹/mo)</label><input type="number" step="0.01" id="comp-da" placeholder="Auto / 0" value="0"
                         oninput="onComponentInput()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">HRA — House Rent
+                    <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">HRA â€” House Rent
                         Allow. (₹/mo)</label><input type="number" step="0.01" id="comp-hra" placeholder="Auto"
                         oninput="onComponentInput()"></div>
                     <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Special / Plant
@@ -2113,7 +3003,7 @@
                       <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">ESIC Employee
                           <small>(0.75% or ₹)</small></label><input type="number" step="any" id="comp-esic-pct"
                           value="0" min="0" placeholder="0.75% or ₹" oninput="updateSalaryPreview()"></div>
-                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Professional Tax —
+                      <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">Professional Tax â€”
                           PT (₹)</label><input type="number" step="1" id="comp-pt" value="200"
                           oninput="updateSalaryPreview()"></div>
                       <div class="form-group" style="margin-bottom:0;"><label style="font-size:11px;">LIC Premium
@@ -2214,7 +3104,7 @@
                 style="background:linear-gradient(135deg,#0B1936,#1a2f5e); border-radius:10px; padding:14px 18px; margin-top:10px; color:#FFF;">
                 <div
                   style="font-size:10px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                  <span><i class="fa-solid fa-chart-pie" style="color:#FF6B00;"></i> Live Salary Architecture Preview —
+                  <span><i class="fa-solid fa-chart-pie" style="color:#FF6B00;"></i> Live Salary Architecture Preview â€”
                     Full Month</span>
                   <span id="preview-annual-ctc" style="color:#FDBA74; font-weight:700; font-size:11px;">Annual CTC: ₹0 /
                     Year</span>
@@ -2446,11 +3336,11 @@
               <img src="/images/srijandev_logo.png" alt="SrijanDev"
                 style="height: 18px; width: auto; object-fit: contain;">
               <div>
-                <span>© 2026 <strong>SrijanDev</strong>. All Rights Reserved.</span>
+                <span>Â© 2026 <strong>SrijanDev</strong>. All Rights Reserved.</span>
               </div>
             </div>
             <div style="text-align: right;">
-              <span>Developed & Powered by <strong>SrijanDev</strong> • Enterprise Cloud & Payroll Suite</span>
+              <span>Developed & Powered by <strong>SrijanDev</strong> â€¢ Enterprise Cloud & Payroll Suite</span>
             </div>
           </div>
         </div>
@@ -2512,11 +3402,11 @@
               2. Letter Category / Type *</label>
             <select id="letter-type-select" class="custom-select" style="font-weight: 700; color: var(--logo-navy);"
               onchange="updateLetterTemplate()">
-              <option value="appointment">📄 Formal Letter of Appointment</option>
-              <option value="offer">💼 Employment Offer & Welcome Letter</option>
-              <option value="experience">🏆 Work Experience & Service Certificate</option>
-              <option value="relieving">🤝 Relieving & Clearance Certificate</option>
-              <option value="increment">📈 Salary Increment & Revision Letter</option>
+              <option value="appointment">ðŸ“„ Formal Letter of Appointment</option>
+              <option value="offer">ðŸ’¼ Employment Offer & Welcome Letter</option>
+              <option value="experience">ðŸ† Work Experience & Service Certificate</option>
+              <option value="relieving">ðŸ¤ Relieving & Clearance Certificate</option>
+              <option value="increment">ðŸ“ˆ Salary Increment & Revision Letter</option>
             </select>
           </div>
 
@@ -2638,7 +3528,7 @@
                     </h1>
                     <p
                       style="font-size: 10.5px; font-weight: 700; color: #FF6B00; margin: 1px 0 0; text-transform: uppercase;">
-                      Plant Operations • Heavy Fleets O&M • HEMM & Infra Contracts
+                      Plant Operations â€¢ Heavy Fleets O&M â€¢ HEMM & Infra Contracts
                     </p>
                     <p style="font-size: 9.5px; color: #475569; margin: 1px 0 0;">
                       Contract Partner: <strong>Ambuja Cement Darlaghat</strong> & <strong>ACC Cement Chanda</strong>
@@ -2739,7 +3629,7 @@
                   </p>
                   <div
                     style="display: inline-block; border: 1px solid #FF6B00; padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: 800; color: #FF6B00; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">
-                    ★ AUTHORIZED SIGNATORY & OFFICIAL STAMP ★
+                    â˜… AUTHORIZED SIGNATORY & OFFICIAL STAMP â˜…
                   </div>
                   <div style="font-size: 11px; font-weight: 800; color: #0B1936;" id="view-letter-sig-name">Authorized
                     Signatory / Managing Director</div>
@@ -2755,11 +3645,11 @@
                   <img src="/images/srijandev_logo.png" alt="SrijanDev"
                     style="height: 18px; width: auto; object-fit: contain;">
                   <div>
-                    <span>© 2026 <strong>SrijanDev</strong>. All Rights Reserved.</span>
+                    <span>Â© 2026 <strong>SrijanDev</strong>. All Rights Reserved.</span>
                   </div>
                 </div>
                 <div style="text-align: right;">
-                  <span>Developed & Powered by <strong>SrijanDev</strong> • Enterprise HR & Payroll Suite</span>
+                  <span>Developed & Powered by <strong>SrijanDev</strong> â€¢ Enterprise HR & Payroll Suite</span>
                 </div>
               </div>
             </div>
@@ -2882,7 +3772,7 @@
                 <label style="font-size: 11.5px; font-weight: 700; color: var(--logo-orange);">Payable / Worked Days
                   *</label>
                 <input type="number" step="0.5" id="correction-worked-days" value="31" min="0" max="31"
-                  oninput="recalculateCorrectionSlip()" style="font-weight: 800; color: var(--logo-orange);">
+                  oninput="recalculateCorrectionSlip(false, true)" style="font-weight: 800; color: var(--logo-orange);">
               </div>
               <div class="form-group" style="margin-bottom: 0;">
                 <label style="font-size: 11.5px; font-weight: 700;">Overtime (OT) Hours</label>
@@ -3206,7 +4096,7 @@
             </button>
             <button type="button" id="btn-next-bulk-whatsapp-queue" class="btn btn-primary btn-sm hidden"
               onclick="advanceNextBulkWhatsAppManual()">
-              <i class="fa-solid fa-forward-step"></i> Send Next Now ⏩
+              <i class="fa-solid fa-forward-step"></i> Send Next Now â©
             </button>
             <button type="button" id="btn-stop-bulk-whatsapp-queue" class="btn btn-outline-danger btn-sm hidden"
               onclick="stopBulkWhatsAppDispatch()">
@@ -3221,9 +4111,9 @@
               <select id="bulk-wa-delay-select" class="custom-select"
                 style="font-size: 12px; padding: 4px 10px; height: 32px; font-weight: 600; min-width: 170px;"
                 onchange="handleBulkDelayChange()">
-                <option value="3" selected>⚡ Fast (3s auto-advance)</option>
-                <option value="5">⏱ Standard (5s auto-advance)</option>
-                <option value="0">✋ Manual (Click 'Send Next')</option>
+                <option value="3" selected>âš¡ Fast (3s auto-advance)</option>
+                <option value="5">â± Standard (5s auto-advance)</option>
+                <option value="0">âœ‹ Manual (Click 'Send Next')</option>
               </select>
             </div>
             <div
@@ -3294,9 +4184,43 @@
   <div id="toast" class="toast hidden"></div>
 
   <!-- Application Logic JS -->
-  <script src="/payroll/payroll.js?v=2.5.0"></script>
+  <script src="/payroll/js/00-globals.js"></script>
+  <script src="/payroll/js/01-clock-display.js"></script>
+  <script src="/payroll/js/02-navigation-tabs-mobile-drawer.js"></script>
+  <script src="/payroll/js/03-authentication-rbac-session.js"></script>
+  <script src="/payroll/js/04-data-fetching.js"></script>
+  <script src="/payroll/js/05-render-users-table.js"></script>
+  <script src="/payroll/js/06-superadmin-dynamic-permissions-modal-handler.js"></script>
+  <script src="/payroll/js/07-delete-user.js"></script>
+  <script src="/payroll/js/08-add-edit-user-modal.js"></script>
+  <script src="/payroll/js/09-vehicles-management-table.js"></script>
+  <script src="/payroll/js/10-vehicle-bulk-import-engine-excel-csv.js"></script>
+  <script src="/payroll/js/11-vehicle-availability-mttr-reliability-analytics.js"></script>
+  <script src="/payroll/js/12-1-click-excel-mttr-availability-exporter.js"></script>
+  <script src="/payroll/js/13-daily-muster-roll-today-s-live-attendance.js"></script>
+  <script src="/payroll/js/14-tomorrow-s-shift-machine-schedule-system.js"></script>
+  <script src="/payroll/js/15-attendance-glass-view-leave-balance-tracker-live-dynamic-sync-with-muster-roll-approved-leaves.js"></script>
+  <script src="/payroll/js/16-1-click-excel-reports-exporters.js"></script>
+  <script src="/payroll/js/17-bulk-employee-upload.js"></script>
+  <script src="/payroll/js/18-salary-slips-table.js"></script>
+  <script src="/payroll/js/19-whatsapp-dispatch-strict-1-page-pdf-engine.js"></script>
+  <script src="/payroll/js/20-official-printable-salary-slip-modal.js"></script>
+  <script src="/payroll/js/21-event-listeners-modals.js"></script>
+  <script src="/payroll/js/22-leave-management-functions-modal-helpers.js"></script>
+  <script src="/payroll/js/23-dashboard-metrics-calculation.js"></script>
+  <script src="/payroll/js/23-populate-dropdowns.js"></script>
+  <script src="/payroll/js/23-vehicle-statutory-compliance-tracking-engine.js"></script>
+  <script src="/payroll/js/24-utilities.js"></script>
+  <script src="/payroll/js/25-system-generated-hr-letters-appointment-engine.js"></script>
+  <script src="/payroll/js/26-inventory-spares-management.js"></script>
+  <script src="/payroll/js/27-job-cards-maintenance-engine.js"></script>
+  <script src="/payroll/js/28-material-issue-challans-engine.js"></script>
+  <script src="/payroll/js/29-vehicle-consumption-cost-analytics.js"></script>
+  <script src="/payroll/js/30-vehicle-subnav-tabs.js"></script>
   <!-- PWA Service Worker & Install Engine -->
   <script src="/pwa.js"></script>
 </body>
 
 </html>
+
+

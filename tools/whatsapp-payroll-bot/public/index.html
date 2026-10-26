@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -384,7 +384,7 @@
                 <strong>Kaise connect karein:</strong>
                 <ol>
                   <li>Apne phone me <strong>WhatsApp</strong> khole.</li>
-                  <li>Upar 3 dots (Menu) ➡️ <strong>Linked Devices</strong> dabaye.</li>
+                  <li>Upar 3 dots (Menu) âž¡ï¸ <strong>Linked Devices</strong> dabaye.</li>
                   <li><strong>Link a Device</strong> dabakar is QR code ko scan karein.</li>
                 </ol>
               </div>
@@ -407,7 +407,7 @@
           <div class="anti-ban-shield">
             <strong><i class="fa-solid fa-shield-halved"></i> 100% Anti-Ban Protection Active:</strong>
             <p style="margin-top: 4px;">
-              Bot har message ke pehle human typing simulate karta hai aur natural 8–12s delay leta hai. Isse WhatsApp spam filter trigger nahi hota aur number 100% safe rehta hai.
+              Bot har message ke pehle human typing simulate karta hai aur natural 8â€“12s delay leta hai. Isse WhatsApp spam filter trigger nahi hota aur number 100% safe rehta hai.
             </p>
           </div>
         </div>
@@ -473,8 +473,8 @@
               <div id="progress-bar-fill" class="progress-bar-fill"></div>
             </div>
             <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-muted);">
-              <span>✅ Sent: <strong id="prog-sent" style="color: var(--success);">0</strong></span>
-              <span>❌ Failed: <strong id="prog-failed" style="color: var(--danger);">0</strong></span>
+              <span>âœ… Sent: <strong id="prog-sent" style="color: var(--success);">0</strong></span>
+              <span>âŒ Failed: <strong id="prog-failed" style="color: var(--danger);">0</strong></span>
             </div>
           </div>
 
@@ -541,8 +541,8 @@
           const phone = data.user?.id ? `+${data.user.id.split('@')[0].split(':')[0]}` : '';
           document.getElementById('connected-phone').textContent = phone;
           btnDispatch.disabled = false;
-        } else if (data.status === 'qr_ready') {
-          badge.className = 'badge-status qr_ready';
+        } else if (data.status === 'qr_rea💰) {
+          badge.className = 'badge-status qr_rea💰;
           badge.innerHTML = '<i class="fa-solid fa-qrcode"></i> Scan QR Code';
           qrBox.style.display = 'block';
           connectedBox.style.display = 'none';
@@ -583,11 +583,11 @@
         });
         const data = await res.json();
         if (data.success) {
-          alert(`✅ ${data.message}`);
+          alert(`âœ… ${data.message}`);
           addLog(data.message, 'success');
           loadSlips();
         } else {
-          alert(`❌ Error: ${data.error}`);
+          alert(`âŒ Error: ${data.error}`);
           addLog(`Upload error: ${data.error}`, 'error');
         }
       } catch (err) {
@@ -622,7 +622,7 @@
 
       document.getElementById('slip-count-badge').textContent = `${filtered.length} Slips (${month || 'All'})`;
 
-      const tbody = document.getElementById('slips-table-body');
+      const tbody = document.getElementById('slips-table-bo💰);
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">No slips found for ${month}.</td></tr>`;
         return;
@@ -646,7 +646,7 @@
             </td>
             <td>
               <span>${slip.workedDays || 31} / ${slip.totalDays || 31}</span>
-              ${otVal > 0 ? `<div style="margin-top: 2px;"><span style="background: rgba(245, 158, 11, 0.2); color: #F59E0B; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;">⚡ OT: ₹${otVal.toLocaleString('en-IN')}</span></div>` : ''}
+              ${otVal > 0 ? `<div style="margin-top: 2px;"><span style="background: rgba(245, 158, 11, 0.2); color: #F59E0B; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px;">âš¡ OT: ₹${otVal.toLocaleString('en-IN')}</span></div>` : ''}
             </td>
             <td style="font-weight: 600;">${fmt(slip.grossPay)}</td>
             <td style="color: var(--danger); font-weight: 600;">${fmt(slip.totalDeductions)}</td>
@@ -693,15 +693,15 @@
         });
         const data = await res.json();
         if (data.success) {
-          if (statusEl) statusEl.innerHTML = '<span style="color: var(--success); font-weight: bold;">✅ Sent</span>';
-          addLog(`✅ PDF Sent to ${slip.userName} (+91 ${slip.mobile})!`, 'success');
+          if (statusEl) statusEl.innerHTML = '<span style="color: var(--success); font-weight: bold;">âœ… Sent</span>';
+          addLog(`âœ… PDF Sent to ${slip.userName} (+91 ${slip.mobile})!`, 'success');
         } else {
-          if (statusEl) statusEl.innerHTML = '<span style="color: var(--danger); font-weight: bold;">❌ Failed</span>';
-          addLog(`❌ Failed for ${slip.userName}: ${data.error}`, 'error');
+          if (statusEl) statusEl.innerHTML = '<span style="color: var(--danger); font-weight: bold;">âŒ Failed</span>';
+          addLog(`âŒ Failed for ${slip.userName}: ${data.error}`, 'error');
         }
       } catch (err) {
-        if (statusEl) statusEl.innerHTML = '<span style="color: var(--danger); font-weight: bold;">❌ Error</span>';
-        addLog(`❌ Error: ${err.message}`, 'error');
+        if (statusEl) statusEl.innerHTML = '<span style="color: var(--danger); font-weight: bold;">âŒ Error</span>';
+        addLog(`âŒ Error: ${err.message}`, 'error');
       }
     }
 
@@ -820,3 +820,4 @@
   </script>
 </body>
 </html>
+

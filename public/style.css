@@ -2040,4 +2040,205 @@ section {
   }
 }
 
+/* ==========================================================================
+   OUR TEAM SECTION - DEDICATED PLANT & FLEET WORKFORCE
+   ========================================================================== */
+.team-section {
+  padding: 110px 0;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.85) 0%, rgba(255, 255, 255, 0.95) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.team-hero-card {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 40px;
+  padding: 36px;
+  border-radius: 28px;
+  background: #FFFFFF !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: 0 20px 50px rgba(11, 25, 54, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  align-items: center;
+  transition: all 0.35s ease;
+}
+
+.team-hero-card:hover {
+  border-color: var(--logo-orange) !important;
+  box-shadow: 0 25px 60px rgba(11, 25, 54, 0.12), 0 0 25px var(--logo-orange-glow);
+}
+
+.team-image-wrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(11, 25, 54, 0.15);
+  aspect-ratio: 16 / 10;
+  background: var(--logo-navy);
+}
+
+.team-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.team-hero-card:hover .team-hero-img {
+  transform: scale(1.04);
+}
+
+.team-image-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(11, 25, 54, 0.88);
+  border: 1px solid rgba(255, 107, 0, 0.45);
+  backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.team-image-badge i {
+  color: var(--logo-orange);
+}
+
+.team-overlay-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(11, 25, 54, 0.6) 100%);
+  pointer-events: none;
+}
+
+.team-details-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.team-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--logo-orange);
+  background: var(--logo-orange-subtle);
+  border: 1px solid rgba(255, 107, 0, 0.25);
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.team-title {
+  font-size: 32px;
+  line-height: 1.25;
+  color: var(--logo-navy);
+  margin-bottom: 16px;
+  font-weight: 800;
+}
+
+.team-description {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.team-highlights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.team-highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-slate);
+  border-radius: 14px;
+  border: 1px solid var(--border-light);
+  transition: all 0.25s ease;
+}
+
+.team-highlight-item:hover {
+  background: #FFFFFF;
+  border-color: var(--logo-orange);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(11, 25, 54, 0.05);
+}
+
+.highlight-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--logo-navy);
+  color: var(--logo-orange);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.highlight-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--logo-navy);
+  margin-bottom: 4px;
+}
+
+.highlight-info p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.team-action-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+  .team-hero-card {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 24px;
+  }
+  .team-title {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 640px) {
+  .team-highlights-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .team-action-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .team-action-row .btn {
+    width: 100%;
+  }
+}
+
+
 

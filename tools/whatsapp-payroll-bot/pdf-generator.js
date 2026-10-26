@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer-core');
+﻿const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
 
@@ -406,14 +406,14 @@ function buildScreenshot1Html(slip) {
       <div style="display: flex; align-items: center; gap: 8px;">
         ${srijandevBase64 ? `<img src="${srijandevBase64}" alt="SrijanDev">` : ''}
         <div>
-          <span>© 2026 <strong>SrijanDev</strong>. All Rights Reserved.</span>
-          <span style="margin: 0 4px;">•</span>
+          <span>Â© 2026 <strong>SrijanDev</strong>. All Rights Reserved.</span>
+          <span style="margin: 0 4px;">â€¢</span>
           <span>Powered by SrijanDev Operations & Payroll Engine</span>
         </div>
       </div>
       <div style="text-align: right;">
         <span>System Generated Official Payslip</span>
-        <span style="margin: 0 4px;">•</span>
+        <span style="margin: 0 4px;">â€¢</span>
         <span>Valid Without Physical Signature</span>
       </div>
     </div>
@@ -459,3 +459,4 @@ async function generateSalarySlipPdf(slip) {
 module.exports = {
   generateSalarySlipPdf,
 };
+

@@ -424,9 +424,144 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 24px;
-  background: radial-gradient(circle at top, #1A2E54 0%, #0B1936 60%, #050B1A 100%);
+  padding: 32px 20px;
+  background: radial-gradient(circle at 50% 20%, #1A2E54 0%, #0B1936 60%, #050B1A 100%);
   position: relative;
+}
+
+.login-split-card {
+  display: flex;
+  width: 100%;
+  max-width: 1060px;
+  min-height: 640px;
+  background: #FFFFFF;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.login-showcase {
+  position: relative;
+  flex: 1.15;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px;
+  overflow: hidden;
+  background-color: var(--logo-navy);
+}
+
+.login-showcase-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  transform: scale(1.02);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.login-split-card:hover .login-showcase-bg {
+  transform: scale(1.06);
+}
+
+.login-showcase-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(11, 25, 54, 0.5) 0%,
+    rgba(11, 25, 54, 0.72) 45%,
+    rgba(5, 11, 26, 0.95) 100%
+  );
+  backdrop-filter: blur(0.5px);
+}
+
+.login-showcase-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.showcase-top-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 107, 0, 0.95);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
+}
+
+.showcase-middle {
+  margin-top: auto;
+}
+
+.showcase-plant-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--logo-orange);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  background: rgba(11, 25, 54, 0.7);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 107, 0, 0.3);
+}
+
+.showcase-heading {
+  font-size: 30px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.22;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.showcase-desc {
+  font-size: 14px;
+  color: #E2E8F0;
+  line-height: 1.6;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  max-width: 480px;
+}
+
+.showcase-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.showcase-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(11, 25, 54, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  color: #F8FAFC;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.showcase-stat-pill i {
+  color: var(--logo-orange);
 }
 
 .login-card {
@@ -436,6 +571,36 @@ body {
   background: #FFFFFF !important;
   border-radius: var(--radius-xl);
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-split-card .login-card {
+  flex: 1;
+  max-width: 480px;
+  padding: 44px 40px;
+  box-shadow: none !important;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 960px) {
+  .login-split-card {
+    flex-direction: column;
+    max-width: 480px;
+    min-height: auto;
+  }
+  .login-showcase {
+    min-height: 260px;
+    padding: 24px;
+  }
+  .showcase-heading {
+    font-size: 22px;
+  }
+  .login-split-card .login-card {
+    max-width: 100%;
+    padding: 32px 24px;
+  }
 }
 
 .brand-header {
@@ -3017,5 +3182,317 @@ body {
 
   .pwa-banner-actions .btn {
     flex: 1;
+  }
+}
+
+/* ==========================================================================
+   VEHICLE MAINTENANCE, SPARES INVENTORY, CHALLAN & JOB CARD MODULE STYLES
+   ========================================================================== */
+
+/* Sub-Navigation Tabs */
+.vehicle-subnav-container {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 6px;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.vehicle-subnav-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: max-content;
+}
+
+.v-subnav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.v-subnav-btn:hover {
+  background: #F1F5F9;
+  color: var(--logo-navy);
+}
+
+.v-subnav-btn.active {
+  background: var(--logo-navy);
+  color: #FFFFFF;
+  border-color: var(--logo-navy);
+  box-shadow: 0 4px 12px rgba(11, 25, 54, 0.25);
+}
+
+.v-subnav-btn.active i {
+  color: var(--logo-orange);
+}
+
+.v-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #E2E8F0;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.v-subnav-btn.active .v-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+.v-badge.v-badge-alert,
+.v-subnav-btn.active .v-badge.v-badge-alert {
+  background: #EF4444;
+  color: #FFFFFF;
+  animation: pulseBadge 2s infinite;
+}
+
+@keyframes pulseBadge {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Crew Assignment & Maintenance Cards */
+.crew-assignment-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crew-assignment-card:focus-within {
+  border-color: var(--logo-orange);
+  box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.15);
+}
+
+.crew-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #F1F5F9;
+  color: var(--logo-navy);
+  margin: 2px 0;
+}
+
+.crew-chip.lead {
+  background: #EEF2FF;
+  color: #4338CA;
+  border: 1px solid #C7D2FE;
+}
+
+.crew-chip.asst {
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.crew-chip.helper {
+  background: #FFF7ED;
+  color: #C2410C;
+  border: 1px solid #FFEDD5;
+}
+
+/* Stock Status Pills & Warranty Tags */
+.stock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.wty-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+}
+
+.wty-active-badge {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.wty-none-badge {
+  background: #F1F5F9;
+  color: #64748B;
+  border: 1px solid #E2E8F0;
+}
+
+/* Official Printable Delivery Challan Sheet */
+.official-challan-sheet {
+  background: #FFFFFF;
+  color: #0F172A;
+  padding: 24px;
+  border: 2px solid #0B1936;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+}
+
+.official-challan-header {
+  border-bottom: 2px solid #0B1936;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.official-challan-company-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #0B1936;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.official-challan-subtitle {
+  font-size: 11px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+.official-challan-badge {
+  background: #0B1936;
+  color: #FFFFFF;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.official-challan-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.official-challan-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.official-challan-table th {
+  background: #0B1936;
+  color: #FFFFFF;
+  padding: 8px 10px;
+  font-weight: 700;
+  text-align: left;
+  border: 1px solid #0B1936;
+}
+
+.official-challan-table td {
+  padding: 8px 10px;
+  border: 1px solid #CBD5E1;
+}
+
+.official-challan-signatures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 40px;
+  text-align: center;
+}
+
+.official-signature-box {
+  border-top: 1px dashed #475569;
+  padding-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+/* Official Maintenance Job Card Printable Sheet */
+.official-job-card-sheet {
+  background: #FFFFFF;
+  color: #0F172A;
+  padding: 24px;
+  border: 2px solid #FF6B00;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+}
+
+.official-job-card-header {
+  border-bottom: 2px solid #FF6B00;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #modal-print-challan,
+  #modal-print-challan *,
+  #modal-print-job-card,
+  #modal-print-job-card * {
+    visibility: visible;
+  }
+  #modal-print-challan,
+  #modal-print-job-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #FFF !important;
+  }
+  .modal-dialog {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .modal-header,
+  .modal-footer {
+    display: none !important;
   }
 }

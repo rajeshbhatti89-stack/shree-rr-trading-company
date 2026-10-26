@@ -1,4 +1,4 @@
-const {
+﻿const {
   default: makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
@@ -13,7 +13,7 @@ const fs = require('fs');
 class WhatsAppService {
   constructor() {
     this.sock = null;
-    this.status = 'disconnected'; // 'disconnected' | 'qr_ready' | 'connecting' | 'connected'
+    this.status = 'disconnected'; // 'disconnected' | 'qr_rea💰 | 'connecting' | 'connected'
     this.qrString = null;
     this.qrDataUrl = null;
     this.user = null;
@@ -29,7 +29,7 @@ class WhatsAppService {
     const payload = {
       status: this.status,
       user: this.user,
-      qrDataUrl: this.status === 'qr_ready' ? this.qrDataUrl : null,
+      qrDataUrl: this.status === 'qr_rea💰 ? this.qrDataUrl : null,
       updatedAt: new Date().toISOString()
     };
     this.listeners.forEach(fn => {
@@ -63,7 +63,7 @@ class WhatsAppService {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-          this.status = 'qr_ready';
+          this.status = 'qr_rea💰;
           this.qrString = qr;
           try {
             this.qrDataUrl = await QRCode.toDataURL(qr);
@@ -169,7 +169,7 @@ class WhatsAppService {
       document: safeBuffer,
       mimetype: 'application/pdf',
       fileName: String(fileName || 'Salary_Slip.pdf'),
-      caption: String(caption || `📄 Shree RR Trading Company - Salary Slip for ${employeeName || 'Staff'}`)
+      caption: String(caption || `ðŸ“„ Shree RR Trading Company - Salary Slip for ${employeeName || 'Staff'}`)
     });
 
     return {
@@ -186,3 +186,4 @@ const whatsappService = new WhatsAppService();
 module.exports = {
   whatsappService
 };
+

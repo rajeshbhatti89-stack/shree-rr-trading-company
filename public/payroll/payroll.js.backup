@@ -273,7 +273,8 @@ function applyDynamicRBACPermissions() {
   };
 
   const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
-  const canManageUsers = isSuper || isHO || (perms['hr.users.manage'] === true);
+  const isAdmin = currentUser.role === 'Admin' || currentUser.role === 'Super Admin';
+  const canManageUsers = isAdmin || isHO || (perms['hr.users.manage'] === true);
   
   const navUsers = document.getElementById('nav-users');
   if (navUsers) {
@@ -298,6 +299,35 @@ function applyDynamicRBACPermissions() {
   if (btnUsersHrLetter) {
     if (canGenerateLetters) btnUsersHrLetter.classList.remove('hidden');
     else btnUsersHrLetter.classList.add('hidden');
+  }
+
+  const btnLeaveCredit = document.getElementById('btn-open-credit-leave-modal');
+  const btnLeaveLog = document.getElementById('btn-open-leave-modal');
+  const btnLeaveHistory = document.getElementById('btn-open-leave-history-modal');
+  
+  if (btnLeaveCredit) {
+    if (canManageUsers) btnLeaveCredit.classList.remove('hidden');
+    else btnLeaveCredit.classList.add('hidden');
+  }
+  if (btnLeaveLog) {
+    if (canManageUsers) btnLeaveLog.classList.remove('hidden');
+    else btnLeaveLog.classList.add('hidden');
+  }
+  if (btnLeaveHistory) {
+    if (canManageUsers) btnLeaveHistory.classList.remove('hidden');
+    else btnLeaveHistory.classList.add('hidden');
+  }
+
+  const navAttendanceGlass = document.getElementById('nav-attendance-glass');
+  const dashBtnLeaves = document.getElementById('dash-btn-leaves');
+  
+  if (navAttendanceGlass) {
+    if (canManageUsers) navAttendanceGlass.classList.remove('hidden');
+    else navAttendanceGlass.classList.add('hidden');
+  }
+  if (dashBtnLeaves) {
+    if (canManageUsers) dashBtnLeaves.classList.remove('hidden');
+    else dashBtnLeaves.classList.add('hidden');
   }
 
   const navVehicles = document.getElementById('nav-vehicles');
@@ -517,7 +547,20 @@ function generateClientSalarySlips(mYear = 'August 2026', userSubset = null) {
 
   return activeEmployees.map((u) => {
     const dim = defaultDim;
-    let pdays = Math.min(dim, Number(u.payableDays) || (Number(u.presentDays || 26) + Number(u.weakOff || 4) + Number(u.leave || 0) + Number(u.publicHoliday || 0)));
+    const totalLeavesTaken = Number(u.leave || 0);
+    const availableLeaveBalance = u.leaveBalance !== undefined ? Number(u.leaveBalance) : 10;
+    const unpaidLeaves = Math.max(0, totalLeavesTaken - availableLeaveBalance);
+    
+    let pdays;
+    if (u.payableDays) {
+      pdays = Number(u.payableDays);
+    } else if (u.presentDays !== undefined) {
+      const paidLeaves = totalLeavesTaken - unpaidLeaves;
+      pdays = Number(u.presentDays) + Number(u.weakOff || 0) + paidLeaves + Number(u.publicHoliday || 0);
+    } else {
+      pdays = dim - unpaidLeaves;
+    }
+    pdays = Math.min(dim, pdays);
     
     // Prorate salary based on Date of Joining (DOJ) if joined in current month
     if (u.doj) {
@@ -694,10 +737,10 @@ function renderUsersTable() {
 
   const excludedLocations = ['ho', 'filter plant', 'shr letter', 'offer'];
   const filtered = allUsers.filter((u) => {
-    if (u.role === 'Super Admin') return false;
+    if (u.role === 'Super Admin' && (!currentUser || currentUser.role !== 'Super Admin')) return false;
     const loc = (u.location || '').toLowerCase();
     const site = (u.site || '').toLowerCase();
-    if (excludedLocations.some(ex => loc.includes(ex) || site.includes(ex))) return false;
+    if ((!currentUser || currentUser.role !== 'Super Admin') && excludedLocations.some(ex => loc.includes(ex) || site.includes(ex))) return false;
     
     // ACC Chanda (or other branch) users should only see their own branch users
     if (currentUser && currentUser.role !== 'Super Admin' && currentUser.site !== 'Headquarters / All Sites') {
@@ -1660,14 +1703,19 @@ function renderFleetMTTRMatrix() {
     return;
   }
 
+  const monthFilter = document.getElementById('fleet-mttr-month-filter')?.value || 'ALL';
+
   let totalFleetScheduled = 0;
   let totalFleetOperating = 0;
   let totalFleetBreakdown = 0;
   let totalFleetBDEvents = 0;
 
   const rowsHtml = allVehicles.map((v) => {
-    const vLogs = allVehicleLogs.filter((l) => l.vehicleNo.toUpperCase() === v.vehicleNo.toUpperCase());
-    const scheduled = vLogs.reduce((sum, l) => sum + (Number(l.totalHours) || 24), 0) || 720;
+    let vLogs = allVehicleLogs.filter((l) => l.vehicleNo.toUpperCase() === v.vehicleNo.toUpperCase());
+    if (monthFilter !== 'ALL') {
+      vLogs = vLogs.filter(l => l.date && l.date.startsWith(monthFilter));
+    }
+    const scheduled = vLogs.reduce((sum, l) => sum + (Number(l.totalHours) || 24), 0) || (monthFilter === 'ALL' ? 720 : new Date(parseInt(monthFilter.split('-')[0]), parseInt(monthFilter.split('-')[1]), 0).getDate() * 24);
     const bdHours = vLogs.reduce((sum, l) => sum + (Number(l.breakdownHours) || 0), 0);
     const bdEvents = vLogs.filter((l) => Number(l.breakdownHours) > 0).length;
     const operating = vLogs.reduce((sum, l) => sum + (Number(l.operatingHours) || 0), 0) || Math.max(0, scheduled - bdHours);
@@ -1727,12 +1775,18 @@ function renderVehicleBreakdownLogs() {
   const tbody = document.getElementById('breakdown-logs-table-body');
   if (!tbody) return;
 
-  if (allVehicleLogs.length === 0) {
+  const monthFilter = document.getElementById('fleet-mttr-month-filter')?.value || 'ALL';
+  let logsToRender = allVehicleLogs;
+  if (monthFilter !== 'ALL') {
+    logsToRender = logsToRender.filter(l => l.date && l.date.startsWith(monthFilter));
+  }
+
+  if (logsToRender.length === 0) {
     tbody.innerHTML = `<tr><td colspan="10" class="text-center" style="padding: 30px; color: var(--text-dim);">No breakdown (B/D) logs recorded yet. Click "+ Log Breakdown (B/D) & Service Hours" to record machine downtime.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = allVehicleLogs
+  tbody.innerHTML = logsToRender
     .map(
       (l) => `
       <tr>
@@ -1782,10 +1836,16 @@ function exportFleetMTTRExcel() {
 
   const today = new Date().toISOString().split('T')[0];
 
+  const monthFilter = document.getElementById('fleet-mttr-month-filter')?.value || 'ALL';
+  let reportTitle = `EQUIPMENT AVAILABILITY & MTTR RELIABILITY REPORT (${today.toUpperCase()})`;
+  if (monthFilter !== 'ALL') {
+    reportTitle += ` - Month: ${monthFilter}`;
+  }
+
   // Sheet 1: MTTR Performance Matrix
   const mttrData = [
     ['SHREE RR TRADING COMPANY - HEAVY PLANT MACHINERY FLEET RELIABILITY'],
-    [`EQUIPMENT AVAILABILITY & MTTR RELIABILITY REPORT (${today.toUpperCase()})`],
+    [reportTitle],
     ['Site: ACC Chanda Plant Site & Operations | Portal: https://payroll.shreerrtradingcompany.com'],
     [],
     [
@@ -1808,8 +1868,11 @@ function exportFleetMTTRExcel() {
   ];
 
   allVehicles.forEach((v, idx) => {
-    const vLogs = allVehicleLogs.filter((l) => l.vehicleNo.toUpperCase() === v.vehicleNo.toUpperCase());
-    const scheduled = vLogs.reduce((sum, l) => sum + (Number(l.totalHours) || 24), 0) || 720;
+    let vLogs = allVehicleLogs.filter((l) => l.vehicleNo.toUpperCase() === v.vehicleNo.toUpperCase());
+    if (monthFilter !== 'ALL') {
+      vLogs = vLogs.filter(l => l.date && l.date.startsWith(monthFilter));
+    }
+    const scheduled = vLogs.reduce((sum, l) => sum + (Number(l.totalHours) || 24), 0) || (monthFilter === 'ALL' ? 720 : new Date(parseInt(monthFilter.split('-')[0]), parseInt(monthFilter.split('-')[1]), 0).getDate() * 24);
     const bdHours = vLogs.reduce((sum, l) => sum + (Number(l.breakdownHours) || 0), 0);
     const bdEvents = vLogs.filter((l) => Number(l.breakdownHours) > 0).length;
     const operating = vLogs.reduce((sum, l) => sum + (Number(l.operatingHours) || 0), 0) || Math.max(0, scheduled - bdHours);
@@ -2627,7 +2690,7 @@ function exportTomorrowScheduleExcel() {
 }
 
 function exportMonthlyPayrollExcel() {
-  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'August 2026';
+  const selectedMonth = document.getElementById('report-month-select')?.value || document.getElementById('payroll-month-select')?.value || 'August 2026';
   const monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
 
   if (monthSlips.length === 0) {
@@ -2713,7 +2776,7 @@ function exportMonthlyPayrollExcel() {
 }
 
 function exportBankDisbursalExcel() {
-  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'August 2026';
+  const selectedMonth = document.getElementById('report-month-select')?.value || document.getElementById('payroll-month-select')?.value || 'August 2026';
   const monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
 
   if (monthSlips.length === 0) {
@@ -3978,6 +4041,8 @@ function initEventListeners() {
     openLeaveHistoryModal();
   });
 
+  document.getElementById('btn-export-attendance-excel')?.addEventListener('click', exportMonthlyAttendanceExcel);
+
   document.getElementById('leave-history-search')?.addEventListener('input', () => {
     renderLeaveHistoryTable();
   });
@@ -4535,6 +4600,13 @@ function autoCalculateLeaveDays() {
 }
 
 function openCreditLeaveModalForEmp(empIdentifier) {
+  if (!currentUser) return;
+  const isAdmin = currentUser.role === 'Admin' || currentUser.role === 'Super Admin';
+  const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
+  if (!isAdmin && !isHO) {
+    showToast('Unauthorized: Only HO and Admin can manage leaves.', 'error');
+    return;
+  }
   populateUserDropdowns();
   const select = document.getElementById('credit-select-user');
   if (select && empIdentifier) {
@@ -4547,6 +4619,13 @@ function openCreditLeaveModalForEmp(empIdentifier) {
 }
 
 function openLeaveModalForEmp(empIdentifier, initialMode = 'apply') {
+  if (!currentUser) return;
+  const isAdmin = currentUser.role === 'Admin' || currentUser.role === 'Super Admin';
+  const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
+  if (!isAdmin && !isHO) {
+    showToast('Unauthorized: Only HO and Admin can manage leaves.', 'error');
+    return;
+  }
   populateUserDropdowns();
   const select = document.getElementById('leave-select-user');
   if (select && empIdentifier) {
@@ -4571,6 +4650,13 @@ function openLeaveModalForEmp(empIdentifier, initialMode = 'apply') {
 }
 
 function openLeaveHistoryModal(filterEmp) {
+  if (!currentUser) return;
+  const isAdmin = currentUser.role === 'Admin' || currentUser.role === 'Super Admin';
+  const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
+  if (!isAdmin && !isHO) {
+    showToast('Unauthorized: Only HO and Admin can view/manage leave history.', 'error');
+    return;
+  }
   const searchInput = document.getElementById('leave-history-search');
   if (searchInput) {
     searchInput.value = filterEmp || '';
@@ -4640,6 +4726,13 @@ function renderLeaveHistoryTable(presetFilter) {
 }
 
 async function deleteLeaveRecord(leaveId) {
+  if (!currentUser) return;
+  const isAdmin = currentUser.role === 'Admin' || currentUser.role === 'Super Admin';
+  const isHO = currentUser.site && (currentUser.site === 'Headquarters / All Sites' || currentUser.site.toUpperCase() === 'HO');
+  if (!isAdmin && !isHO) {
+    showToast('Unauthorized: Only HO and Admin can delete leaves.', 'error');
+    return;
+  }
   if (!confirm('Are you sure you want to delete / revoke this leave record? The employee\'s leave quota will be automatically restored.')) {
     return;
   }
@@ -6000,7 +6093,7 @@ function loadCorrectionFormData(slip, user) {
   recalculateCorrectionSlip(false);
 }
 
-function recalculateCorrectionSlip(useStandardFormula = false) {
+function recalculateCorrectionSlip(useStandardFormula = false, isManualDaysInput = false) {
   const empSelect = document.getElementById('correction-select-emp');
   const userId = empSelect ? empSelect.value : '';
   const user = allUsers.find((u) => u.id === userId || u.empId === userId);
@@ -6008,8 +6101,19 @@ function recalculateCorrectionSlip(useStandardFormula = false) {
   const dim = Math.max(1, Number(document.getElementById('correction-total-days')?.value) || 31);
   const phDays = Math.max(0, Number(document.getElementById('correction-public-holidays')?.value) || 0);
 
-  if (useStandardFormula && user) {
-    const computedPdays = Math.min(dim, (Number(user.presentDays || 26) + Number(user.weakOff || 4) + Number(user.leave || 0) + phDays));
+  if (useStandardFormula && user && !isManualDaysInput) {
+    const totalLeavesTaken = Number(user.leave || 0);
+    const availableLeaveBalance = user.leaveBalance !== undefined ? Number(user.leaveBalance) : 10;
+    const unpaidLeaves = Math.max(0, totalLeavesTaken - availableLeaveBalance);
+    
+    let computedPdays;
+    if (user.presentDays !== undefined) {
+      const paidLeaves = totalLeavesTaken - unpaidLeaves;
+      computedPdays = Number(user.presentDays) + Number(user.weakOff || 0) + paidLeaves + phDays;
+    } else {
+      computedPdays = dim - unpaidLeaves;
+    }
+    computedPdays = Math.min(dim, computedPdays);
     const workedDaysInput = document.getElementById('correction-worked-days');
     if (workedDaysInput) workedDaysInput.value = computedPdays;
   }
@@ -6021,7 +6125,7 @@ function recalculateCorrectionSlip(useStandardFormula = false) {
   // Preserve any currently typed/loaded OT wage
   let currentOt = Number(document.getElementById('correction-earn-ot')?.value) || 0;
 
-  if (useStandardFormula && user) {
+  if ((useStandardFormula || isManualDaysInput) && user) {
     const ctc = Number(user.ctc);
     const bpd = Number(user.basicPerDay);
 
@@ -6371,6 +6475,122 @@ window.handleCorrectionEmployeeChange = handleCorrectionEmployeeChange;
 window.recalculateCorrectionSlip = recalculateCorrectionSlip;
 window.saveSalaryCorrection = saveSalaryCorrection;
 window.previewCurrentCorrectionSlip = previewCurrentCorrectionSlip;
+
+function exportMonthlyAttendanceExcel() {
+  const selectedMonth = document.getElementById('glass-month-select')?.value || 'September 2026';
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const [mName, yStr] = selectedMonth.split(' ');
+  const year = parseInt(yStr) || 2026;
+  let monthIndex = monthNames.findIndex((m) => m.toLowerCase() === (mName || '').toLowerCase());
+  if (monthIndex === -1) monthIndex = 8;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const monthNumStr = String(monthIndex + 1).padStart(2, '0');
+
+  const excludedLocations = ['ho', 'filter plant', 'shr letter', 'offer'];
+  const workers = allUsers.filter((u) => {
+    if (u.role === 'Super Admin') return false;
+    const loc = (u.location || '').toLowerCase();
+    const site = (u.site || '').toLowerCase();
+    if (excludedLocations.some(ex => loc.includes(ex) || site.includes(ex))) return false;
+    if (currentUser && currentUser.role !== 'Super Admin' && currentUser.site !== 'Headquarters / All Sites') {
+      if (u.site !== currentUser.site && u.location !== currentUser.location) return false;
+    }
+    return true;
+  });
+
+  if (workers.length === 0) {
+    showToast('No employees found to export.', 'error');
+    return;
+  }
+
+  const excelData = [];
+  excelData.push(['SHREE RR TRADING COMPANY - MONTHLY ATTENDANCE REPORT']);
+  excelData.push([`Month: ${selectedMonth} | Generated On: ${new Date().toLocaleDateString()}`]);
+  excelData.push([]);
+  
+  const header = ['Emp ID', 'Employee Name', 'Role', 'Designation', 'Total Days', 'Present (P)', 'Absent (A)', 'Leave (L)', 'Weekly Off (WO)', 'Holiday (PH)', 'Total Payable Days'];
+  for (let d = 1; d <= daysInMonth; d++) {
+    header.push(d.toString());
+  }
+  excelData.push(header);
+
+  workers.forEach(u => {
+    let presentCount = 0;
+    let absentCount = 0;
+    let leaveCount = 0;
+    let woCount = 0;
+    let phCount = 0;
+    let hasAnyMusterRecords = false;
+
+    const dayStatuses = [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayStr = String(day).padStart(2, '0');
+      const dateStr = `${year}-${monthNumStr}-${dayStr}`;
+      const dateObj = new Date(year, monthIndex, day);
+      const isSunday = dateObj.getDay() === 0;
+
+      const attRecord = (allAttendance || []).find(a => (a.userId === u.id || a.empId === u.empId) && a.date === dateStr);
+      const leaveRecord = (allLeaves || []).find(lv => (lv.userId === u.id || lv.empId === u.empId) && lv.status === 'Approved' && lv.fromDate <= dateStr && lv.toDate >= dateStr);
+
+      let statusStr = '';
+
+      if (attRecord) {
+        hasAnyMusterRecords = true;
+        const status = attRecord.status;
+        if (status === 'Half Day') { presentCount += 0.5; statusStr = 'HD'; }
+        else if (status === 'Weekly Off') { woCount++; statusStr = 'WO'; }
+        else if (status === 'Public Holiday' || status === 'Holiday') { phCount++; statusStr = 'PH'; }
+        else if (status === 'Leave') { leaveCount++; statusStr = 'L'; }
+        else if (status === 'Absent') { absentCount++; statusStr = 'A'; }
+        else { presentCount++; statusStr = 'P'; }
+      } else if (leaveRecord) {
+        leaveCount++; statusStr = 'L';
+      } else if (isSunday) {
+        woCount++; statusStr = 'WO';
+      } else {
+        absentCount++; statusStr = 'A';
+      }
+      dayStatuses.push(statusStr);
+    }
+    
+    let finalPresent = hasAnyMusterRecords ? presentCount : (Number(u.presentDays) || (daysInMonth - (Number(u.weakOff) || 4)));
+    let finalWO = hasAnyMusterRecords ? woCount : (Number(u.weakOff) || 4);
+    let finalPH = hasAnyMusterRecords ? phCount : (Number(u.publicHoliday) || 0);
+    let finalLeave = leaveCount > 0 ? leaveCount : (Number(u.leave) || 0);
+    let finalAbsent = hasAnyMusterRecords ? absentCount : 0;
+    
+    if (!hasAnyMusterRecords) {
+      dayStatuses.fill('-');
+    }
+
+    const payableDays = finalPresent + finalWO + finalPH + finalLeave;
+
+    const row = [
+      u.empId,
+      u.name,
+      u.role || 'Worker',
+      u.designation || u.rank || 'Staff',
+      daysInMonth,
+      finalPresent,
+      finalAbsent,
+      finalLeave,
+      finalWO,
+      finalPH,
+      payableDays
+    ];
+    
+    row.push(...dayStatuses);
+    excelData.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(excelData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report');
+  XLSX.writeFile(wb, `Shree_RR_Attendance_Report_${selectedMonth.replace(/ /g, '_')}.xlsx`);
+  showToast(`Downloaded Monthly Attendance Report for ${selectedMonth}!`);
+}
+
 
 
 

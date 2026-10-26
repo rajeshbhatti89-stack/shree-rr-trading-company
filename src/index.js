@@ -3983,7 +3983,86 @@ const DEFAULT_INITIAL_DB = {
       "notes": "Muster Roll: Shift C Verified"
     }
   ],
-  "vehicles": [],
+  "vehicles": [
+    {
+      "id": "veh-srr-01",
+      "vehicleNo": "MH34-BG-1122",
+      "name": "Komatsu PC210 Hydraulic Excavator",
+      "type": "Excavator",
+      "model": "PC210-10M0 (21-Ton Heavy Mining Excavator)",
+      "site": "ACC Chanda Plant Site",
+      "operatorId": "SRR007",
+      "operatorName": "SHANKAR DEVIDAS MARBATE",
+      "status": "Active (Plant Duty)",
+      "fuelType": "Diesel",
+      "hourlyRate": 3800,
+      "notes": "Primary pit loading excavator at Limestone Quarry",
+      "fitnessExpiry": "2027-03-31",
+      "fitnessCertNo": "FIT-MH34-1122",
+      "pucExpiry": "2026-11-30",
+      "pucCertNo": "PUC-MH34-1122",
+      "insuranceExpiry": "2026-12-31",
+      "insurancePolicyNo": "POL-TATA-889102",
+      "insuranceProvider": "TATA AIG Commercial",
+      "permitExpiry": "2027-06-30",
+      "permitNo": "PRM-CG-44112",
+      "permitType": "Commercial Heavy Mining Permit",
+      "roadTaxExpiry": "2027-03-31",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "veh-srr-02",
+      "vehicleNo": "MH34-BG-1123",
+      "name": "Tata Signa 2823 Heavy Tipper",
+      "type": "Tipper",
+      "model": "Signa 2823.TK 16-CuM Rock Body",
+      "site": "ACC Chanda Plant Site",
+      "operatorId": "SRR011",
+      "operatorName": "RAJU TIKARAM KOSARE",
+      "status": "Active (Plant Duty)",
+      "fuelType": "Diesel",
+      "hourlyRate": 1950,
+      "notes": "Pit to Crusher Limestone Haulage",
+      "fitnessExpiry": "2027-04-30",
+      "fitnessCertNo": "FIT-MH34-1123",
+      "pucExpiry": "2026-12-15",
+      "pucCertNo": "PUC-MH34-1123",
+      "insuranceExpiry": "2027-01-31",
+      "insurancePolicyNo": "POL-NIA-773321",
+      "insuranceProvider": "National Insurance Co",
+      "permitExpiry": "2027-05-31",
+      "permitNo": "PRM-CG-44113",
+      "permitType": "National Commercial Goods Permit",
+      "roadTaxExpiry": "2027-03-31",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "veh-srr-03",
+      "vehicleNo": "HP12-D-4521",
+      "name": "JCB 3DX Plus Backhoe Loader",
+      "type": "JCB",
+      "model": "3DX Plus 4WD Heavy Duty",
+      "site": "Ambuja Darlaghat Site",
+      "operatorId": "SRR013",
+      "operatorName": "BANDU NATHUJI DEOGADE",
+      "status": "Under Maintenance (Garage Bay)",
+      "fuelType": "Diesel",
+      "hourlyRate": 1650,
+      "notes": "General plant cleanup, drain trenching & haul road maintenance",
+      "fitnessExpiry": "2027-02-28",
+      "fitnessCertNo": "FIT-HP12-4521",
+      "pucExpiry": "2026-10-31",
+      "pucCertNo": "PUC-HP12-4521",
+      "insuranceExpiry": "2026-11-30",
+      "insurancePolicyNo": "POL-OIC-992144",
+      "insuranceProvider": "Oriental Insurance",
+      "permitExpiry": "2027-04-30",
+      "permitNo": "PRM-HP-12908",
+      "permitType": "State Commercial Heavy Permit",
+      "roadTaxExpiry": "2027-03-31",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
   "leaves": [
     {
       "id": "lev-001",
@@ -4012,7 +4091,556 @@ const DEFAULT_INITIAL_DB = {
       "appliedDate": "2026-07-21"
     }
   ],
-  "vehicleLogs": []
+  "vehicleLogs": [],
+  "inventory": [
+    {
+      "id": "inv-001",
+      "partNo": "FILT-HYD-01",
+      "name": "Hydraulic Return Line Filter Element",
+      "category": "Filters",
+      "stockQty": 12,
+      "unit": "Nos",
+      "unitPrice": 3200,
+      "warranty": "6 Months / 1000 Hrs",
+      "minStock": 3,
+      "supplier": "Donaldson / L&T Komatsu",
+      "location": "Bay A-1 (Main Store)",
+      "notes": "Standard for Komatsu PC210 & PC300 Hydraulic Excavators",
+      "updatedAt": "2026-10-20T10:00:00.000Z"
+    },
+    {
+      "id": "inv-002",
+      "partNo": "FILT-ENG-02",
+      "name": "Engine Oil Filter Cartridge Heavy Fleet",
+      "category": "Filters",
+      "stockQty": 25,
+      "unit": "Nos",
+      "unitPrice": 1450,
+      "warranty": "500 Operating Hrs",
+      "minStock": 6,
+      "supplier": "Fleetguard / Cummins",
+      "location": "Bay A-2",
+      "notes": "For Tata Signa 2823 Tipper & Cummins 6BT engines",
+      "updatedAt": "2026-10-20T10:00:00.000Z"
+    },
+    {
+      "id": "inv-003",
+      "partNo": "FILT-AIR-03",
+      "name": "Primary Heavy Duty Air Cleaner Assembly",
+      "category": "Filters",
+      "stockQty": 8,
+      "unit": "Nos",
+      "unitPrice": 2800,
+      "warranty": "6 Months",
+      "minStock": 2,
+      "supplier": "Mann & Hummel OEM",
+      "location": "Bay A-3",
+      "notes": "High dust intake protection for cement plant pit mining",
+      "updatedAt": "2026-10-21T10:00:00.000Z"
+    },
+    {
+      "id": "inv-004",
+      "partNo": "LUB-HYD-68",
+      "name": "Hydraulic Oil ISO VG 68 Anti-Wear",
+      "category": "Lubricants/Oils",
+      "stockQty": 420,
+      "unit": "Ltrs",
+      "unitPrice": 195,
+      "warranty": "N/A",
+      "minStock": 100,
+      "supplier": "IOCL Servo System 68",
+      "location": "Oil Yard Drum Storage",
+      "notes": "210L Barrel Packaging",
+      "updatedAt": "2026-10-22T10:00:00.000Z"
+    },
+    {
+      "id": "inv-005",
+      "partNo": "LUB-ENG-15W40",
+      "name": "Engine Oil Premium CI-4 Plus 15W-40",
+      "category": "Lubricants/Oils",
+      "stockQty": 310,
+      "unit": "Ltrs",
+      "unitPrice": 240,
+      "warranty": "N/A",
+      "minStock": 80,
+      "supplier": "Valvoline Heavy Duty",
+      "location": "Oil Yard Drum Storage",
+      "notes": "High soot dispersion for heavy haulage tippers",
+      "updatedAt": "2026-10-22T10:00:00.000Z"
+    },
+    {
+      "id": "inv-006",
+      "partNo": "LUB-GRS-EP2",
+      "name": "Lithium Complex EP-2 High Temp Grease",
+      "category": "Lubricants/Oils",
+      "stockQty": 85,
+      "unit": "Kgs",
+      "unitPrice": 280,
+      "warranty": "N/A",
+      "minStock": 20,
+      "supplier": "Castrol Spheerol EPL2",
+      "location": "Bay B-1",
+      "notes": "Greasing pins, bushings, bucket links & wheel bearings",
+      "updatedAt": "2026-10-22T10:00:00.000Z"
+    },
+    {
+      "id": "inv-007",
+      "partNo": "HYD-SEAL-BOOM",
+      "name": "Hydraulic Boom Cylinder OEM Seal Kit",
+      "category": "Hydraulic",
+      "stockQty": 4,
+      "unit": "Sets",
+      "unitPrice": 5800,
+      "warranty": "6 Months OEM Wty",
+      "minStock": 2,
+      "supplier": "Hallite Polyurethane Seals",
+      "location": "Precision Spares Cabinet 1",
+      "notes": "Includes piston seals, rod seals, wiper, buffer ring",
+      "updatedAt": "2026-10-23T10:00:00.000Z"
+    },
+    {
+      "id": "inv-008",
+      "partNo": "HYD-HOSE-01",
+      "name": "High-Pressure 4-Spiral Hydraulic Hose 1/2in 5000PSI",
+      "category": "Hydraulic",
+      "stockQty": 6,
+      "unit": "Nos",
+      "unitPrice": 4200,
+      "warranty": "3 Months",
+      "minStock": 2,
+      "supplier": "Parker Hannifin / Gates",
+      "location": "Bay C-2",
+      "notes": "Crimped with BSP female swivel fittings 2.5m",
+      "updatedAt": "2026-10-23T10:00:00.000Z"
+    },
+    {
+      "id": "inv-009",
+      "partNo": "BRK-PAD-01",
+      "name": "Heavy Duty Brake Lining & Shoe Assembly Set",
+      "category": "Mechanical",
+      "stockQty": 10,
+      "unit": "Sets",
+      "unitPrice": 4500,
+      "warranty": "6 Months / 20,000 KM",
+      "minStock": 4,
+      "supplier": "Rane Brake Lining / TATA OEM",
+      "location": "Bay D-1",
+      "notes": "Rear axle set for Tata Signa 2823.TK",
+      "updatedAt": "2026-10-24T10:00:00.000Z"
+    },
+    {
+      "id": "inv-010",
+      "partNo": "TYRE-1020",
+      "name": "10.00-20 16PR Mining Lug Heavy Commercial Tyre",
+      "category": "Tyres/Underchassis",
+      "stockQty": 6,
+      "unit": "Nos",
+      "unitPrice": 21500,
+      "warranty": "1 Year / 40,000 KM",
+      "minStock": 2,
+      "supplier": "MRF Super Lug 50-Plus Mining",
+      "location": "Tyre Bay Yard",
+      "notes": "Cut and chip resistant compound for limestone haul road",
+      "updatedAt": "2026-10-24T10:00:00.000Z"
+    },
+    {
+      "id": "inv-011",
+      "partNo": "ELEC-BAT-12V",
+      "name": "12V 150AH Heavy Commercial Lead-Acid Battery",
+      "category": "Electrical",
+      "stockQty": 5,
+      "unit": "Nos",
+      "unitPrice": 11200,
+      "warranty": "18 Months Replacement Wty",
+      "minStock": 2,
+      "supplier": "Exide Commercial / Amaron Pro",
+      "location": "Battery Charging Station",
+      "notes": "High cranking amps for heavy diesel starting",
+      "updatedAt": "2026-10-25T10:00:00.000Z"
+    },
+    {
+      "id": "inv-012",
+      "partNo": "ELEC-ALT-24V",
+      "name": "24V 55A Heavy Duty Alternator Assembly",
+      "category": "Electrical",
+      "stockQty": 3,
+      "unit": "Nos",
+      "unitPrice": 8900,
+      "warranty": "1 Year",
+      "minStock": 1,
+      "supplier": "Lucas TVS / Denso OEM",
+      "location": "Electrical Spares Rack E",
+      "notes": "Includes vacuum pump and pulley",
+      "updatedAt": "2026-10-25T10:00:00.000Z"
+    }
+  ],
+  "jobCards": [
+    {
+      "id": "jc-001",
+      "jobCardNo": "JC-2026-0001",
+      "date": "2026-10-24",
+      "inTime": "08:30 AM",
+      "outTime": "04:45 PM",
+      "vehicleNo": "MH34-BG-1122",
+      "vehicleName": "Komatsu PC210 Hydraulic Excavator",
+      "vehicleModel": "PC210-10M0 (21-Ton Heavy Mining Excavator)",
+      "meterReading": 4820,
+      "maintenanceType": "Breakdown Repair",
+      "priority": "High",
+      "issueReported": "Hydraulic boom cylinder leaking seal, slow cycle time in limestone pit",
+      "status": "Completed",
+      "leadMechanicId": "usr-srr002",
+      "leadMechanicName": "MOHMMAD IRFAN SULEMAN SIDDIKI",
+      "leadMechanicRole": "Mechanic",
+      "assistantMechanicId": "usr-srr004",
+      "assistantMechanicName": "SHEIKH ISUB SHEIKH KASAM",
+      "helperId": "usr-srr006",
+      "helperName": "PRAVIN PURUSHOTTAM PENDOR",
+      "workCarriedOut": "Dismantled LH boom hydraulic cylinder. Replaced complete OEM polyurethane seal kit (Hallite). Topped up 25L ISO 68 hydraulic oil. Pressure tested at 320 bar relief valve. Cycle time restored to nominal 12 sec.",
+      "totalMaterialCost": 10675,
+      "totalLaborHours": 7.5,
+      "completedDate": "2026-10-24",
+      "notes": "Passed pit test run under full load. Cleaned grease points.",
+      "createdAt": "2026-10-24T08:30:00.000Z"
+    },
+    {
+      "id": "jc-002",
+      "jobCardNo": "JC-2026-0002",
+      "date": "2026-10-25",
+      "inTime": "09:00 AM",
+      "outTime": "01:30 PM",
+      "vehicleNo": "MH34-BG-1123",
+      "vehicleName": "Tata Signa 2823 Heavy Tipper",
+      "vehicleModel": "Signa 2823.TK 16-CuM Rock Body",
+      "meterReading": 38450,
+      "maintenanceType": "Preventive Maintenance (PM - 500 Hrs)",
+      "priority": "Normal",
+      "issueReported": "Scheduled 500 Hrs lube & filter service. Brake inspection requested.",
+      "status": "Completed",
+      "leadMechanicId": "usr-srr004",
+      "leadMechanicName": "SHEIKH ISUB SHEIKH KASAM",
+      "leadMechanicRole": "Mechanic",
+      "assistantMechanicId": "usr-srr005",
+      "assistantMechanicName": "Ramesh Komuraiah Rudrarapu",
+      "helperId": "usr-srr006",
+      "helperName": "PRAVIN PURUSHOTTAM PENDOR",
+      "workCarriedOut": "Drained old engine oil. Fitted new Cummins Fleetguard oil filter cartridge. Refilled 28L 15W-40 CI-4 Plus diesel engine oil. Greased chassis prop shaft, kingpins and trunnion bogies with EP-2 lithium grease. Brake shoes inspected at 65% remaining life.",
+      "totalMaterialCost": 9570,
+      "totalLaborHours": 4.5,
+      "completedDate": "2026-10-25",
+      "notes": "Engine oil pressure 4.2 bar at 1500 RPM. Cleared for pit dispatch.",
+      "createdAt": "2026-10-25T09:00:00.000Z"
+    },
+    {
+      "id": "jc-003",
+      "jobCardNo": "JC-2026-0003",
+      "date": "2026-10-26",
+      "inTime": "07:15 AM",
+      "outTime": "",
+      "vehicleNo": "HP12-D-4521",
+      "vehicleName": "JCB 3DX Plus Backhoe Loader",
+      "vehicleModel": "3DX Plus 4WD Heavy Duty",
+      "meterReading": 6120,
+      "maintenanceType": "Breakdown Repair",
+      "priority": "Urgent",
+      "issueReported": "Front bucket high pressure hydraulic hose burst during pit drainage clearance. Machine halted.",
+      "status": "In Progress",
+      "leadMechanicId": "usr-srr005",
+      "leadMechanicName": "Ramesh Komuraiah Rudrarapu",
+      "leadMechanicRole": "Mechanic",
+      "assistantMechanicId": "usr-srr002",
+      "assistantMechanicName": "MOHMMAD IRFAN SULEMAN SIDDIKI",
+      "helperId": "usr-srr006",
+      "helperName": "PRAVIN PURUSHOTTAM PENDOR",
+      "workCarriedOut": "Isolated front loader spool valve. Removed burst hose assembly. Installed new 4-spiral 5000 PSI high pressure assembly. Flushing and refilling hydraulic oil.",
+      "totalMaterialCost": 6150,
+      "totalLaborHours": 3.0,
+      "completedDate": "",
+      "notes": "Awaiting final bleeding and relief valve pressure calibration.",
+      "createdAt": "2026-10-26T07:15:00.000Z"
+    }
+  ],
+  "challans": [
+    {
+      "id": "chl-001",
+      "challanNo": "CH-2026-0001",
+      "date": "2026-10-24",
+      "vehicleNo": "MH34-BG-1122",
+      "vehicleName": "Komatsu PC210 Hydraulic Excavator",
+      "jobCardNo": "JC-2026-0001",
+      "issuedToId": "usr-srr002",
+      "issuedToName": "MOHMMAD IRFAN SULEMAN SIDDIKI",
+      "issuedToRole": "Mechanic",
+      "issuedBy": "Super Administrator / Workshop Store",
+      "items": [
+        {
+          "partId": "inv-007",
+          "partNo": "HYD-SEAL-BOOM",
+          "partName": "Hydraulic Boom Cylinder OEM Seal Kit",
+          "category": "Hydraulic",
+          "qty": 1,
+          "unit": "Sets",
+          "unitPrice": 5800,
+          "totalPrice": 5800,
+          "warranty": "6 Months OEM Wty",
+          "remarks": "Fitted on LH main boom cylinder"
+        },
+        {
+          "partId": "inv-004",
+          "partNo": "LUB-HYD-68",
+          "partName": "Hydraulic Oil ISO VG 68 Anti-Wear",
+          "category": "Lubricants/Oils",
+          "qty": 25,
+          "unit": "Ltrs",
+          "unitPrice": 195,
+          "totalPrice": 4875,
+          "warranty": "N/A",
+          "remarks": "System makeup oil after cylinder rebuild"
+        }
+      ],
+      "totalItems": 2,
+      "totalQty": 26,
+      "totalAmount": 10675,
+      "remarks": "Spares & lubricant issued for boom cylinder breakdown overhaul under JC-2026-0001",
+      "status": "Issued",
+      "createdAt": "2026-10-24T09:15:00.000Z"
+    },
+    {
+      "id": "chl-002",
+      "challanNo": "CH-2026-0002",
+      "date": "2026-10-25",
+      "vehicleNo": "MH34-BG-1123",
+      "vehicleName": "Tata Signa 2823 Heavy Tipper",
+      "jobCardNo": "JC-2026-0002",
+      "issuedToId": "usr-srr004",
+      "issuedToName": "SHEIKH ISUB SHEIKH KASAM",
+      "issuedToRole": "Mechanic",
+      "issuedBy": "Super Administrator / Workshop Store",
+      "items": [
+        {
+          "partId": "inv-002",
+          "partNo": "FILT-ENG-02",
+          "partName": "Engine Oil Filter Cartridge Heavy Fleet",
+          "category": "Filters",
+          "qty": 1,
+          "unit": "Nos",
+          "unitPrice": 1450,
+          "totalPrice": 1450,
+          "warranty": "500 Operating Hrs",
+          "remarks": "Scheduled replacement"
+        },
+        {
+          "partId": "inv-005",
+          "partNo": "LUB-ENG-15W40",
+          "partName": "Engine Oil Premium CI-4 Plus 15W-40",
+          "category": "Lubricants/Oils",
+          "qty": 28,
+          "unit": "Ltrs",
+          "unitPrice": 240,
+          "totalPrice": 6720,
+          "warranty": "N/A",
+          "remarks": "Complete crankcase refill"
+        },
+        {
+          "partId": "inv-006",
+          "partNo": "LUB-GRS-EP2",
+          "partName": "Lithium Complex EP-2 High Temp Grease",
+          "category": "Lubricants/Oils",
+          "qty": 5,
+          "unit": "Kgs",
+          "unitPrice": 280,
+          "totalPrice": 1400,
+          "warranty": "N/A",
+          "remarks": "Chassis & trunnion grease gun refills"
+        }
+      ],
+      "totalItems": 3,
+      "totalQty": 34,
+      "totalAmount": 9570,
+      "remarks": "Materials issued for 500 Hrs Scheduled Preventive Maintenance service under JC-2026-0002",
+      "status": "Issued",
+      "createdAt": "2026-10-25T09:30:00.000Z"
+    },
+    {
+      "id": "chl-003",
+      "challanNo": "CH-2026-0003",
+      "date": "2026-10-26",
+      "vehicleNo": "HP12-D-4521",
+      "vehicleName": "JCB 3DX Plus Backhoe Loader",
+      "jobCardNo": "JC-2026-0003",
+      "issuedToId": "usr-srr005",
+      "issuedToName": "Ramesh Komuraiah Rudrarapu",
+      "issuedToRole": "Mechanic",
+      "issuedBy": "Super Administrator / Workshop Store",
+      "items": [
+        {
+          "partId": "inv-008",
+          "partNo": "HYD-HOSE-01",
+          "partName": "High-Pressure 4-Spiral Hydraulic Hose 1/2in 5000PSI",
+          "category": "Hydraulic",
+          "qty": 1,
+          "unit": "Nos",
+          "unitPrice": 4200,
+          "totalPrice": 4200,
+          "warranty": "3 Months",
+          "remarks": "Replaced burst front loader hose"
+        },
+        {
+          "partId": "inv-004",
+          "partNo": "LUB-HYD-68",
+          "partName": "Hydraulic Oil ISO VG 68 Anti-Wear",
+          "category": "Lubricants/Oils",
+          "qty": 10,
+          "unit": "Ltrs",
+          "unitPrice": 195,
+          "totalPrice": 1950,
+          "warranty": "N/A",
+          "remarks": "Top-up hydraulic reservoir"
+        }
+      ],
+      "totalItems": 2,
+      "totalQty": 11,
+      "totalAmount": 6150,
+      "remarks": "Urgent hose and oil dispatch for pit breakdown on HP12-D-4521 under JC-2026-0003",
+      "status": "Issued",
+      "createdAt": "2026-10-26T07:45:00.000Z"
+    }
+  ],
+  "vehiclePartConsumptions": [
+    {
+      "id": "vpc-001",
+      "challanNo": "CH-2026-0001",
+      "challanDate": "2026-10-24",
+      "vehicleNo": "MH34-BG-1122",
+      "vehicleName": "Komatsu PC210 Hydraulic Excavator",
+      "jobCardNo": "JC-2026-0001",
+      "partNo": "HYD-SEAL-BOOM",
+      "partName": "Hydraulic Boom Cylinder OEM Seal Kit",
+      "category": "Hydraulic",
+      "qty": 1,
+      "unit": "Sets",
+      "unitPrice": 5800,
+      "totalPrice": 5800,
+      "warranty": "6 Months OEM Wty",
+      "issuedToId": "usr-srr002",
+      "issuedToName": "MOHMMAD IRFAN SULEMAN SIDDIKI",
+      "createdAt": "2026-10-24T09:15:00.000Z"
+    },
+    {
+      "id": "vpc-002",
+      "challanNo": "CH-2026-0001",
+      "challanDate": "2026-10-24",
+      "vehicleNo": "MH34-BG-1122",
+      "vehicleName": "Komatsu PC210 Hydraulic Excavator",
+      "jobCardNo": "JC-2026-0001",
+      "partNo": "LUB-HYD-68",
+      "partName": "Hydraulic Oil ISO VG 68 Anti-Wear",
+      "category": "Lubricants/Oils",
+      "qty": 25,
+      "unit": "Ltrs",
+      "unitPrice": 195,
+      "totalPrice": 4875,
+      "warranty": "N/A",
+      "issuedToId": "usr-srr002",
+      "issuedToName": "MOHMMAD IRFAN SULEMAN SIDDIKI",
+      "createdAt": "2026-10-24T09:15:00.000Z"
+    },
+    {
+      "id": "vpc-003",
+      "challanNo": "CH-2026-0002",
+      "challanDate": "2026-10-25",
+      "vehicleNo": "MH34-BG-1123",
+      "vehicleName": "Tata Signa 2823 Heavy Tipper",
+      "jobCardNo": "JC-2026-0002",
+      "partNo": "FILT-ENG-02",
+      "partName": "Engine Oil Filter Cartridge Heavy Fleet",
+      "category": "Filters",
+      "qty": 1,
+      "unit": "Nos",
+      "unitPrice": 1450,
+      "totalPrice": 1450,
+      "warranty": "500 Operating Hrs",
+      "issuedToId": "usr-srr004",
+      "issuedToName": "SHEIKH ISUB SHEIKH KASAM",
+      "createdAt": "2026-10-25T09:30:00.000Z"
+    },
+    {
+      "id": "vpc-004",
+      "challanNo": "CH-2026-0002",
+      "challanDate": "2026-10-25",
+      "vehicleNo": "MH34-BG-1123",
+      "vehicleName": "Tata Signa 2823 Heavy Tipper",
+      "jobCardNo": "JC-2026-0002",
+      "partNo": "LUB-ENG-15W40",
+      "partName": "Engine Oil Premium CI-4 Plus 15W-40",
+      "category": "Lubricants/Oils",
+      "qty": 28,
+      "unit": "Ltrs",
+      "unitPrice": 240,
+      "totalPrice": 6720,
+      "warranty": "N/A",
+      "issuedToId": "usr-srr004",
+      "issuedToName": "SHEIKH ISUB SHEIKH KASAM",
+      "createdAt": "2026-10-25T09:30:00.000Z"
+    },
+    {
+      "id": "vpc-005",
+      "challanNo": "CH-2026-0002",
+      "challanDate": "2026-10-25",
+      "vehicleNo": "MH34-BG-1123",
+      "vehicleName": "Tata Signa 2823 Heavy Tipper",
+      "jobCardNo": "JC-2026-0002",
+      "partNo": "LUB-GRS-EP2",
+      "partName": "Lithium Complex EP-2 High Temp Grease",
+      "category": "Lubricants/Oils",
+      "qty": 5,
+      "unit": "Kgs",
+      "unitPrice": 280,
+      "totalPrice": 1400,
+      "warranty": "N/A",
+      "issuedToId": "usr-srr004",
+      "issuedToName": "SHEIKH ISUB SHEIKH KASAM",
+      "createdAt": "2026-10-25T09:30:00.000Z"
+    },
+    {
+      "id": "vpc-006",
+      "challanNo": "CH-2026-0003",
+      "challanDate": "2026-10-26",
+      "vehicleNo": "HP12-D-4521",
+      "vehicleName": "JCB 3DX Plus Backhoe Loader",
+      "jobCardNo": "JC-2026-0003",
+      "partNo": "HYD-HOSE-01",
+      "partName": "High-Pressure 4-Spiral Hydraulic Hose 1/2in 5000PSI",
+      "category": "Hydraulic",
+      "qty": 1,
+      "unit": "Nos",
+      "unitPrice": 4200,
+      "totalPrice": 4200,
+      "warranty": "3 Months",
+      "issuedToId": "usr-srr005",
+      "issuedToName": "Ramesh Komuraiah Rudrarapu",
+      "createdAt": "2026-10-26T07:45:00.000Z"
+    },
+    {
+      "id": "vpc-007",
+      "challanNo": "CH-2026-0003",
+      "challanDate": "2026-10-26",
+      "vehicleNo": "HP12-D-4521",
+      "vehicleName": "JCB 3DX Plus Backhoe Loader",
+      "jobCardNo": "JC-2026-0003",
+      "partNo": "LUB-HYD-68",
+      "partName": "Hydraulic Oil ISO VG 68 Anti-Wear",
+      "category": "Lubricants/Oils",
+      "qty": 10,
+      "unit": "Ltrs",
+      "unitPrice": 195,
+      "totalPrice": 1950,
+      "warranty": "N/A",
+      "issuedToId": "usr-srr005",
+      "issuedToName": "Ramesh Komuraiah Rudrarapu",
+      "createdAt": "2026-10-26T07:45:00.000Z"
+    }
+  ]
 }
 
 // Salary Slips Generator Utility
@@ -4175,6 +4803,30 @@ const getDb = async (env) => {
         dbData.salarySlips = [...dbData.salarySlips, ...sepSlips]
         dbNeedsSave = true
       }
+    }
+  }
+
+  // Ensure Vehicle Maintenance Suite collections exist and are initialized
+  if (dbData) {
+    if (!Array.isArray(dbData.vehicles) || dbData.vehicles.length === 0) {
+      dbData.vehicles = DEFAULT_INITIAL_DB.vehicles || []
+      dbNeedsSave = true
+    }
+    if (!Array.isArray(dbData.inventory) || dbData.inventory.length === 0) {
+      dbData.inventory = DEFAULT_INITIAL_DB.inventory || []
+      dbNeedsSave = true
+    }
+    if (!Array.isArray(dbData.jobCards) || dbData.jobCards.length === 0) {
+      dbData.jobCards = DEFAULT_INITIAL_DB.jobCards || []
+      dbNeedsSave = true
+    }
+    if (!Array.isArray(dbData.challans) || dbData.challans.length === 0) {
+      dbData.challans = DEFAULT_INITIAL_DB.challans || []
+      dbNeedsSave = true
+    }
+    if (!Array.isArray(dbData.vehiclePartConsumptions) || dbData.vehiclePartConsumptions.length === 0) {
+      dbData.vehiclePartConsumptions = DEFAULT_INITIAL_DB.vehiclePartConsumptions || []
+      dbNeedsSave = true
     }
   }
 
@@ -4720,6 +5372,500 @@ app.delete('/api/payroll/vehicle-logs/:id', async (c) => {
   await setDb(c.env, db)
   const deletedCount = initialLength - db.vehicleLogs.length
   return c.json({ success: true, message: 'Vehicle log entry deleted.', deletedCount })
+})
+
+// 4b. Vehicle Maintenance Suite: Spares Inventory, Job Cards, Material Challans & Consumption Analytics
+// ==========================================
+// 1. INVENTORY MASTER (SPARE PARTS & MATERIALS WITH WTY & PRICE)
+// ==========================================
+app.get('/api/payroll/inventory', async (c) => {
+  const db = await getDb(c.env)
+  return c.json({ success: true, inventory: db.inventory || [] })
+})
+
+app.post('/api/payroll/inventory', async (c) => {
+  const body = await c.req.json().catch(() => ({}))
+  const name = sanitizeString(body.name, 150)
+  if (!name) {
+    return c.json({ success: false, message: 'Part Name / Description is required' }, 400)
+  }
+
+  const db = await getDb(c.env)
+  if (!db.inventory) db.inventory = []
+
+  const seq = (db.inventory.length + 1).toString().padStart(3, '0')
+  const partNo = sanitizeAlphanumeric(body.partNo, 50) || `PRT-${seq}`
+
+  // Check unique partNo
+  const existing = db.inventory.find((i) => i.partNo.toUpperCase() === partNo.toUpperCase())
+  if (existing) {
+    return c.json({ success: false, message: `Part No "${partNo}" already exists in inventory master` }, 400)
+  }
+
+  const newItem = {
+    id: `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    partNo,
+    name,
+    category: sanitizeString(body.category, 60) || 'General Spares',
+    stockQty: sanitizeNumber(body.stockQty, 0, 0, 1000000),
+    unit: sanitizeString(body.unit, 20) || 'Nos',
+    unitPrice: sanitizeNumber(body.unitPrice, 0, 0, 100000000),
+    warranty: sanitizeString(body.warranty, 100) || 'N/A',
+    minStock: sanitizeNumber(body.minStock, 2, 0, 10000),
+    supplier: sanitizeString(body.supplier, 120) || 'OEM / Authorized Vendor',
+    location: sanitizeString(body.location, 100) || 'Main Workshop Store',
+    notes: sanitizeString(body.notes, 300),
+    updatedAt: new Date().toISOString()
+  }
+
+  db.inventory.unshift(newItem)
+  await setDb(c.env, db)
+  return c.json({ success: true, message: `Spare part ${partNo} added to inventory!`, item: newItem })
+})
+
+app.put('/api/payroll/inventory/:id', async (c) => {
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const body = await c.req.json().catch(() => ({}))
+  const db = await getDb(c.env)
+  if (!db.inventory) db.inventory = []
+
+  const idx = db.inventory.findIndex((i) => i.id === id || i.partNo.toUpperCase() === id.toUpperCase())
+  if (idx === -1) {
+    return c.json({ success: false, message: 'Spare part item not found' }, 404)
+  }
+
+  const old = db.inventory[idx]
+  db.inventory[idx] = {
+    ...old,
+    partNo: body.partNo !== undefined ? sanitizeAlphanumeric(body.partNo, 50) : old.partNo,
+    name: body.name !== undefined ? sanitizeString(body.name, 150) : old.name,
+    category: body.category !== undefined ? sanitizeString(body.category, 60) : old.category,
+    stockQty: body.stockQty !== undefined ? sanitizeNumber(body.stockQty, 0, 0, 1000000) : old.stockQty,
+    unit: body.unit !== undefined ? sanitizeString(body.unit, 20) : old.unit,
+    unitPrice: body.unitPrice !== undefined ? sanitizeNumber(body.unitPrice, 0, 0, 100000000) : old.unitPrice,
+    warranty: body.warranty !== undefined ? sanitizeString(body.warranty, 100) : old.warranty,
+    minStock: body.minStock !== undefined ? sanitizeNumber(body.minStock, 2, 0, 10000) : old.minStock,
+    supplier: body.supplier !== undefined ? sanitizeString(body.supplier, 120) : old.supplier,
+    location: body.location !== undefined ? sanitizeString(body.location, 100) : old.location,
+    notes: body.notes !== undefined ? sanitizeString(body.notes, 300) : old.notes,
+    updatedAt: new Date().toISOString()
+  }
+
+  await setDb(c.env, db)
+  return c.json({ success: true, message: 'Spare part details updated successfully!', item: db.inventory[idx] })
+})
+
+app.delete('/api/payroll/inventory/:id', async (c) => {
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const db = await getDb(c.env)
+  if (!db.inventory) db.inventory = []
+
+  const initialLen = db.inventory.length
+  db.inventory = db.inventory.filter((i) => i.id !== id && i.partNo.toUpperCase() !== id.toUpperCase())
+  if (db.inventory.length === initialLen) {
+    return c.json({ success: false, message: 'Item not found in inventory' }, 404)
+  }
+
+  await setDb(c.env, db)
+  return c.json({ success: true, message: 'Spare part removed from inventory records.' })
+})
+
+app.post('/api/payroll/inventory/adjust-stock', async (c) => {
+  const body = await c.req.json().catch(() => ({}))
+  const id = sanitizeAlphanumeric(body.id, 100)
+  const delta = sanitizeNumber(body.quantity, 0, -100000, 100000)
+  const db = await getDb(c.env)
+  if (!db.inventory) db.inventory = []
+
+  const item = db.inventory.find((i) => i.id === id || i.partNo.toUpperCase() === id.toUpperCase())
+  if (!item) return c.json({ success: false, message: 'Item not found' }, 404)
+
+  item.stockQty = Math.max(0, (Number(item.stockQty) || 0) + delta)
+  if (body.newUnitPrice && Number(body.newUnitPrice) > 0) {
+    item.unitPrice = sanitizeNumber(body.newUnitPrice)
+  }
+  item.updatedAt = new Date().toISOString()
+
+  await setDb(c.env, db)
+  return c.json({ success: true, message: `Stock for ${item.partNo} updated to ${item.stockQty} ${item.unit}.`, item })
+})
+
+// ==========================================
+// 2. MAINTENANCE JOB CARDS (WITH CREW ASSIGNMENT)
+// ==========================================
+app.get('/api/payroll/job-cards', async (c) => {
+  const db = await getDb(c.env)
+  return c.json({ success: true, jobCards: db.jobCards || [] })
+})
+
+app.post('/api/payroll/job-cards', async (c) => {
+  const body = await c.req.json().catch(() => ({}))
+  const vehicleNo = sanitizeAlphanumeric(body.vehicleNo, 30)
+  if (!vehicleNo) {
+    return c.json({ success: false, message: 'Plant vehicle registration number is required' }, 400)
+  }
+
+  const db = await getDb(c.env)
+  if (!db.jobCards) db.jobCards = []
+
+  const seq = (db.jobCards.length + 1).toString().padStart(4, '0')
+  const jobCardNo = sanitizeAlphanumeric(body.jobCardNo, 30) || `JC-${new Date().getFullYear()}-${seq}`
+  const veh = (db.vehicles || []).find((v) => v.vehicleNo.toUpperCase() === vehicleNo.toUpperCase())
+
+  const newJobCard = {
+    id: `jc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    jobCardNo,
+    date: sanitizeDateString(body.date) || new Date().toISOString().split('T')[0],
+    inTime: sanitizeString(body.inTime, 20) || '08:30 AM',
+    outTime: sanitizeString(body.outTime, 20) || '',
+    vehicleNo,
+    vehicleName: veh ? veh.name : sanitizeString(body.vehicleName, 100) || 'Heavy Fleet Equipment',
+    vehicleModel: veh ? veh.model : sanitizeString(body.vehicleModel, 80) || '',
+    meterReading: sanitizeNumber(body.meterReading, 0, 0, 10000000),
+    maintenanceType: sanitizeString(body.maintenanceType, 60) || 'Breakdown Repair',
+    priority: sanitizeString(body.priority, 30) || 'High',
+    issueReported: sanitizeString(body.issueReported, 300) || 'Reported breakdown/inspection',
+    status: sanitizeString(body.status, 40) || 'In Progress',
+    // Assignment of technician/mechanic/helper:
+    leadMechanicId: sanitizeAlphanumeric(body.leadMechanicId, 50),
+    leadMechanicName: sanitizeString(body.leadMechanicName, 100) || 'Unassigned',
+    leadMechanicRole: sanitizeString(body.leadMechanicRole, 50) || 'Mechanic',
+    assistantMechanicId: sanitizeAlphanumeric(body.assistantMechanicId, 50),
+    assistantMechanicName: sanitizeString(body.assistantMechanicName, 100) || '',
+    helperId: sanitizeAlphanumeric(body.helperId, 50),
+    helperName: sanitizeString(body.helperName, 100) || '',
+    workCarriedOut: sanitizeString(body.workCarriedOut, 500) || '',
+    totalMaterialCost: sanitizeNumber(body.totalMaterialCost, 0),
+    totalLaborHours: sanitizeNumber(body.totalLaborHours, 0),
+    notes: sanitizeString(body.notes, 250),
+    completedDate: sanitizeDateString(body.completedDate) || '',
+    createdAt: new Date().toISOString()
+  }
+
+  // Auto-sync vehicle status if in active repair
+  if (veh) {
+    if (newJobCard.status !== 'Completed' && newJobCard.status !== 'Closed') {
+      veh.status = 'Under Maintenance (Garage Bay)'
+    } else {
+      veh.status = 'Active (Plant Duty)'
+    }
+  }
+
+  db.jobCards.unshift(newJobCard)
+  await setDb(c.env, db)
+  return c.json({ success: true, message: `Job Card ${jobCardNo} created successfully!`, jobCard: newJobCard })
+})
+
+app.put('/api/payroll/job-cards/:id', async (c) => {
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const body = await c.req.json().catch(() => ({}))
+  const db = await getDb(c.env)
+  if (!db.jobCards) db.jobCards = []
+
+  const idx = db.jobCards.findIndex((j) => j.id === id || j.jobCardNo.toUpperCase() === id.toUpperCase())
+  if (idx === -1) return c.json({ success: false, message: 'Job Card not found' }, 404)
+
+  const oldJc = db.jobCards[idx]
+  db.jobCards[idx] = {
+    ...oldJc,
+    status: body.status !== undefined ? sanitizeString(body.status, 40) : oldJc.status,
+    workCarriedOut: body.workCarriedOut !== undefined ? sanitizeString(body.workCarriedOut, 500) : oldJc.workCarriedOut,
+    outTime: body.outTime !== undefined ? sanitizeString(body.outTime, 20) : oldJc.outTime,
+    completedDate: body.completedDate !== undefined ? sanitizeDateString(body.completedDate) : oldJc.completedDate,
+    leadMechanicId: body.leadMechanicId !== undefined ? sanitizeAlphanumeric(body.leadMechanicId, 50) : oldJc.leadMechanicId,
+    leadMechanicName: body.leadMechanicName !== undefined ? sanitizeString(body.leadMechanicName, 100) : oldJc.leadMechanicName,
+    assistantMechanicId: body.assistantMechanicId !== undefined ? sanitizeAlphanumeric(body.assistantMechanicId, 50) : oldJc.assistantMechanicId,
+    assistantMechanicName: body.assistantMechanicName !== undefined ? sanitizeString(body.assistantMechanicName, 100) : oldJc.assistantMechanicName,
+    helperId: body.helperId !== undefined ? sanitizeAlphanumeric(body.helperId, 50) : oldJc.helperId,
+    helperName: body.helperName !== undefined ? sanitizeString(body.helperName, 100) : oldJc.helperName,
+    meterReading: body.meterReading !== undefined ? sanitizeNumber(body.meterReading) : oldJc.meterReading,
+    priority: body.priority !== undefined ? sanitizeString(body.priority, 30) : oldJc.priority,
+    issueReported: body.issueReported !== undefined ? sanitizeString(body.issueReported, 300) : oldJc.issueReported,
+    maintenanceType: body.maintenanceType !== undefined ? sanitizeString(body.maintenanceType, 60) : oldJc.maintenanceType,
+    notes: body.notes !== undefined ? sanitizeString(body.notes, 250) : oldJc.notes,
+    totalLaborHours: body.totalLaborHours !== undefined ? sanitizeNumber(body.totalLaborHours) : oldJc.totalLaborHours,
+    updatedAt: new Date().toISOString()
+  }
+
+  // Update vehicle status
+  const veh = (db.vehicles || []).find((v) => v.vehicleNo.toUpperCase() === db.jobCards[idx].vehicleNo.toUpperCase())
+  if (veh) {
+    if (db.jobCards[idx].status === 'Completed' || db.jobCards[idx].status === 'Closed') {
+      veh.status = 'Active (Plant Duty)'
+    } else {
+      veh.status = 'Under Maintenance (Garage Bay)'
+    }
+  }
+
+  await setDb(c.env, db)
+  return c.json({ success: true, message: `Job Card ${db.jobCards[idx].jobCardNo} updated successfully!`, jobCard: db.jobCards[idx] })
+})
+
+app.delete('/api/payroll/job-cards/:id', async (c) => {
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const db = await getDb(c.env)
+  if (!db.jobCards) db.jobCards = []
+
+  const initialLen = db.jobCards.length
+  db.jobCards = db.jobCards.filter((j) => j.id !== id && j.jobCardNo.toUpperCase() !== id.toUpperCase())
+  if (db.jobCards.length === initialLen) {
+    return c.json({ success: false, message: 'Job Card not found' }, 404)
+  }
+
+  await setDb(c.env, db)
+  return c.json({ success: true, message: 'Job Card deleted successfully.' })
+})
+
+// ==========================================
+// 3. MATERIAL ISSUE CHALLANS (WITH AUTO-PART SAVING WITH VEHICLE)
+// ==========================================
+app.get('/api/payroll/challans', async (c) => {
+  const db = await getDb(c.env)
+  return c.json({ success: true, challans: db.challans || [] })
+})
+
+app.post('/api/payroll/challans', async (c) => {
+  const body = await c.req.json().catch(() => ({}))
+  const vehicleNo = sanitizeAlphanumeric(body.vehicleNo, 30)
+  if (!vehicleNo) {
+    return c.json({ success: false, message: 'Plant vehicle registration number is required' }, 400)
+  }
+  const items = Array.isArray(body.items) ? body.items : []
+  if (items.length === 0) {
+    return c.json({ success: false, message: 'At least one material / spare part item is required' }, 400)
+  }
+
+  const db = await getDb(c.env)
+  if (!db.challans) db.challans = []
+  if (!db.inventory) db.inventory = []
+  if (!db.vehiclePartConsumptions) db.vehiclePartConsumptions = []
+
+  const seq = (db.challans.length + 1).toString().padStart(4, '0')
+  const challanNo = sanitizeAlphanumeric(body.challanNo, 30) || `CH-${new Date().getFullYear()}-${seq}`
+  const challanDate = sanitizeDateString(body.date) || new Date().toISOString().split('T')[0]
+  const veh = (db.vehicles || []).find((v) => v.vehicleNo.toUpperCase() === vehicleNo.toUpperCase())
+  const jobCardNo = sanitizeAlphanumeric(body.jobCardNo, 30)
+
+  let totalAmount = 0
+  let totalQty = 0
+  const processedItems = []
+
+  for (const it of items) {
+    const partName = sanitizeString(it.partName || it.name, 120)
+    if (!partName) continue
+    const partNo = sanitizeAlphanumeric(it.partNo, 50) || `PRT-${Date.now().toString().slice(-5)}`
+    const qty = sanitizeNumber(it.qty || it.quantity, 1, 0.01, 100000)
+    const unit = sanitizeString(it.unit, 20) || 'Nos'
+    const unitPrice = sanitizeNumber(it.unitPrice || it.rate, 0)
+    const totalPrice = Math.round(qty * unitPrice * 100) / 100
+    const warranty = sanitizeString(it.warranty || it.wty, 80) || 'N/A'
+    const category = sanitizeString(it.category, 60) || 'General Spares'
+    const remarks = sanitizeString(it.remarks, 200)
+
+    totalAmount += totalPrice
+    totalQty += qty
+
+    const itemObj = {
+      partId: it.partId || `part-${Date.now()}`,
+      partNo,
+      partName,
+      category,
+      qty,
+      unit,
+      unitPrice,
+      totalPrice,
+      warranty,
+      remarks
+    }
+    processedItems.push(itemObj)
+
+    // AUTOMATIC PART SAVING 1: Update or Auto-Save into Inventory Master
+    let invItem = db.inventory.find((i) => i.partNo.toUpperCase() === partNo.toUpperCase() || i.name.toLowerCase() === partName.toLowerCase())
+    if (invItem) {
+      // Deduct stock
+      invItem.stockQty = Math.max(0, (Number(invItem.stockQty) || 0) - qty)
+      if (unitPrice > 0) invItem.unitPrice = unitPrice
+      if (warranty && warranty !== 'N/A') invItem.warranty = warranty
+      invItem.updatedAt = new Date().toISOString()
+    } else if (body.autoSaveNewParts !== false) {
+      // Auto-save new part into Inventory Master!
+      const newInv = {
+        id: `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        partNo,
+        name: partName,
+        category,
+        stockQty: 0,
+        unit,
+        unitPrice,
+        warranty,
+        minStock: 2,
+        supplier: 'Auto-saved from Challan',
+        location: 'Workshop Central Store',
+        notes: `Registered via Challan ${challanNo} for ${vehicleNo}`,
+        updatedAt: new Date().toISOString()
+      }
+      db.inventory.push(newInv)
+    }
+
+    // AUTOMATIC PART SAVING 2: Save directly to vehicle consumption history
+    db.vehiclePartConsumptions.push({
+      id: `vpc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      challanNo,
+      challanDate,
+      vehicleNo,
+      vehicleName: veh ? veh.name : (body.vehicleName || 'Plant Equipment'),
+      jobCardNo,
+      partNo,
+      partName,
+      category,
+      qty,
+      unit,
+      unitPrice,
+      totalPrice,
+      warranty,
+      issuedToId: sanitizeAlphanumeric(body.issuedToId, 50),
+      issuedToName: sanitizeString(body.issuedToName, 100) || 'Mechanic',
+      createdAt: new Date().toISOString()
+    })
+  }
+
+  const newChallan = {
+    id: `chl-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    challanNo,
+    date: challanDate,
+    vehicleNo,
+    vehicleName: veh ? veh.name : sanitizeString(body.vehicleName, 100) || 'Plant Equipment',
+    jobCardNo,
+    issuedToId: sanitizeAlphanumeric(body.issuedToId, 50),
+    issuedToName: sanitizeString(body.issuedToName, 100) || 'Mechanic / Technician',
+    issuedToRole: sanitizeString(body.issuedToRole, 50) || 'Technician',
+    issuedBy: sanitizeString(body.issuedBy, 100) || 'Workshop Storekeeper',
+    items: processedItems,
+    totalItems: processedItems.length,
+    totalQty: Math.round(totalQty * 100) / 100,
+    totalAmount: Math.round(totalAmount * 100) / 100,
+    remarks: sanitizeString(body.remarks, 300) || `Material issued for maintenance on ${vehicleNo}`,
+    status: 'Issued',
+    createdAt: new Date().toISOString()
+  }
+
+  // Update Job Card material cost if linked
+  if (jobCardNo && Array.isArray(db.jobCards)) {
+    const jc = db.jobCards.find((j) => j.jobCardNo.toUpperCase() === jobCardNo.toUpperCase())
+    if (jc) {
+      jc.totalMaterialCost = (Number(jc.totalMaterialCost) || 0) + newChallan.totalAmount
+    }
+  }
+
+  db.challans.unshift(newChallan)
+  await setDb(c.env, db)
+  return c.json({
+    success: true,
+    message: `Material Issue Challan ${challanNo} issued & parts saved to vehicle!`,
+    challan: newChallan
+  })
+})
+
+app.delete('/api/payroll/challans/:id', async (c) => {
+  const id = sanitizeAlphanumeric(c.req.param('id'), 100)
+  const db = await getDb(c.env)
+  if (!db.challans) db.challans = []
+  const challan = db.challans.find((ch) => ch.id === id || ch.challanNo.toUpperCase() === id.toUpperCase())
+  if (!challan) return c.json({ success: false, message: 'Challan not found' }, 404)
+
+  // Revert inventory stock
+  if (Array.isArray(challan.items) && Array.isArray(db.inventory)) {
+    for (const it of challan.items) {
+      const invItem = db.inventory.find((i) => i.partNo.toUpperCase() === (it.partNo || '').toUpperCase())
+      if (invItem) {
+        invItem.stockQty = (Number(invItem.stockQty) || 0) + (Number(it.qty) || 0)
+      }
+    }
+  }
+
+  // Remove from vehiclePartConsumptions
+  if (Array.isArray(db.vehiclePartConsumptions)) {
+    db.vehiclePartConsumptions = db.vehiclePartConsumptions.filter((vpc) => vpc.challanNo !== challan.challanNo)
+  }
+
+  // Revert job card cost if linked
+  if (challan.jobCardNo && Array.isArray(db.jobCards)) {
+    const jc = db.jobCards.find((j) => j.jobCardNo.toUpperCase() === challan.jobCardNo.toUpperCase())
+    if (jc) {
+      jc.totalMaterialCost = Math.max(0, (Number(jc.totalMaterialCost) || 0) - (Number(challan.totalAmount) || 0))
+    }
+  }
+
+  db.challans = db.challans.filter((ch) => ch.id !== id && ch.challanNo.toUpperCase() !== id.toUpperCase())
+  await setDb(c.env, db)
+  return c.json({ success: true, message: 'Challan voided and inventory stock restored.' })
+})
+
+// ==========================================
+// 4. VEHICLE MATERIAL CONSUMPTION & COST ANALYTICS
+// ==========================================
+app.get('/api/payroll/vehicle-consumption', async (c) => {
+  const db = await getDb(c.env)
+  const challans = db.challans || []
+  const vpc = db.vehiclePartConsumptions || []
+  const vehicles = db.vehicles || []
+
+  const map = {}
+  for (const veh of vehicles) {
+    map[veh.vehicleNo.toUpperCase()] = {
+      vehicleNo: veh.vehicleNo,
+      vehicleName: veh.name,
+      model: veh.model,
+      type: veh.type,
+      site: veh.site,
+      totalChallans: 0,
+      totalItemsCount: 0,
+      totalCost: 0,
+      items: [],
+      lastIssueDate: ''
+    }
+  }
+
+  for (const ch of challans) {
+    const vKey = (ch.vehicleNo || '').toUpperCase()
+    if (!map[vKey]) {
+      map[vKey] = {
+        vehicleNo: ch.vehicleNo,
+        vehicleName: ch.vehicleName || 'Equipment',
+        model: '',
+        type: 'Plant Machinery',
+        site: '',
+        totalChallans: 0,
+        totalItemsCount: 0,
+        totalCost: 0,
+        items: [],
+        lastIssueDate: ''
+      }
+    }
+    map[vKey].totalChallans++
+    map[vKey].totalCost += Number(ch.totalAmount) || 0
+    if (!map[vKey].lastIssueDate || ch.date > map[vKey].lastIssueDate) {
+      map[vKey].lastIssueDate = ch.date
+    }
+    if (Array.isArray(ch.items)) {
+      for (const it of ch.items) {
+        map[vKey].totalItemsCount += Number(it.qty) || 0
+        map[vKey].items.push({
+          ...it,
+          challanNo: ch.challanNo,
+          date: ch.date,
+          jobCardNo: ch.jobCardNo,
+          issuedToName: ch.issuedToName
+        })
+      }
+    }
+  }
+
+  return c.json({
+    success: true,
+    consumptionByVehicle: Object.values(map),
+    allConsumptions: vpc
+  })
 })
 
 // 5. Attendance & Daily Muster Roll
@@ -5372,4 +6518,5 @@ app.delete('/api/payroll/salary-slips/:id', async (c) => {
 })
 
 export default app
+
 
