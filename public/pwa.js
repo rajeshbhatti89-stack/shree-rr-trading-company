@@ -16,6 +16,10 @@ if ('serviceWorker' in navigator) {
       .register(swPath, { scope: swScope })
       .then((reg) => {
         console.log('✅ PWA Service Worker Registered. Scope:', reg.scope);
+        // Ensure browser checks for latest service worker and updates caches
+        if (typeof reg.update === 'function') {
+          reg.update();
+        }
       })
       .catch((err) => {
         console.warn('PWA Service Worker registration warning:', err);

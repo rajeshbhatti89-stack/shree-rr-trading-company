@@ -84,17 +84,6 @@ async function fetchVehicleConsumption() {
   if (typeof renderVehicleConsumptionAnalytics === 'function') renderVehicleConsumptionAnalytics();
 }
 
-// Local Storage Keys & Robust Client Persistence Layer
-const STORAGE_KEYS = {
-  SLIPS: 'srr_payroll_salary_slips_v3',
-  USERS: 'srr_payroll_users_v3',
-  ATTENDANCE: 'srr_payroll_attendance_v3',
-  LEAVES: 'srr_payroll_leaves_v3',
-  INVENTORY: 'srr_payroll_inventory_v1',
-  JOB_CARDS: 'srr_payroll_job_cards_v1',
-  CHALLANS: 'srr_payroll_challans_v1'
-};
-
 async function fetchUsers() {
   try {
     const res = await fetch('/api/payroll/users');
@@ -192,14 +181,6 @@ async function fetchLeaves() {
   }
   renderAttendanceGlassCards();
 }
-
-// Local Storage Keys & Robust Client Persistence Layer
-const STORAGE_KEYS = {
-  SLIPS: 'srr_payroll_salary_slips_v3',
-  USERS: 'srr_payroll_users_v3',
-  ATTENDANCE: 'srr_payroll_attendance_v3',
-  LEAVES: 'srr_payroll_leaves_v3'
-};
 
 function saveSlipsToStorage(slips) {
   try {

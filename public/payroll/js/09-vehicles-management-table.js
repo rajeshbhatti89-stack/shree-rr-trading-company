@@ -54,7 +54,9 @@ function renderVehiclesTable() {
         ? 'fa-faucet-drip'
         : 'fa-truck-ramp-box';
 
-      const comp = calculateCompliancePriority(v);
+      const comp = typeof calculateCompliancePriority === 'function'
+        ? calculateCompliancePriority(v)
+        : { badgeClass: 'badge-secondary', badgeText: 'Compliant', popoverHtml: '' };
 
       return `
       <tr>
