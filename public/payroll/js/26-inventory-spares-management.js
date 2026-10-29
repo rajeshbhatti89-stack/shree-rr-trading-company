@@ -25,7 +25,7 @@ function initInventoryManagement() {
     formInward.addEventListener('submit', handleSaveStockInward);
   }
 
-  const btnAdd = document.getElementById('btn-open-add-inventory-modal');
+  const btnAdd = document.getElementById('btn-open-add-inventory-modal') || document.getElementById('btn-open-add-inventory');
   if (btnAdd) {
     btnAdd.addEventListener('click', openAddInventoryModal);
   }

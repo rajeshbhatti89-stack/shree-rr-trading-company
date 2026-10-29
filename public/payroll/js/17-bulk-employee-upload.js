@@ -135,7 +135,7 @@ function handleFileSelect(file) {
               <td>${escapeHtml(e.mobile || '-')}</td>
               <td>${escapeHtml(e.bankAccount || '-')}</td>
               <td>${escapeHtml(e.ifsc || '-')}</td>
-              <td>${e.basicPerDay ? `?${e.basicPerDay}/Day` : e.ctc ? `?${e.ctc} CTC` : '?25,000'}</td>
+              <td>${e.basicPerDay ? `₹${e.basicPerDay}/Day` : e.ctc ? `₹${e.ctc} CTC` : '₹25,000'}</td>
             </tr>
           `
           )

@@ -16,22 +16,34 @@ async function loadAllData() {
   updateDashboardMetrics();
 }
 
+const MOCK_DATA_PURGE_IDS = {
+  INVENTORY: new Set(['inv-001', 'inv-002', 'inv-003', 'inv-004', 'inv-005', 'inv-006', 'inv-007', 'inv-008', 'inv-009', 'inv-010', 'inv-011', 'inv-012']),
+  JOB_CARDS: new Set(['jc-001', 'jc-002', 'jc-003', 'JC-2026-0001', 'JC-2026-0002', 'JC-2026-0003']),
+  CHALLANS: new Set(['chl-001', 'chl-002', 'chl-003', 'CH-2026-0001', 'CH-2026-0002', 'CH-2026-0003']),
+  VPC: new Set(['vpc-001', 'vpc-002', 'vpc-003', 'vpc-004', 'vpc-005', 'vpc-006', 'vpc-007'])
+};
+
 async function fetchInventory() {
   try {
     const res = await fetch('/api/payroll/inventory');
     const data = await res.json();
     if (data.success && Array.isArray(data.inventory)) {
-      allInventory = data.inventory;
+      allInventory = data.inventory.filter(i => !MOCK_DATA_PURGE_IDS.INVENTORY.has(i.id) );
       try { localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(allInventory)); } catch (e) {}
     }
   } catch (e) {
     console.warn('Inventory fetch failed, loading local cache', e);
     try {
       const cached = localStorage.getItem(STORAGE_KEYS.INVENTORY);
-      if (cached) allInventory = JSON.parse(cached);
+      if (cached) {
+        allInventory = JSON.parse(cached).filter(i => !MOCK_DATA_PURGE_IDS.INVENTORY.has(i.id) );
+      }
     } catch (err) {}
   }
+  allInventory = (allInventory || []).filter(i => !MOCK_DATA_PURGE_IDS.INVENTORY.has(i.id) );
+  try { localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(allInventory)); } catch (e) {}
   if (typeof renderInventoryTable === 'function') renderInventoryTable();
+  if (typeof updateVehicleSubNavBadges === 'function') updateVehicleSubNavBadges();
 }
 
 async function fetchJobCards() {
@@ -39,18 +51,23 @@ async function fetchJobCards() {
     const res = await fetch('/api/payroll/job-cards');
     const data = await res.json();
     if (data.success && Array.isArray(data.jobCards)) {
-      allJobCards = data.jobCards;
+      allJobCards = data.jobCards.filter(j => !MOCK_DATA_PURGE_IDS.JOB_CARDS.has(j.id) );
       try { localStorage.setItem(STORAGE_KEYS.JOB_CARDS, JSON.stringify(allJobCards)); } catch (e) {}
     }
   } catch (e) {
     console.warn('Job cards fetch failed, loading local cache', e);
     try {
       const cached = localStorage.getItem(STORAGE_KEYS.JOB_CARDS);
-      if (cached) allJobCards = JSON.parse(cached);
+      if (cached) {
+        allJobCards = JSON.parse(cached).filter(j => !MOCK_DATA_PURGE_IDS.JOB_CARDS.has(j.id) );
+      }
     } catch (err) {}
   }
+  allJobCards = (allJobCards || []).filter(j => !MOCK_DATA_PURGE_IDS.JOB_CARDS.has(j.id) );
+  try { localStorage.setItem(STORAGE_KEYS.JOB_CARDS, JSON.stringify(allJobCards)); } catch (e) {}
   if (typeof renderJobCardsTable === 'function') renderJobCardsTable();
   if (typeof populateJobCardDropdowns === 'function') populateJobCardDropdowns();
+  if (typeof updateVehicleSubNavBadges === 'function') updateVehicleSubNavBadges();
 }
 
 async function fetchChallans() {
@@ -58,17 +75,22 @@ async function fetchChallans() {
     const res = await fetch('/api/payroll/challans');
     const data = await res.json();
     if (data.success && Array.isArray(data.challans)) {
-      allChallans = data.challans;
+      allChallans = data.challans.filter(c => !MOCK_DATA_PURGE_IDS.CHALLANS.has(c.id) );
       try { localStorage.setItem(STORAGE_KEYS.CHALLANS, JSON.stringify(allChallans)); } catch (e) {}
     }
   } catch (e) {
     console.warn('Challans fetch failed, loading local cache', e);
     try {
       const cached = localStorage.getItem(STORAGE_KEYS.CHALLANS);
-      if (cached) allChallans = JSON.parse(cached);
+      if (cached) {
+        allChallans = JSON.parse(cached).filter(c => !MOCK_DATA_PURGE_IDS.CHALLANS.has(c.id) );
+      }
     } catch (err) {}
   }
+  allChallans = (allChallans || []).filter(c => !MOCK_DATA_PURGE_IDS.CHALLANS.has(c.id) );
+  try { localStorage.setItem(STORAGE_KEYS.CHALLANS, JSON.stringify(allChallans)); } catch (e) {}
   if (typeof renderChallansTable === 'function') renderChallansTable();
+  if (typeof updateVehicleSubNavBadges === 'function') updateVehicleSubNavBadges();
 }
 
 async function fetchVehicleConsumption() {
@@ -76,11 +98,12 @@ async function fetchVehicleConsumption() {
     const res = await fetch('/api/payroll/vehicle-consumption');
     const data = await res.json();
     if (data.success && Array.isArray(data.allConsumptions)) {
-      allVehiclePartConsumptions = data.allConsumptions;
+      allVehiclePartConsumptions = data.allConsumptions.filter(v => !MOCK_DATA_PURGE_IDS.VPC.has(v.id) );
     }
   } catch (e) {
     console.warn('Vehicle consumption fetch failed', e);
   }
+  allVehiclePartConsumptions = (allVehiclePartConsumptions || []).filter(v => !MOCK_DATA_PURGE_IDS.VPC.has(v.id) );
   if (typeof renderVehicleConsumptionAnalytics === 'function') renderVehicleConsumptionAnalytics();
 }
 

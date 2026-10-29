@@ -144,7 +144,7 @@ function openAddUserModal() {
   openModal('modal-user');
 }
 
-// â”€â”€ Salary Mode Toggle â”€â”€
+// ── Salary Mode Toggle ──
 function onSalaryModeChange() {
   const isCtc = document.getElementById('salary-mode-ctc').checked;
   const ctcSection = document.getElementById('salary-section-ctc');
@@ -166,7 +166,7 @@ function onSalaryModeChange() {
   updateSalaryPreview();
 }
 
-// â”€â”€ Gross Salary Input Handler â”€â”€
+// ── Gross Salary Input Handler ──
 function onGrossSalaryInput() {
   const gross = Number(document.getElementById('user-gross')?.value) || 0;
   if (!gross) {
@@ -222,7 +222,7 @@ function onGrossSalaryInput() {
   updateSalaryPreview();
 }
 
-// â”€â”€ CTC Salary Input Handler â”€â”€
+// ── CTC Salary Input Handler ──
 function onCtcSalaryInput() {
   const ctc = Number(document.getElementById('user-ctc')?.value) || 0;
   if (!ctc) {
@@ -272,7 +272,7 @@ function onCtcSalaryInput() {
   updateSalaryPreview();
 }
 
-// â”€â”€ Component Input Handler â”€â”€
+// ── Component Input Handler ──
 function onComponentInput() {
   const basic = Number(document.getElementById('comp-basic')?.value) || 0;
   const da = Number(document.getElementById('comp-da')?.value) || 0;
@@ -299,12 +299,12 @@ function onComponentInput() {
   updateSalaryPreview();
 }
 
-// â”€â”€ Backward-compatible alias â”€â”€
+// ── Backward-compatible alias ──
 function autoCalculateSalaryComponents() {
   onGrossSalaryInput();
 }
 
-// â”€â”€ Live Salary Architecture Preview â”€â”€
+// ── Live Salary Architecture Preview ──
 function updateSalaryPreview() {
   const isCtc = document.getElementById('salary-mode-ctc')?.checked;
   let gross = 0, employeeDeductions = 0, employerContributions = 0, ctc = 0;

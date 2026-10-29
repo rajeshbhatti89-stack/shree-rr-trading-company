@@ -71,10 +71,13 @@ function renderVehicleConsumptionAnalytics() {
 
   // Ensure all known vehicles appear in table
   (allVehicles || []).forEach(v => {
-    if (selectedVeh === 'ALL' || v.vehicleNo.toUpperCase() === selectedVeh.toUpperCase()) {
-      vehicleMap[v.vehicleNo.toUpperCase()] = {
-        vehicleNo: v.vehicleNo,
-        vehicleName: v.name,
+    if (!v) return;
+    const vNo = String(v.vehicleNo || '').trim();
+    if (!vNo) return;
+    if (selectedVeh === 'ALL' || vNo.toUpperCase() === selectedVeh.toUpperCase()) {
+      vehicleMap[vNo.toUpperCase()] = {
+        vehicleNo: vNo,
+        vehicleName: v.name || 'Plant Equipment',
         type: v.type || 'Equipment',
         model: v.model || '',
         site: v.site || 'Plant Site',

@@ -357,7 +357,7 @@ function renderBulkWhatsAppModal() {
   if (totalCountEl) totalCountEl.textContent = `${slips.length} Employees`;
   if (readyCountEl) readyCountEl.textContent = `${readyCount} / ${slips.length} Ready`;
   if (progressCountEl) progressCountEl.textContent = `${sentCount} / ${slips.length} Dispatched`;
-  if (totalNetEl) totalNetEl.textContent = `?${totalNet.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+  if (totalNetEl) totalNetEl.textContent = `₹${totalNet.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
   // Table body
   const tbody = document.getElementById('bulk-wa-table-body');
@@ -368,13 +368,13 @@ function renderBulkWhatsAppModal() {
       const mob = resolveEmployeeMobile(s);
       const isSent = sentMap.has(s.id);
       const isCurrent = bulkWaState.active && bulkWaState.currentIndex === idx;
-      const netPayStr = `?${Number(s.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      const netPayStr = `₹${Number(s.netPay || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
       let statusBadge = '';
       if (isSent) {
-        statusBadge = `<span class="badge" style="background: rgba(16?85?29,0.12); color: #059669; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16?85?29,0.3);"><i class="fa-solid fa-circle-check"></i> Sent & Opened</span>`;
+        statusBadge = `<span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #059669; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-circle-check"></i> Sent & Opened</span>`;
       } else if (isCurrent) {
-        statusBadge = `<span class="badge" style="background: rgba(255?07,0,0.12); color: #C2410C; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255?07,0,0.3);"><i class="fa-solid fa-spinner fa-spin"></i> Processing...</span>`;
+        statusBadge = `<span class="badge" style="background: rgba(255, 107, 0, 0.12); color: #C2410C; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255, 107, 0, 0.3);"><i class="fa-solid fa-spinner fa-spin"></i> Processing...</span>`;
       } else {
         statusBadge = `<span class="badge" style="background: #F1F5F9; color: #64748B; font-weight: 700; padding: 4px 8px; border-radius: 6px;">Pending</span>`;
       }
@@ -513,7 +513,7 @@ async function processNextBulkWhatsAppItem() {
   }
 
   // Update status UI
-  updateBulkProgressBar(currentIndex, slips.length, `? [${currentIndex + 1}/${slips.length}] Generating 1-Page PDF & opening WhatsApp for <strong>${escapeHtml(slip.userName)}</strong> (+91 ${mobile})...`);
+  updateBulkProgressBar(currentIndex, slips.length, `⚡ [${currentIndex + 1}/${slips.length}] Generating 1-Page PDF & opening WhatsApp for <strong>${escapeHtml(slip.userName)}</strong> (+91 ${mobile})...`);
   renderBulkWhatsAppModal();
 
   // Scroll active row into view

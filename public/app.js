@@ -87,7 +87,7 @@ const RENTAL_FLEET_DATA = [
   },
   {
     id: 6,
-    name: "VÃ¶gele Super 1800 Asphalt Paver",
+    name: "Vögele Super 1800 Asphalt Paver",
     category: "road",
     rate: "₹12,000 / Shift",
     badge: "HIGHWAY PAVING CONTRACT",
@@ -476,7 +476,7 @@ function processChatbotQuery(query) {
   if (q.includes("ambuja") || q.includes("plant") || q.includes("darlaghat")) {
     reply = "Shree RR Trading Company operates flagship <strong>Plant O&M & Tipper Fleet contracts at Ambuja Cement Darlaghat</strong> (Himachal Pradesh). We handle raw material logistics, crushing feed handling, and overburden haulage.";
   } else if (q.includes("rate") || q.includes("rental") || q.includes("cost") || q.includes("price")) {
-    reply = "Machinery rental shift rates:<br>â€¢ <strong>Tata Tipper Truck (35T):</strong> ₹4,500/Shift<br>â€¢ <strong>CAT/Komatsu Excavator (48T):</strong> ₹8,500/Shift<br>â€¢ <strong>Bobcat S450:</strong> ₹2,800/Shift<br>â€¢ <strong>JCB 3CX:</strong> ₹3,200/Shift<br><br>Use our <a href='#calculator' onclick='toggleChatbot()'>Cost Estimator</a> for instant bulk discounts!";
+    reply = "Machinery rental shift rates:<br>• <strong>Tata Tipper Truck (35T):</strong> ₹4,500/Shift<br>• <strong>CAT/Komatsu Excavator (48T):</strong> ₹8,500/Shift<br>• <strong>Bobcat S450:</strong> ₹2,800/Shift<br>• <strong>JCB 3CX:</strong> ₹3,200/Shift<br><br>Use our <a href='#calculator' onclick='toggleChatbot()'>Cost Estimator</a> for instant bulk discounts!";
   } else if (q.includes("garage") || q.includes("maintenance") || q.includes("repair")) {
     reply = "We establish on-site <strong>Heavy Plant Fleet Garage Facilities</strong> staffed 24/7 with hydraulic, mechanical, and electrical engineers to maintain 100% equipment availability.";
   } else if (q.includes("road") || q.includes("govt") || q.includes("highway") || q.includes("pwd")) {

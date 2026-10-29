@@ -179,16 +179,20 @@ function populateChallanVehicleDropdown(selectedVehNo = '') {
   const sel = document.getElementById('chl-vehicle-select');
   if (!sel) return;
 
+  const targetVeh = String(selectedVehNo || '').trim().toUpperCase();
   let html = `<option value="">-- Select Plant Vehicle / Equipment * --</option>`;
   (allVehicles || []).forEach(v => {
-    const isSelected = v.vehicleNo.toUpperCase() === selectedVehNo.toUpperCase();
-    html += `<option value="${escapeHtml(v.vehicleNo)}" data-name="${escapeHtml(v.name)}" ${isSelected ? 'selected' : ''}>${escapeHtml(v.vehicleNo)} - ${escapeHtml(v.name)}</option>`;
+    if (!v) return;
+    const vNo = String(v.vehicleNo || '').trim();
+    if (!vNo) return;
+    const isSelected = targetVeh && vNo.toUpperCase() === targetVeh;
+    html += `<option value="${escapeHtml(vNo)}" data-name="${escapeHtml(v.name || 'Equipment')}" ${isSelected ? 'selected' : ''}>${escapeHtml(vNo)} - ${escapeHtml(v.name || 'Equipment')}</option>`;
   });
   sel.innerHTML = html;
 }
 
 function handleChallanVehicleChange(e, prefillJcNo = '') {
-  const vehNo = document.getElementById('chl-vehicle-select')?.value || '';
+  const vehNo = String(document.getElementById('chl-vehicle-select')?.value || '').trim();
   const jcSelect = document.getElementById('chl-job-card-select');
   if (!jcSelect) return;
 
@@ -197,12 +201,16 @@ function handleChallanVehicleChange(e, prefillJcNo = '') {
     return;
   }
 
+  const matchVeh = vehNo.toUpperCase();
+  const targetJc = String(prefillJcNo || '').trim().toUpperCase();
+
   // Filter job cards for this vehicle
-  const relevantJcs = (allJobCards || []).filter(j => j.vehicleNo.toUpperCase() === vehNo.toUpperCase());
+  const relevantJcs = (allJobCards || []).filter(j => j && String(j.vehicleNo || '').trim().toUpperCase() === matchVeh);
   let html = `<option value="">-- None (Direct Spare Issue without Job Card) --</option>`;
   relevantJcs.forEach(j => {
-    const isSelected = j.jobCardNo.toUpperCase() === prefillJcNo.toUpperCase();
-    html += `<option value="${escapeHtml(j.jobCardNo)}" ${isSelected ? 'selected' : ''}>${escapeHtml(j.jobCardNo)} - ${escapeHtml(j.maintenanceType)} [${escapeHtml(j.status)}]</option>`;
+    const jcNo = String(j.jobCardNo || '').trim();
+    const isSelected = targetJc && jcNo.toUpperCase() === targetJc;
+    html += `<option value="${escapeHtml(jcNo)}" ${isSelected ? 'selected' : ''}>${escapeHtml(jcNo)} - ${escapeHtml(j.maintenanceType || 'Maintenance')} [${escapeHtml(j.status || 'In Progress')}]</option>`;
   });
   jcSelect.innerHTML = html;
 }
@@ -348,12 +356,13 @@ function updateChallanTotals() {
 
 // AUTOMATIC PART SAVING FOR CHALLAN WITH VEHICLE
 async function handleSaveChallan(e) {
-  e.preventDefault();
-  const challanNo = document.getElementById('chl-number').value.trim();
-  const date = document.getElementById('chl-date').value;
+  if (e && e.preventDefault) e.preventDefault();
+  const challanNo = document.getElementById('chl-number')?.value.trim() || `CH-${new Date().getFullYear()}-${((allChallans || []).length + 1).toString().padStart(4, '0')}`;
+  const date = document.getElementById('chl-date')?.value || new Date().toISOString().split('T')[0];
   const vehSelect = document.getElementById('chl-vehicle-select');
-  const vehicleNo = vehSelect.value.trim();
-  const vehicleName = vehSelect.options[vehSelect.selectedIndex]?.getAttribute('data-name') || 'Plant Equipment';
+  const vehicleNo = vehSelect ? vehSelect.value.trim() : '';
+  const selectedVehOpt = (vehSelect && vehSelect.selectedIndex >= 0) ? vehSelect.options[vehSelect.selectedIndex] : null;
+  const vehicleName = selectedVehOpt?.getAttribute('data-name') || 'Plant Equipment';
 
   if (!vehicleNo) {
     showToast('Please select a plant vehicle for the challan.', 'error');
@@ -363,9 +372,15 @@ async function handleSaveChallan(e) {
   const jobCardNo = document.getElementById('chl-job-card-select')?.value.trim() || '';
 
   const techSelect = document.getElementById('chl-issued-to');
-  const issuedToId = techSelect.value;
-  const issuedToName = techSelect.options[techSelect.selectedIndex]?.getAttribute('data-name') || 'Technician';
-  const issuedToRole = techSelect.options[techSelect.selectedIndex]?.getAttribute('data-role') || 'Mechanic';
+  const issuedToId = techSelect ? techSelect.value.trim() : '';
+  const techSelectedOpt = (techSelect && techSelect.selectedIndex >= 0) ? techSelect.options[techSelect.selectedIndex] : null;
+  const issuedToName = techSelectedOpt?.getAttribute('data-name') || (techSelectedOpt?.textContent || 'Technician');
+  const issuedToRole = techSelectedOpt?.getAttribute('data-role') || 'Mechanic';
+
+  if (!issuedToId) {
+    showToast('Please select a Receiving Mechanic / Technician.', 'error');
+    return;
+  }
 
   const issuedBy = document.getElementById('chl-issued-by').value.trim() || 'Workshop Storekeeper';
   const remarks = document.getElementById('chl-remarks').value.trim();
@@ -452,7 +467,7 @@ async function handleSaveChallan(e) {
       grandTotal += it.totalPrice;
       totalQty += it.qty;
       // Deduct stock locally
-      const inv = allInventory.find(i => i.partNo.toUpperCase() === it.partNo.toUpperCase());
+      const inv = (allInventory || []).find(i => i && String(i.partNo || '').trim().toUpperCase() === String(it.partNo || '').trim().toUpperCase());
       if (inv) {
         inv.stockQty = Math.max(0, (Number(inv.stockQty) || 0) - it.qty);
       }
@@ -553,7 +568,7 @@ function openPrintChallanModal(id) {
   const totAmount = Number(ch.totalAmount) || 0;
   const inWords = numberToWordsIndian(Math.round(totAmount));
 
-  const printContainer = document.getElementById('print-challan-container');
+  const printContainer = document.getElementById('print-challan-container') || document.getElementById('print-challan-content');
   if (printContainer) {
     printContainer.innerHTML = `
       <div class="official-challan-sheet">

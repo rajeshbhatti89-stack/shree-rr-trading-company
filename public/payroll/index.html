@@ -37,7 +37,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- Payroll Theme Stylesheet -->
-  <link rel="stylesheet" href="/payroll/payroll.css?v=2.6.0">
+  <link rel="stylesheet" href="/payroll/payroll.css?v=2.7.0">
 </head>
 
 <body>
@@ -563,7 +563,7 @@
               </div>
 
               <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-sm" id="btn-open-create-job-card">
+                <button class="btn btn-primary btn-sm" id="btn-open-create-job-card" onclick="openCreateJobCardModal()">
                   <i class="fa-solid fa-clipboard-check"></i> + Create Maintenance Job Card
                 </button>
                 <button class="btn btn-outline-success btn-sm" id="btn-export-job-cards-excel" title="Download Maintenance Job Cards Excel Report">
@@ -648,7 +648,7 @@
               </div>
 
               <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-sm" id="btn-open-issue-challan">
+                <button class="btn btn-primary btn-sm" id="btn-open-issue-challan" onclick="openIssueChallanModal()">
                   <i class="fa-solid fa-receipt"></i> + Issue Material Challan
                 </button>
                 <button class="btn btn-outline-success btn-sm" id="btn-export-challans-excel" title="Download Delivery Challans Excel Report">
@@ -728,7 +728,7 @@
               </div>
 
               <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="btn btn-primary btn-sm" id="btn-open-add-inventory-modal">
+                <button class="btn btn-primary btn-sm" id="btn-open-add-inventory-modal" onclick="openAddInventoryModal()">
                   <i class="fa-solid fa-plus"></i> + Add Spare Part
                 </button>
                 <button class="btn btn-outline-success btn-sm" id="btn-export-inventory-excel" title="Download Spare Parts Inventory Master Excel Report">
@@ -1946,7 +1946,7 @@
         <button class="btn-close-modal" onclick="closeModal('modal-print-challan')">&times;</button>
       </div>
       <div class="modal-body" style="padding: 20px; background: #FFF; border-radius: var(--radius-md);">
-        <div id="print-challan-content">
+        <div id="print-challan-container">
           <!-- Dynamically populated official printable challan document -->
         </div>
       </div>
@@ -1967,7 +1967,7 @@
         <button class="btn-close-modal" onclick="closeModal('modal-print-job-card')">&times;</button>
       </div>
       <div class="modal-body" style="padding: 20px; background: #FFF; border-radius: var(--radius-md);">
-        <div id="print-job-card-content">
+        <div id="print-job-card-container">
           <!-- Dynamically populated official printable job card document -->
         </div>
       </div>
@@ -4184,41 +4184,41 @@
   <div id="toast" class="toast hidden"></div>
 
   <!-- Application Logic JS -->
-  <script src="/payroll/js/00-globals.js?v=2.6.0"></script>
-  <script src="/payroll/js/01-clock-display.js?v=2.6.0"></script>
-  <script src="/payroll/js/02-navigation-tabs-mobile-drawer.js?v=2.6.0"></script>
-  <script src="/payroll/js/03-authentication-rbac-session.js?v=2.6.0"></script>
-  <script src="/payroll/js/04-data-fetching.js?v=2.6.0"></script>
-  <script src="/payroll/js/05-render-users-table.js?v=2.6.0"></script>
-  <script src="/payroll/js/06-superadmin-dynamic-permissions-modal-handler.js?v=2.6.0"></script>
-  <script src="/payroll/js/07-delete-user.js?v=2.6.0"></script>
-  <script src="/payroll/js/08-add-edit-user-modal.js?v=2.6.0"></script>
-  <script src="/payroll/js/09-vehicles-management-table.js?v=2.6.0"></script>
-  <script src="/payroll/js/10-vehicle-bulk-import-engine-excel-csv.js?v=2.6.0"></script>
-  <script src="/payroll/js/11-vehicle-availability-mttr-reliability-analytics.js?v=2.6.0"></script>
-  <script src="/payroll/js/12-1-click-excel-mttr-availability-exporter.js?v=2.6.0"></script>
-  <script src="/payroll/js/13-daily-muster-roll-today-s-live-attendance.js?v=2.6.0"></script>
-  <script src="/payroll/js/14-tomorrow-s-shift-machine-schedule-system.js?v=2.6.0"></script>
-  <script src="/payroll/js/15-attendance-glass-view-leave-balance-tracker-live-dynamic-sync-with-muster-roll-approved-leaves.js?v=2.6.0"></script>
-  <script src="/payroll/js/16-1-click-excel-reports-exporters.js?v=2.6.0"></script>
-  <script src="/payroll/js/17-bulk-employee-upload.js?v=2.6.0"></script>
-  <script src="/payroll/js/18-salary-slips-table.js?v=2.6.0"></script>
-  <script src="/payroll/js/19-whatsapp-dispatch-strict-1-page-pdf-engine.js?v=2.6.0"></script>
-  <script src="/payroll/js/20-official-printable-salary-slip-modal.js?v=2.6.0"></script>
-  <script src="/payroll/js/21-event-listeners-modals.js?v=2.6.0"></script>
-  <script src="/payroll/js/22-leave-management-functions-modal-helpers.js?v=2.6.0"></script>
-  <script src="/payroll/js/23-dashboard-metrics-calculation.js?v=2.6.0"></script>
-  <script src="/payroll/js/23-populate-dropdowns.js?v=2.6.0"></script>
-  <script src="/payroll/js/23-vehicle-statutory-compliance-tracking-engine.js?v=2.6.0"></script>
-  <script src="/payroll/js/24-utilities.js?v=2.6.0"></script>
-  <script src="/payroll/js/25-system-generated-hr-letters-appointment-engine.js?v=2.6.0"></script>
-  <script src="/payroll/js/26-inventory-spares-management.js?v=2.6.0"></script>
-  <script src="/payroll/js/27-job-cards-maintenance-engine.js?v=2.6.0"></script>
-  <script src="/payroll/js/28-material-issue-challans-engine.js?v=2.6.0"></script>
-  <script src="/payroll/js/29-vehicle-consumption-cost-analytics.js?v=2.6.0"></script>
-  <script src="/payroll/js/30-vehicle-subnav-tabs.js?v=2.6.0"></script>
+  <script src="/payroll/js/00-globals.js?v=2.7.0"></script>
+  <script src="/payroll/js/01-clock-display.js?v=2.7.0"></script>
+  <script src="/payroll/js/02-navigation-tabs-mobile-drawer.js?v=2.7.0"></script>
+  <script src="/payroll/js/03-authentication-rbac-session.js?v=2.7.0"></script>
+  <script src="/payroll/js/04-data-fetching.js?v=2.7.0"></script>
+  <script src="/payroll/js/05-render-users-table.js?v=2.7.0"></script>
+  <script src="/payroll/js/06-superadmin-dynamic-permissions-modal-handler.js?v=2.7.0"></script>
+  <script src="/payroll/js/07-delete-user.js?v=2.7.0"></script>
+  <script src="/payroll/js/08-add-edit-user-modal.js?v=2.7.0"></script>
+  <script src="/payroll/js/09-vehicles-management-table.js?v=2.7.0"></script>
+  <script src="/payroll/js/10-vehicle-bulk-import-engine-excel-csv.js?v=2.7.0"></script>
+  <script src="/payroll/js/11-vehicle-availability-mttr-reliability-analytics.js?v=2.7.0"></script>
+  <script src="/payroll/js/12-1-click-excel-mttr-availability-exporter.js?v=2.7.0"></script>
+  <script src="/payroll/js/13-daily-muster-roll-today-s-live-attendance.js?v=2.7.0"></script>
+  <script src="/payroll/js/14-tomorrow-s-shift-machine-schedule-system.js?v=2.7.0"></script>
+  <script src="/payroll/js/15-attendance-glass-view-leave-balance-tracker-live-dynamic-sync-with-muster-roll-approved-leaves.js?v=2.7.0"></script>
+  <script src="/payroll/js/16-1-click-excel-reports-exporters.js?v=2.7.0"></script>
+  <script src="/payroll/js/17-bulk-employee-upload.js?v=2.7.0"></script>
+  <script src="/payroll/js/18-salary-slips-table.js?v=2.7.0"></script>
+  <script src="/payroll/js/19-whatsapp-dispatch-strict-1-page-pdf-engine.js?v=2.7.0"></script>
+  <script src="/payroll/js/20-official-printable-salary-slip-modal.js?v=2.7.0"></script>
+  <script src="/payroll/js/21-event-listeners-modals.js?v=2.7.0"></script>
+  <script src="/payroll/js/22-leave-management-functions-modal-helpers.js?v=2.7.0"></script>
+  <script src="/payroll/js/23-dashboard-metrics-calculation.js?v=2.7.0"></script>
+  <script src="/payroll/js/23-populate-dropdowns.js?v=2.7.0"></script>
+  <script src="/payroll/js/23-vehicle-statutory-compliance-tracking-engine.js?v=2.7.0"></script>
+  <script src="/payroll/js/24-utilities.js?v=2.7.0"></script>
+  <script src="/payroll/js/25-system-generated-hr-letters-appointment-engine.js?v=2.7.0"></script>
+  <script src="/payroll/js/26-inventory-spares-management.js?v=2.7.0"></script>
+  <script src="/payroll/js/27-job-cards-maintenance-engine.js?v=2.7.0"></script>
+  <script src="/payroll/js/28-material-issue-challans-engine.js?v=2.7.0"></script>
+  <script src="/payroll/js/29-vehicle-consumption-cost-analytics.js?v=2.7.0"></script>
+  <script src="/payroll/js/30-vehicle-subnav-tabs.js?v=2.7.0"></script>
   <!-- PWA Service Worker & Install Engine -->
-  <script src="/pwa.js?v=2.6.0"></script>
+  <script src="/pwa.js?v=2.7.0"></script>
 </body>
 
 </html>

@@ -210,7 +210,7 @@ async function saveTomorrowSchedule() {
 
     const data = await res.json();
     if (data.success) {
-      showToast(`? Tomorrow's shift & machinery schedule saved! (${scheduleRecords.length} operators scheduled)`);
+      showToast(`⚡ Tomorrow's shift & machinery schedule saved! (${scheduleRecords.length} operators scheduled)`);
       await fetchRosters();
     }
   } catch (err) {

@@ -749,9 +749,9 @@ function loadCorrectionFormData(slip, user) {
     if (catEl) catEl.textContent = user.category || 'Skilled';
     if (siteEl) siteEl.textContent = user.location || user.site || 'ACC Chanda';
     if (ctcEl) {
-      if (user.ctc) ctcEl.textContent = `?${Number(user.ctc).toLocaleString('en-IN')} / Mo`;
-      else if (user.basicPerDay) ctcEl.textContent = `?${Number(user.basicPerDay).toFixed(2)} / Day`;
-      else ctcEl.textContent = `?${Number(user.baseSalary || 25000).toLocaleString('en-IN')} / Mo`;
+      if (user.ctc) ctcEl.textContent = `₹${Number(user.ctc).toLocaleString('en-IN')} / Mo`;
+      else if (user.basicPerDay) ctcEl.textContent = `₹${Number(user.basicPerDay).toFixed(2)} / Day`;
+      else ctcEl.textContent = `₹${Number(user.baseSalary || 25000).toLocaleString('en-IN')} / Mo`;
     }
     if (uanEl) uanEl.textContent = user.uan || 'N/A';
     if (pfEl) pfEl.textContent = user.pfNo || 'N/A';
@@ -909,7 +909,7 @@ function recalculateCorrectionSlip(useStandardFormula = false, isManualDaysInput
     document.getElementById('correction-ded-esic').value = calcEsic.toFixed(2);
     document.getElementById('correction-ded-pt').value = calcPt.toFixed(2);
 
-    showToast(`? Standard statutory formula calculated for ${user.name}! (Overtime & Components Preserved)`);
+    showToast(`⚡ Standard statutory formula calculated for ${user.name}! (Overtime & Components Preserved)`);
   } else if (otHours > 0 && otRate > 0) {
     const computedOt = Math.round(otHours * otRate * 100) / 100;
     const otInput = document.getElementById('correction-earn-ot');
@@ -942,9 +942,9 @@ function recalculateCorrectionSlip(useStandardFormula = false, isManualDaysInput
   const netDisp = document.getElementById('correction-net-display');
   const wordsDisp = document.getElementById('correction-net-words');
 
-  if (grossDisp) grossDisp.textContent = `?${gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-  if (dedDisp) dedDisp.textContent = `?${totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-  if (netDisp) netDisp.textContent = `?${netPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+  if (grossDisp) grossDisp.textContent = `₹${gross.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+  if (dedDisp) dedDisp.textContent = `₹${totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+  if (netDisp) netDisp.textContent = `₹${netPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
   if (wordsDisp) wordsDisp.textContent = numberToWordsIndian(Math.max(0, Math.round(netPay))) + ' Rupees Only';
 }
 
@@ -1102,7 +1102,7 @@ async function saveSalaryCorrection() {
 
     closeModal('modal-salary-correction');
     renderSalaryTable();
-    showToast(`? Salary structure & OT locked locally for ${user.name}!`);
+    showToast(`⚡ Salary structure & OT locked locally for ${user.name}!`);
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;

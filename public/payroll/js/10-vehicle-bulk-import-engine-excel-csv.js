@@ -43,7 +43,7 @@ function initVehicleBulkImport() {
 
         const data = await res.json();
         if (data.success) {
-          showToast(`? ${data.message}`);
+          showToast(`⚡ ${data.message}`);
           closeModal('modal-bulk-vehicles');
           await fetchVehicles();
           updateDashboardMetrics();

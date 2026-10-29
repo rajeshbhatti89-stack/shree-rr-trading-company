@@ -207,17 +207,25 @@ function renderJobCardsTable() {
 }
 
 function openCreateJobCardModal(prefillVehNo = '') {
-  document.getElementById('modal-job-card-title').innerHTML = `<i class="fa-solid fa-clipboard-check text-orange"></i> Create Maintenance Job Card`;
-  document.getElementById('form-job-card').reset();
-  document.getElementById('jc-id').value = '';
-  document.getElementById('jc-card-no').value = `JC-${new Date().getFullYear()}-${(allJobCards.length + 1).toString().padStart(4, '0')}`;
-  document.getElementById('jc-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('jc-in-time').value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  document.getElementById('jc-status').value = 'In Progress';
-  document.getElementById('jc-priority').value = 'High';
+  const titleEl = document.getElementById('modal-job-card-title');
+  if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-clipboard-check text-orange"></i> Create Maintenance Job Card`;
+  const formEl = document.getElementById('form-job-card');
+  if (formEl) formEl.reset();
+  const idEl = document.getElementById('jc-id');
+  if (idEl) idEl.value = '';
+  const cardNoEl = document.getElementById('jc-card-no');
+  if (cardNoEl) cardNoEl.value = `JC-${new Date().getFullYear()}-${((allJobCards || []).length + 1).toString().padStart(4, '0')}`;
+  const dateEl = document.getElementById('jc-date');
+  if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+  const inTimeEl = document.getElementById('jc-in-time');
+  if (inTimeEl) inTimeEl.value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const statusEl = document.getElementById('jc-status');
+  if (statusEl) statusEl.value = 'In Progress';
+  const priorityEl = document.getElementById('jc-priority');
+  if (priorityEl) priorityEl.value = 'High';
 
   populateJobCardVehicleSelect(prefillVehNo);
-  populateTechnicianDropdowns();
+  if (typeof populateTechnicianDropdowns === 'function') populateTechnicianDropdowns();
   openModal('modal-job-card');
 }
 
@@ -250,10 +258,14 @@ function populateJobCardVehicleSelect(selectedVehNo = '') {
   const sel = document.getElementById('jc-vehicle-select');
   if (!sel) return;
 
+  const targetVeh = String(selectedVehNo || '').trim().toUpperCase();
   let html = `<option value="">-- Select Plant Vehicle / Equipment * --</option>`;
   (allVehicles || []).forEach(v => {
-    const isSelected = v.vehicleNo.toUpperCase() === selectedVehNo.toUpperCase();
-    html += `<option value="${escapeHtml(v.vehicleNo)}" data-name="${escapeHtml(v.name)}" data-model="${escapeHtml(v.model || '')}" ${isSelected ? 'selected' : ''}>${escapeHtml(v.vehicleNo)} - ${escapeHtml(v.name)} (${escapeHtml(v.site || 'Pit')})</option>`;
+    if (!v) return;
+    const vNo = String(v.vehicleNo || '').trim();
+    if (!vNo) return;
+    const isSelected = targetVeh && vNo.toUpperCase() === targetVeh;
+    html += `<option value="${escapeHtml(vNo)}" data-name="${escapeHtml(v.name || 'Plant Equipment')}" data-model="${escapeHtml(v.model || '')}" ${isSelected ? 'selected' : ''}>${escapeHtml(vNo)} - ${escapeHtml(v.name || 'Equipment')} (${escapeHtml(v.site || 'Pit')})</option>`;
   });
   sel.innerHTML = html;
 }
@@ -264,37 +276,53 @@ function populateJobCardDropdowns() {
 }
 
 async function handleSaveJobCard(e) {
-  e.preventDefault();
-  const id = document.getElementById('jc-id').value.trim();
-  const jobCardNo = document.getElementById('jc-card-no').value.trim();
+  if (e && e.preventDefault) e.preventDefault();
+  const id = document.getElementById('jc-id')?.value.trim() || '';
+  const jobCardNo = document.getElementById('jc-card-no')?.value.trim() || `JC-${new Date().getFullYear()}-${((allJobCards || []).length + 1).toString().padStart(4, '0')}`;
   const vehSelect = document.getElementById('jc-vehicle-select');
-  const vehicleNo = vehSelect.value.trim();
-  const selectedVehOption = vehSelect.options[vehSelect.selectedIndex];
-  const vehicleName = selectedVehOption?.getAttribute('data-name') || '';
+  const vehicleNo = vehSelect ? vehSelect.value.trim() : '';
+  if (!vehicleNo) {
+    showToast('Please select a plant vehicle / equipment.', 'error');
+    return;
+  }
+  const selectedVehOption = (vehSelect && vehSelect.selectedIndex >= 0) ? vehSelect.options[vehSelect.selectedIndex] : null;
+  const vehicleName = selectedVehOption?.getAttribute('data-name') || 'Plant Equipment';
   const vehicleModel = selectedVehOption?.getAttribute('data-model') || '';
 
-  const date = document.getElementById('jc-date').value;
-  const inTime = document.getElementById('jc-in-time').value;
-  const outTime = document.getElementById('jc-out-time').value;
-  const meterReading = Number(document.getElementById('jc-meter-reading').value) || 0;
-  const maintenanceType = document.getElementById('jc-maintenance-type').value;
-  const priority = document.getElementById('jc-priority').value;
-  const issueReported = document.getElementById('jc-issue-reported').value.trim();
-  const status = document.getElementById('jc-status').value;
+  const date = document.getElementById('jc-date')?.value || new Date().toISOString().split('T')[0];
+  const inTime = document.getElementById('jc-in-time')?.value || '';
+  const outTime = document.getElementById('jc-out-time')?.value || '';
+  const meterReading = Number(document.getElementById('jc-meter-reading')?.value) || 0;
+  const maintenanceType = document.getElementById('jc-maintenance-type')?.value || 'Breakdown Repair';
+  const priority = document.getElementById('jc-priority')?.value || 'High';
+  const issueReported = document.getElementById('jc-issue-reported')?.value.trim() || '';
+  if (!issueReported) {
+    showToast('Please describe the reported defect or maintenance requirement.', 'error');
+    return;
+  }
+  const status = document.getElementById('jc-status')?.value || 'In Progress';
 
   // Technician / Mechanic / Helper Crew Assignment
   const leadSelect = document.getElementById('jc-lead-mechanic');
-  const leadMechanicId = leadSelect.value;
-  const leadMechanicName = leadSelect.options[leadSelect.selectedIndex]?.getAttribute('data-name') || 'Unassigned';
-  const leadMechanicRole = leadSelect.options[leadSelect.selectedIndex]?.getAttribute('data-role') || 'Mechanic';
+  const leadMechanicId = leadSelect?.value || '';
+  const leadSelectedOpt = (leadSelect && leadSelect.selectedIndex >= 0) ? leadSelect.options[leadSelect.selectedIndex] : null;
+  const leadMechanicName = leadSelectedOpt?.getAttribute('data-name') || (leadSelectedOpt?.textContent || 'Unassigned');
+  const leadMechanicRole = leadSelectedOpt?.getAttribute('data-role') || 'Mechanic';
+
+  if (!leadMechanicId) {
+    showToast('Please assign a Lead Mechanic / Senior Technician.', 'error');
+    return;
+  }
 
   const asstSelect = document.getElementById('jc-asst-mechanic');
-  const assistantMechanicId = asstSelect.value;
-  const assistantMechanicName = asstSelect.options[asstSelect.selectedIndex]?.getAttribute('data-name') || '';
+  const assistantMechanicId = asstSelect?.value || '';
+  const asstSelectedOpt = (asstSelect && asstSelect.selectedIndex >= 0) ? asstSelect.options[asstSelect.selectedIndex] : null;
+  const assistantMechanicName = assistantMechanicId ? (asstSelectedOpt?.getAttribute('data-name') || '') : '';
 
   const helperSelect = document.getElementById('jc-helper');
-  const helperId = helperSelect.value;
-  const helperName = helperSelect.options[helperSelect.selectedIndex]?.getAttribute('data-name') || '';
+  const helperId = helperSelect?.value || '';
+  const helperSelectedOpt = (helperSelect && helperSelect.selectedIndex >= 0) ? helperSelect.options[helperSelect.selectedIndex] : null;
+  const helperName = helperId ? (helperSelectedOpt?.getAttribute('data-name') || '') : '';
 
   const workCarriedOut = document.getElementById('jc-work-carried-out').value.trim();
   const totalLaborHours = Number(document.getElementById('jc-labor-hours').value) || 0;
@@ -419,7 +447,7 @@ function openPrintJobCardModal(id) {
     partsRowsHtml = `<tr><td colspan="7" class="text-center" style="color: var(--text-dim); padding: 15px;">No spare parts issued yet for this Job Card.</td></tr>`;
   }
 
-  const printContainer = document.getElementById('print-job-card-container');
+  const printContainer = document.getElementById('print-job-card-container') || document.getElementById('print-job-card-content');
   if (printContainer) {
     printContainer.innerHTML = `
       <div class="official-job-card-sheet">

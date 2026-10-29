@@ -33,7 +33,7 @@ function viewSalarySlip(slipId) {
   const ot = Number(slip.earnings?.otWage !== undefined ? slip.earnings.otWage : (slip.otWage || 0));
   const gross = Number(slip.grossPay || 0);
 
-  const fmt = (val) => `?${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const fmt = (val) => `₹${Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   document.getElementById('slip-earn-basic').textContent = fmt(basic);
   document.getElementById('slip-earn-da').textContent = fmt(da);

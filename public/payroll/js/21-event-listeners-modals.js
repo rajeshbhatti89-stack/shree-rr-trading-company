@@ -78,7 +78,7 @@ function initEventListeners() {
         });
         const data = await res.json();
         if (data.success) {
-          showToast(`? Saved today's muster roll for ${date}! (${musterRecords.length} workers)`);
+          showToast(`⚡ Saved today's muster roll for ${date}! (${musterRecords.length} workers)`);
           await fetchAttendance();
           renderAttendanceGlassCards();
           updateDashboardMetrics();
@@ -395,7 +395,7 @@ function initEventListeners() {
 
         renderUsersTable();
         closeModal('modal-user-access');
-        showToast(`? Access & permissions saved! Login is now ${loginAllowed ? 'ACTIVE' : 'LOCKED'}.`);
+        showToast(`⚡ Access & permissions saved! Login is now ${loginAllowed ? 'ACTIVE' : 'LOCKED'}.`);
         await fetchUsers();
         updateDashboardMetrics();
       } catch (err) {
@@ -531,7 +531,7 @@ function initEventListeners() {
           });
           const data = await res.json();
           if (data.success) {
-            showToast(`? Leave recorded! ${days} day(s) deducted from balance.`);
+            showToast(`⚡ Leave recorded! ${days} day(s) deducted from balance.`);
             closeModal('modal-leave');
             await fetchUsers();
             await fetchLeaves();
@@ -557,7 +557,7 @@ function initEventListeners() {
           });
           const data = await res.json();
           if (data.success) {
-            showToast(data.message || `? Successfully credited ${days} leave days!`);
+            showToast(data.message || `⚡ Successfully credited ${days} leave days!`);
             closeModal('modal-leave');
             await fetchUsers();
             await fetchLeaves();
@@ -582,7 +582,7 @@ function initEventListeners() {
           });
           const data = await res.json();
           if (data.success) {
-            showToast(data.message || `? Successfully deducted ${days} leave days!`);
+            showToast(data.message || `⚡ Successfully deducted ${days} leave days!`);
             closeModal('modal-leave');
             await fetchUsers();
             await fetchLeaves();
@@ -625,7 +625,7 @@ function initEventListeners() {
         });
         const data = await res.json();
         if (data.success) {
-          showToast(data.message || `? Successfully updated leave balance!`);
+          showToast(data.message || `⚡ Successfully updated leave balance!`);
           closeModal('modal-leave-credit');
           await fetchUsers();
           await fetchLeaves();

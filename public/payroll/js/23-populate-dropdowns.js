@@ -45,13 +45,13 @@ function populateTechnicianDropdowns(leadId = '', asstId = '', helperId = '', is
   const buildGroupedHtml = (emptyLabel, selectedVal) => {
     let html = `<option value="">-- ${emptyLabel} --</option>`;
     if (mechanics.length > 0) {
-      html += `<optgroup label="?? Mechanics & Technicians">` + mechanics.map(u => formatOption(u, selectedVal)).join('') + `</optgroup>`;
+      html += `<optgroup label="🔧 Mechanics & Technicians">` + mechanics.map(u => formatOption(u, selectedVal)).join('') + `</optgroup>`;
     }
     if (helpers.length > 0) {
-      html += `<optgroup label="?? Helpers & Greasers">` + helpers.map(u => formatOption(u, selectedVal)).join('') + `</optgroup>`;
+      html += `<optgroup label="🛠️ Helpers & Greasers">` + helpers.map(u => formatOption(u, selectedVal)).join('') + `</optgroup>`;
     }
     if (others.length > 0) {
-      html += `<optgroup label="?? Plant Operators & Other Staff">` + others.map(u => formatOption(u, selectedVal)).join('') + `</optgroup>`;
+      html += `<optgroup label="👷 Plant Operators & Other Staff">` + others.map(u => formatOption(u, selectedVal)).join('') + `</optgroup>`;
     }
     return html;
   };

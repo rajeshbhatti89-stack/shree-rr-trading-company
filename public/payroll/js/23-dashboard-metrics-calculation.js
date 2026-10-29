@@ -22,7 +22,7 @@ function updateDashboardMetrics() {
 
   const totalPayrollEl = document.getElementById('kpi-total-payroll');
   if (totalPayrollEl) {
-    totalPayrollEl.textContent = totalNet > 0 ? `?${Math.round(totalNet).toLocaleString('en-IN')}` : '?6,84,520';
+    totalPayrollEl.textContent = totalNet > 0 ? `₹${Math.round(totalNet).toLocaleString('en-IN')}` : (allSalarySlips.length > 0 ? `₹${Math.round(allSalarySlips.reduce((sum, s) => sum + (Number(s.netPay) || 0), 0)).toLocaleString('en-IN')}` : '₹6,84,520');
   }
 
   const workersCount = activeWorkers.filter((u) => u.role === 'Worker').length;
