@@ -90,23 +90,39 @@ function openVehicleComplianceModal() {
 }
 
 function filterCompliancePriority(priority) {
-  const select = document.getElementById('compliance-priority-filter');
-  if (select) select.value = priority;
+  const selects = [
+    document.getElementById('compliance-priority-filter'),
+    document.getElementById('compliance-subview-priority-filter')
+  ].filter(Boolean);
+  selects.forEach(s => s.value = priority);
   renderComplianceMatrix(priority);
 }
 
 function renderComplianceMatrix(presetFilter) {
-  const tbody = document.getElementById('compliance-matrix-tbody');
-  if (!tbody) return;
+  const tbodies = [
+    document.getElementById('compliance-matrix-tbody'),
+    document.getElementById('compliance-subview-matrix-tbody')
+  ].filter(Boolean);
 
-  const search = (document.getElementById('compliance-search-input')?.value || '').toLowerCase().trim();
-  const priorityFilter = presetFilter || document.getElementById('compliance-priority-filter')?.value || 'ALL';
+  if (tbodies.length === 0) return;
+
+  const search = (
+    document.getElementById('compliance-subview-search-input')?.value ||
+    document.getElementById('compliance-search-input')?.value ||
+    ''
+  ).toLowerCase().trim();
+
+  const priorityFilter =
+    presetFilter ||
+    document.getElementById('compliance-subview-priority-filter')?.value ||
+    document.getElementById('compliance-priority-filter')?.value ||
+    'ALL';
 
   let criticalCount = 0;
   let warningCount = 0;
   let compliantCount = 0;
 
-  const analyzedVehicles = allVehicles.map((v) => {
+  const analyzedVehicles = (allVehicles || []).map((v) => {
     const comp = calculateCompliancePriority(v);
     if (comp.overallPriority === 'CRITICAL') criticalCount++;
     else if (comp.overallPriority === 'WARNING') warningCount++;
@@ -114,15 +130,23 @@ function renderComplianceMatrix(presetFilter) {
     return { ...v, comp };
   });
 
-  // Update top counters
-  const elCrit = document.getElementById('compliance-count-critical');
-  const elWarn = document.getElementById('compliance-count-warning');
-  const elComp = document.getElementById('compliance-count-compliant');
-  const elTot = document.getElementById('compliance-count-total');
-  if (elCrit) elCrit.textContent = criticalCount;
-  if (elWarn) elWarn.textContent = warningCount;
-  if (elComp) elComp.textContent = compliantCount;
-  if (elTot) elTot.textContent = allVehicles.length;
+  // Update top counters in both page subview and modal dialog
+  ['compliance-count-critical', 'compliance-subview-count-critical'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = criticalCount;
+  });
+  ['compliance-count-warning', 'compliance-subview-count-warning'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = warningCount;
+  });
+  ['compliance-count-compliant', 'compliance-subview-count-compliant'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = compliantCount;
+  });
+  ['compliance-count-total', 'compliance-subview-count-total'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = (allVehicles || []).length;
+  });
 
   const filtered = analyzedVehicles.filter((v) => {
     const matchPriority = priorityFilter === 'ALL' || v.comp.overallPriority === priorityFilter;
@@ -140,7 +164,8 @@ function renderComplianceMatrix(presetFilter) {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="padding: 28px; color: var(--text-dim);">No vehicle compliance records found matching filter.</td></tr>`;
+    const emptyHtml = `<tr><td colspan="8" class="text-center" style="padding: 28px; color: var(--text-dim);">No vehicle compliance records found matching filter.</td></tr>`;
+    tbodies.forEach(tb => tb.innerHTML = emptyHtml);
     return;
   }
 
@@ -168,7 +193,7 @@ function renderComplianceMatrix(presetFilter) {
     `;
   };
 
-  tbody.innerHTML = filtered
+  const rowsHtml = filtered
     .map((v) => {
       const c = v.comp;
       return `
@@ -197,10 +222,12 @@ function renderComplianceMatrix(presetFilter) {
       `;
     })
     .join('');
+
+  tbodies.forEach(tb => tb.innerHTML = rowsHtml);
 }
 
 function openEditComplianceModal(vehId) {
-  const veh = allVehicles.find((v) => v.id === vehId || v.vehicleNo === vehId);
+  const veh = (allVehicles || []).find((v) => v.id === vehId || v.vehicleNo === vehId);
   if (!veh) return;
 
   document.getElementById('modal-edit-compliance-title').innerHTML = `<i class="fa-solid fa-file-shield text-orange"></i> Update Statutory Compliance (${escapeHtml(veh.vehicleNo)})`;
@@ -223,37 +250,39 @@ function openEditComplianceModal(vehId) {
 }
 
 async function saveVehicleCompliance(e) {
-  const vehId = document.getElementById('edit-comp-veh-id').value;
+  if (e && e.preventDefault) e.preventDefault();
+  const vehId = document.getElementById('edit-comp-veh-id')?.value;
   if (!vehId) return;
 
   const payload = {
-    fitnessCertNo: document.getElementById('edit-comp-fitness-no').value.trim(),
-    fitnessExpiry: document.getElementById('edit-comp-fitness-exp').value,
-    pucCertNo: document.getElementById('edit-comp-puc-no').value.trim(),
-    pucExpiry: document.getElementById('edit-comp-puc-exp').value,
-    insuranceProvider: document.getElementById('edit-comp-insurance-prov').value.trim(),
-    insurancePolicyNo: document.getElementById('edit-comp-insurance-pol').value.trim(),
-    insuranceExpiry: document.getElementById('edit-comp-insurance-exp').value,
-    permitType: document.getElementById('edit-comp-permit-type').value,
-    permitNo: document.getElementById('edit-comp-permit-no').value.trim(),
-    permitExpiry: document.getElementById('edit-comp-permit-exp').value,
-    roadTaxReceipt: document.getElementById('edit-comp-roadtax-no').value.trim(),
-    roadTaxExpiry: document.getElementById('edit-comp-roadtax-exp').value
+    fitnessCertNo: document.getElementById('edit-comp-fitness-no')?.value?.trim() || '',
+    fitnessExpiry: document.getElementById('edit-comp-fitness-exp')?.value || '',
+    pucCertNo: document.getElementById('edit-comp-puc-no')?.value?.trim() || '',
+    pucExpiry: document.getElementById('edit-comp-puc-exp')?.value || '',
+    insuranceProvider: document.getElementById('edit-comp-insurance-prov')?.value?.trim() || '',
+    insurancePolicyNo: document.getElementById('edit-comp-insurance-pol')?.value?.trim() || '',
+    insuranceExpiry: document.getElementById('edit-comp-insurance-exp')?.value || '',
+    permitType: document.getElementById('edit-comp-permit-type')?.value || '',
+    permitNo: document.getElementById('edit-comp-permit-no')?.value?.trim() || '',
+    permitExpiry: document.getElementById('edit-comp-permit-exp')?.value || '',
+    roadTaxReceipt: document.getElementById('edit-comp-roadtax-no')?.value?.trim() || '',
+    roadTaxExpiry: document.getElementById('edit-comp-roadtax-exp')?.value || ''
   };
 
   try {
-    const res = await fetch(`/api/payroll/vehicles/${vehId}/compliance`, {
+    const res = await fetch(`/api/payroll/vehicles/${encodeURIComponent(vehId)}/compliance`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (data.success) {
-      showToast(data.message || '? Statutory compliance updated successfully!');
+      showToast(data.message || '✓ Statutory compliance updated successfully!');
       closeModal('modal-edit-compliance');
       await fetchVehicles();
       renderComplianceMatrix();
       renderVehiclesTable();
+      if (typeof updateVehicleSubNavBadges === 'function') updateVehicleSubNavBadges();
     } else {
       showToast(data.message || 'Failed to update compliance', 'error');
     }
@@ -263,6 +292,16 @@ async function saveVehicleCompliance(e) {
 }
 
 function exportComplianceReportExcel() {
+  if (!allVehicles || allVehicles.length === 0) {
+    showToast('No vehicle records to export.', 'error');
+    return;
+  }
+
+  if (typeof XLSX === 'undefined') {
+    showToast('Excel exporter library not loaded. Please try again.', 'error');
+    return;
+  }
+
   const excelData = [
     ['SHREE RR TRADING COMPANY - HEMM FLEET COMPLIANCE STATUS REPORT'],
     [`Generated Date: ${new Date().toLocaleDateString('en-GB')} | Portal: https://payroll.shreerrtradingcompany.com`],
@@ -288,7 +327,7 @@ function exportComplianceReportExcel() {
     ]
   ];
 
-  allVehicles.forEach((v) => {
+  (allVehicles || []).forEach((v) => {
     const c = calculateCompliancePriority(v);
     excelData.push([
       v.vehicleNo || '',
@@ -324,7 +363,7 @@ function sendComplianceWhatsAppAlert() {
   const criticalList = [];
   const warningList = [];
 
-  allVehicles.forEach((v) => {
+  (allVehicles || []).forEach((v) => {
     const c = calculateCompliancePriority(v);
     if (c.overallPriority === 'CRITICAL') {
       criticalCount++;
@@ -336,7 +375,7 @@ function sendComplianceWhatsAppAlert() {
   });
 
   let text = `🚨 *SHREE RR TRADING COMPANY - FLEET COMPLIANCE ALERT* 🚨\nDate: ${new Date().toLocaleDateString('en-GB')}\n\n`;
-  text += `📊 *Summary:* ${criticalCount} Critical / Expired | ${warningCount} Expiring Soon | ${allVehicles.length} Monitored Fleets\n\n`;
+  text += `📊 *Summary:* ${criticalCount} Critical / Expired | ${warningCount} Expiring Soon | ${(allVehicles || []).length} Monitored Fleets\n\n`;
 
   if (criticalList.length > 0) {
     text += `🚨 *CRITICAL / EXPIRED (Action Required):*\n` + criticalList.slice(0, 8).join('\n') + '\n\n';
@@ -358,6 +397,3 @@ function initOpeningWelcomePopup() {
     }, 600);
   }
 }
-
-
-

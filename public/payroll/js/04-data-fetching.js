@@ -149,6 +149,8 @@ async function fetchVehicles() {
   populateVehicleDropdowns();
   renderTomorrowScheduleTable();
   renderFleetMTTRMatrix();
+  if (typeof renderComplianceMatrix === 'function') renderComplianceMatrix();
+  if (typeof updateVehicleSubNavBadges === 'function') updateVehicleSubNavBadges();
 }
 
 async function fetchVehicleLogs() {

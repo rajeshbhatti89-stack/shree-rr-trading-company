@@ -30,6 +30,7 @@ function switchVehicleSubTab(tabName) {
   // Toggle view panels
   const viewPanels = [
     'vview-fleet-master',
+    'vview-compliance',
     'vview-job-cards',
     'vview-challans',
     'vview-inventory',
@@ -51,6 +52,8 @@ function switchVehicleSubTab(tabName) {
   // Re-render target view
   if (tabName === 'fleet-master') {
     if (typeof renderVehiclesTable === 'function') renderVehiclesTable();
+  } else if (tabName === 'compliance') {
+    if (typeof renderComplianceMatrix === 'function') renderComplianceMatrix();
   } else if (tabName === 'job-cards') {
     if (typeof renderJobCardsTable === 'function') renderJobCardsTable();
   } else if (tabName === 'challans') {
@@ -68,6 +71,20 @@ function switchVehicleSubTab(tabName) {
 }
 
 function updateVehicleSubNavBadges() {
+  const compBadge = document.getElementById('vsub-compliance-count');
+  if (compBadge) {
+    let alertCount = 0;
+    (allVehicles || []).forEach(v => {
+      if (typeof calculateCompliancePriority === 'function') {
+        const c = calculateCompliancePriority(v);
+        if (c.overallPriority === 'CRITICAL' || c.overallPriority === 'WARNING') alertCount++;
+      }
+    });
+    compBadge.textContent = alertCount;
+    compBadge.className = `v-badge ${alertCount > 0 ? 'v-badge-alert' : ''}`;
+    compBadge.title = `${alertCount} vehicle(s) require statutory document renewal`;
+  }
+
   const jcBadge = document.getElementById('vsub-jc-count');
   if (jcBadge) {
     const openCount = (allJobCards || []).filter(j => j.status !== 'Completed' && j.status !== 'Closed').length;

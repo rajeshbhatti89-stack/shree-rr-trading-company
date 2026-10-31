@@ -78,14 +78,14 @@ function renderChallansTable() {
     totalPartsIssued += Number(ch.totalQty) || 0;
   });
 
-  const kpiCount = document.getElementById('kpi-chl-count');
+  const kpiCount = document.getElementById('kpi-chl-count') || document.getElementById('kpi-chl-total');
   if (kpiCount) kpiCount.textContent = (allChallans || []).length;
 
   const kpiVal = document.getElementById('kpi-chl-total-val');
   if (kpiVal) kpiVal.textContent = `₹${Math.round(totalChallansVal).toLocaleString('en-IN')}`;
 
-  const kpiParts = document.getElementById('kpi-chl-total-parts');
-  if (kpiParts) kpiParts.textContent = totalPartsIssued;
+  const kpiParts = document.getElementById('kpi-chl-total-parts') || document.getElementById('kpi-chl-items-count');
+  if (kpiParts) kpiParts.textContent = `${totalPartsIssued} Items`;
 
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="padding: 35px; color: var(--text-dim);">No Material Issue Challans found. Click "+ Issue Material Challan" to issue parts to a vehicle.</td></tr>`;
@@ -157,7 +157,7 @@ function openIssueChallanModal(prefillVehNo = '', prefillJcNo = '') {
   document.getElementById('modal-challan-title').innerHTML = `<i class="fa-solid fa-receipt text-orange"></i> Issue Material Delivery Challan`;
   document.getElementById('form-material-challan').reset();
   document.getElementById('chl-id').value = '';
-  document.getElementById('chl-number').value = `CH-${new Date().getFullYear()}-${(allChallans.length + 1).toString().padStart(4, '0')}`;
+  document.getElementById('chl-number').value = `CH-${new Date().getFullYear()}-${((allChallans || []).length + 1).toString().padStart(4, '0')}`;
   document.getElementById('chl-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('chl-issued-by').value = (currentUser && currentUser.name) ? currentUser.name : 'Workshop Storekeeper';
 
@@ -351,7 +351,9 @@ function updateChallanTotals() {
   if (totItemsElem) totItemsElem.textContent = `${rows.length} Item${rows.length === 1 ? '' : 's'} (${totalQty} Total Qty)`;
 
   const inWordsElem = document.getElementById('chl-summary-amount-in-words');
-  if (inWordsElem) inWordsElem.textContent = numberToWordsIndian(Math.round(grandTotal));
+  if (inWordsElem) {
+    inWordsElem.textContent = (typeof numberToWordsIndian === 'function') ? numberToWordsIndian(Math.round(grandTotal)) : `${Math.round(grandTotal)} Rupees Only`;
+  }
 }
 
 // AUTOMATIC PART SAVING FOR CHALLAN WITH VEHICLE
@@ -382,8 +384,8 @@ async function handleSaveChallan(e) {
     return;
   }
 
-  const issuedBy = document.getElementById('chl-issued-by').value.trim() || 'Workshop Storekeeper';
-  const remarks = document.getElementById('chl-remarks').value.trim();
+  const issuedBy = document.getElementById('chl-issued-by')?.value?.trim() || 'Workshop Storekeeper';
+  const remarks = document.getElementById('chl-remarks')?.value?.trim() || '';
   const autoSaveNewParts = document.getElementById('chl-auto-save-parts')?.checked !== false;
 
   // Extract items from rows

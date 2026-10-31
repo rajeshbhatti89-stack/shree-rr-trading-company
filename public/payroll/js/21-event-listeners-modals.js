@@ -497,6 +497,8 @@ function initEventListeners() {
   // Compliance Filter & Search Listeners
   document.getElementById('compliance-search-input')?.addEventListener('input', () => renderComplianceMatrix());
   document.getElementById('compliance-priority-filter')?.addEventListener('change', () => renderComplianceMatrix());
+  document.getElementById('compliance-subview-search-input')?.addEventListener('input', () => renderComplianceMatrix());
+  document.getElementById('compliance-subview-priority-filter')?.addEventListener('change', () => renderComplianceMatrix());
 
   // Form: Unified Leave Management (Apply / Credit / Deduct)
   const formLeave = document.getElementById('form-leave');

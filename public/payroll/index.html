@@ -37,7 +37,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- Payroll Theme Stylesheet -->
-  <link rel="stylesheet" href="/payroll/payroll.css?v=2.7.0">
+  <link rel="stylesheet" href="/payroll/payroll.css?v=2.7.1">
 </head>
 
 <body>
@@ -168,7 +168,7 @@
         <a href="#vehicles" class="nav-item" data-tab="vehicles" id="nav-vehicles">
           <i class="fa-solid fa-truck-monster"></i> <span>Plant Vehicles & Fleets</span>
         </a>
-        <a href="#compliance" class="nav-item" id="nav-compliance" onclick="openVehicleComplianceModal(); return false;"
+        <a href="#compliance" class="nav-item" id="nav-compliance" data-tab="vehicles" data-vtab="compliance"
           title="Track Fitness, PUC, Insurance & Permits">
           <i class="fa-solid fa-shield-halved text-warning"></i> <span>Vehicle Compliance</span>
         </a>
@@ -440,6 +440,10 @@
                 <i class="fa-solid fa-truck-monster text-orange"></i> Plant Fleet Master
                 <span class="v-badge" id="vsub-fleet-count">0</span>
               </button>
+              <button class="v-subnav-btn" data-vtab="compliance">
+                <i class="fa-solid fa-shield-halved text-orange"></i> Statutory Compliance
+                <span class="v-badge" id="vsub-compliance-count">0</span>
+              </button>
               <button class="v-subnav-btn" data-vtab="job-cards">
                 <i class="fa-solid fa-clipboard-check text-orange"></i> Maintenance Job Cards
                 <span class="v-badge" id="vsub-jc-count">0</span>
@@ -533,6 +537,120 @@
             </table>
           </div>
           </div> <!-- /#vview-fleet-master -->
+
+          <!-- SUB-VIEW 2: Statutory & Safety Compliance Matrix Dashboard -->
+          <div id="vview-compliance" class="vehicle-subview hidden">
+            <!-- Compliance KPI Summary Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
+              <div class="compliance-kpi-card critical" onclick="filterCompliancePriority('CRITICAL')"
+                style="cursor: pointer; background: #FEF2F2; border: 1.5px solid #FCA5A5; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #EF4444; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: #991B1B; text-transform: uppercase;">Critical / Expired</div>
+                  <div style="font-size: 24px; font-weight: 900; color: #DC2626;" id="compliance-subview-count-critical">0</div>
+                  <div style="font-size: 11px; color: #B91C1C;">Action: Immediate renewal</div>
+                </div>
+              </div>
+
+              <div class="compliance-kpi-card warning" onclick="filterCompliancePriority('WARNING')"
+                style="cursor: pointer; background: #FFFBEB; border: 1.5px solid #FCD34D; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #F59E0B; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: #92400E; text-transform: uppercase;">Expiring Soon (&lt; 30 Days)</div>
+                  <div style="font-size: 24px; font-weight: 900; color: #D97706;" id="compliance-subview-count-warning">0</div>
+                  <div style="font-size: 11px; color: #B45309;">Renewal in progress</div>
+                </div>
+              </div>
+
+              <div class="compliance-kpi-card compliant" onclick="filterCompliancePriority('COMPLIANT')"
+                style="cursor: pointer; background: #ECFDF5; border: 1.5px solid #6EE7B7; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: #10B981; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: #065F46; text-transform: uppercase;">Fully Compliant</div>
+                  <div style="font-size: 24px; font-weight: 900; color: #059669;" id="compliance-subview-count-compliant">0</div>
+                  <div style="font-size: 11px; color: #047857;">Permitted on plant site</div>
+                </div>
+              </div>
+
+              <div class="compliance-kpi-card all" onclick="filterCompliancePriority('ALL')"
+                style="cursor: pointer; background: #F8FAFC; border: 1.5px solid #CBD5E1; border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 14px;">
+                <div style="width: 42px; height: 42px; border-radius: 50%; background: var(--logo-navy); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-truck-monster"></i>
+                </div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Monitored Fleets</div>
+                  <div style="font-size: 24px; font-weight: 900; color: var(--logo-navy);" id="compliance-subview-count-total">0</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">Click to show all</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Toolbar: Search, Filter, Export & Alerts -->
+            <div class="section-top-actions">
+              <div class="search-filter-box">
+                <div class="search-input-wrap">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="compliance-subview-search-input" placeholder="Search vehicle reg no, equipment name, policy no, permit no...">
+                </div>
+                <select id="compliance-subview-priority-filter" class="custom-select">
+                  <option value="ALL">All Notification Priorities</option>
+                  <option value="CRITICAL">🚨 Critical / Expired Only</option>
+                  <option value="WARNING">⚠️ Expiring Soon (&lt; 30 Days)</option>
+                  <option value="COMPLIANT">🟢 Compliant / Valid Only</option>
+                </select>
+              </div>
+
+              <div class="action-buttons-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-outline-success btn-sm" onclick="exportComplianceReportExcel()" title="Export Compliance Spreadsheet">
+                  <i class="fa-solid fa-file-excel"></i> Export Excel
+                </button>
+                <button class="btn btn-whatsapp btn-sm" onclick="sendComplianceWhatsAppAlert()" title="Send WhatsApp Compliance Digest">
+                  <i class="fa-brands fa-whatsapp"></i> WhatsApp Digest
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="document.getElementById('btn-open-add-vehicle-modal').click()">
+                  <i class="fa-solid fa-truck-ramp-box"></i> Add Plant Vehicle
+                </button>
+              </div>
+            </div>
+
+            <!-- Compliance Matrix Table Container -->
+            <div class="table-container peach-glass" style="margin-bottom: 28px;">
+              <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-shield-halved text-orange"></i> Plant Fleet Statutory & Safety Compliance Matrix
+                </h3>
+                <span class="badge-pill badge-neutral" style="font-size: 11px;">
+                  <i class="fa-solid fa-clock-rotate-left"></i> Real-time Expiry Countdown
+                </span>
+              </div>
+              <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+                <table class="data-table" id="compliance-matrix-subview-table">
+                  <thead style="position: sticky; top: 0; background: #FFF5EE; z-index: 10;">
+                    <tr>
+                      <th>Vehicle & Model</th>
+                      <th>Fitness Cert</th>
+                      <th>PUC (Pollution)</th>
+                      <th>Insurance Policy</th>
+                      <th>Goods Permit</th>
+                      <th>Road Tax</th>
+                      <th>Priority Status</th>
+                      <th class="text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="compliance-subview-matrix-tbody">
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div> <!-- /#vview-compliance -->
+
 
           <!-- SUB-VIEW 2: Maintenance Job Cards (With Crew Assignment) -->
           <div id="vview-job-cards" class="vehicle-subview hidden">
@@ -1821,7 +1939,7 @@
             </div>
             <div class="form-group" style="grid-column: span 2;">
               <label>Part / Item Name *</label>
-              <input type="text" id="inv-part-name" class="custom-input" placeholder="e.g. Hydraulic Pump Seal Kit" required>
+              <input type="text" id="inv-part-name" name="name" class="custom-input" placeholder="e.g. Hydraulic Pump Seal Kit" required>
             </div>
             <div class="form-group">
               <label>Category *</label>
@@ -3402,11 +3520,11 @@
               2. Letter Category / Type *</label>
             <select id="letter-type-select" class="custom-select" style="font-weight: 700; color: var(--logo-navy);"
               onchange="updateLetterTemplate()">
-              <option value="appointment">ðŸ“„ Formal Letter of Appointment</option>
-              <option value="offer">ðŸ’¼ Employment Offer & Welcome Letter</option>
-              <option value="experience">ðŸ† Work Experience & Service Certificate</option>
-              <option value="relieving">ðŸ¤ Relieving & Clearance Certificate</option>
-              <option value="increment">ðŸ“ˆ Salary Increment & Revision Letter</option>
+              <option value="appointment">📜 Formal Letter of Appointment</option>
+              <option value="offer">🤝 Employment Offer & Welcome Letter</option>
+              <option value="experience">🏆 Work Experience & Service Certificate</option>
+              <option value="relieving">💼 Relieving & Clearance Certificate</option>
+              <option value="increment">📈 Salary Increment & Revision Letter</option>
             </select>
           </div>
 
@@ -4111,7 +4229,7 @@
               <select id="bulk-wa-delay-select" class="custom-select"
                 style="font-size: 12px; padding: 4px 10px; height: 32px; font-weight: 600; min-width: 170px;"
                 onchange="handleBulkDelayChange()">
-                <option value="3" selected>âš¡ Fast (3s auto-advance)</option>
+                <option value="3" selected>⚡ Fast (3s auto-advance)</option>
                 <option value="5">â± Standard (5s auto-advance)</option>
                 <option value="0">âœ‹ Manual (Click 'Send Next')</option>
               </select>
@@ -4184,41 +4302,41 @@
   <div id="toast" class="toast hidden"></div>
 
   <!-- Application Logic JS -->
-  <script src="/payroll/js/00-globals.js?v=2.7.0"></script>
-  <script src="/payroll/js/01-clock-display.js?v=2.7.0"></script>
-  <script src="/payroll/js/02-navigation-tabs-mobile-drawer.js?v=2.7.0"></script>
-  <script src="/payroll/js/03-authentication-rbac-session.js?v=2.7.0"></script>
-  <script src="/payroll/js/04-data-fetching.js?v=2.7.0"></script>
-  <script src="/payroll/js/05-render-users-table.js?v=2.7.0"></script>
-  <script src="/payroll/js/06-superadmin-dynamic-permissions-modal-handler.js?v=2.7.0"></script>
-  <script src="/payroll/js/07-delete-user.js?v=2.7.0"></script>
-  <script src="/payroll/js/08-add-edit-user-modal.js?v=2.7.0"></script>
-  <script src="/payroll/js/09-vehicles-management-table.js?v=2.7.0"></script>
-  <script src="/payroll/js/10-vehicle-bulk-import-engine-excel-csv.js?v=2.7.0"></script>
-  <script src="/payroll/js/11-vehicle-availability-mttr-reliability-analytics.js?v=2.7.0"></script>
-  <script src="/payroll/js/12-1-click-excel-mttr-availability-exporter.js?v=2.7.0"></script>
-  <script src="/payroll/js/13-daily-muster-roll-today-s-live-attendance.js?v=2.7.0"></script>
-  <script src="/payroll/js/14-tomorrow-s-shift-machine-schedule-system.js?v=2.7.0"></script>
-  <script src="/payroll/js/15-attendance-glass-view-leave-balance-tracker-live-dynamic-sync-with-muster-roll-approved-leaves.js?v=2.7.0"></script>
-  <script src="/payroll/js/16-1-click-excel-reports-exporters.js?v=2.7.0"></script>
-  <script src="/payroll/js/17-bulk-employee-upload.js?v=2.7.0"></script>
-  <script src="/payroll/js/18-salary-slips-table.js?v=2.7.0"></script>
-  <script src="/payroll/js/19-whatsapp-dispatch-strict-1-page-pdf-engine.js?v=2.7.0"></script>
-  <script src="/payroll/js/20-official-printable-salary-slip-modal.js?v=2.7.0"></script>
-  <script src="/payroll/js/21-event-listeners-modals.js?v=2.7.0"></script>
-  <script src="/payroll/js/22-leave-management-functions-modal-helpers.js?v=2.7.0"></script>
-  <script src="/payroll/js/23-dashboard-metrics-calculation.js?v=2.7.0"></script>
-  <script src="/payroll/js/23-populate-dropdowns.js?v=2.7.0"></script>
-  <script src="/payroll/js/23-vehicle-statutory-compliance-tracking-engine.js?v=2.7.0"></script>
-  <script src="/payroll/js/24-utilities.js?v=2.7.0"></script>
-  <script src="/payroll/js/25-system-generated-hr-letters-appointment-engine.js?v=2.7.0"></script>
-  <script src="/payroll/js/26-inventory-spares-management.js?v=2.7.0"></script>
-  <script src="/payroll/js/27-job-cards-maintenance-engine.js?v=2.7.0"></script>
-  <script src="/payroll/js/28-material-issue-challans-engine.js?v=2.7.0"></script>
-  <script src="/payroll/js/29-vehicle-consumption-cost-analytics.js?v=2.7.0"></script>
-  <script src="/payroll/js/30-vehicle-subnav-tabs.js?v=2.7.0"></script>
+  <script src="/payroll/js/00-globals.js?v=2.7.1"></script>
+  <script src="/payroll/js/24-utilities.js?v=2.7.1"></script>
+  <script src="/payroll/js/01-clock-display.js?v=2.7.1"></script>
+  <script src="/payroll/js/02-navigation-tabs-mobile-drawer.js?v=2.7.1"></script>
+  <script src="/payroll/js/03-authentication-rbac-session.js?v=2.7.1"></script>
+  <script src="/payroll/js/04-data-fetching.js?v=2.7.1"></script>
+  <script src="/payroll/js/05-render-users-table.js?v=2.7.1"></script>
+  <script src="/payroll/js/06-superadmin-dynamic-permissions-modal-handler.js?v=2.7.1"></script>
+  <script src="/payroll/js/07-delete-user.js?v=2.7.1"></script>
+  <script src="/payroll/js/08-add-edit-user-modal.js?v=2.7.1"></script>
+  <script src="/payroll/js/09-vehicles-management-table.js?v=2.7.1"></script>
+  <script src="/payroll/js/10-vehicle-bulk-import-engine-excel-csv.js?v=2.7.1"></script>
+  <script src="/payroll/js/11-vehicle-availability-mttr-reliability-analytics.js?v=2.7.1"></script>
+  <script src="/payroll/js/12-1-click-excel-mttr-availability-exporter.js?v=2.7.1"></script>
+  <script src="/payroll/js/13-daily-muster-roll-today-s-live-attendance.js?v=2.7.1"></script>
+  <script src="/payroll/js/14-tomorrow-s-shift-machine-schedule-system.js?v=2.7.1"></script>
+  <script src="/payroll/js/15-attendance-glass-view-leave-balance-tracker-live-dynamic-sync-with-muster-roll-approved-leaves.js?v=2.7.1"></script>
+  <script src="/payroll/js/16-1-click-excel-reports-exporters.js?v=2.7.1"></script>
+  <script src="/payroll/js/17-bulk-employee-upload.js?v=2.7.1"></script>
+  <script src="/payroll/js/18-salary-slips-table.js?v=2.7.1"></script>
+  <script src="/payroll/js/19-whatsapp-dispatch-strict-1-page-pdf-engine.js?v=2.7.1"></script>
+  <script src="/payroll/js/20-official-printable-salary-slip-modal.js?v=2.7.1"></script>
+  <script src="/payroll/js/21-event-listeners-modals.js?v=2.7.1"></script>
+  <script src="/payroll/js/22-leave-management-functions-modal-helpers.js?v=2.7.1"></script>
+  <script src="/payroll/js/23-dashboard-metrics-calculation.js?v=2.7.1"></script>
+  <script src="/payroll/js/23-populate-dropdowns.js?v=2.7.1"></script>
+  <script src="/payroll/js/23-vehicle-statutory-compliance-tracking-engine.js?v=2.7.1"></script>
+  <script src="/payroll/js/25-system-generated-hr-letters-appointment-engine.js?v=2.7.1"></script>
+  <script src="/payroll/js/26-inventory-spares-management.js?v=2.7.1"></script>
+  <script src="/payroll/js/27-job-cards-maintenance-engine.js?v=2.7.1"></script>
+  <script src="/payroll/js/28-material-issue-challans-engine.js?v=2.7.1"></script>
+  <script src="/payroll/js/29-vehicle-consumption-cost-analytics.js?v=2.7.1"></script>
+  <script src="/payroll/js/30-vehicle-subnav-tabs.js?v=2.7.1"></script>
   <!-- PWA Service Worker & Install Engine -->
-  <script src="/pwa.js?v=2.7.0"></script>
+  <script src="/pwa.js?v=2.7.1"></script>
 </body>
 
 </html>

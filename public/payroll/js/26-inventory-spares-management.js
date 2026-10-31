@@ -181,14 +181,25 @@ function renderInventoryTable() {
 }
 
 function openAddInventoryModal() {
-  document.getElementById('modal-inventory-title').innerHTML = `<i class="fa-solid fa-boxes-stacked text-orange"></i> Add Spare Part / Material`;
-  document.getElementById('form-inventory-item').reset();
-  document.getElementById('inv-item-id').value = '';
-  document.getElementById('inv-part-no').readOnly = false;
-  document.getElementById('inv-part-no').value = `PRT-${Date.now().toString().slice(-5)}`;
-  document.getElementById('inv-unit').value = 'Nos';
-  document.getElementById('inv-warranty').value = '6 Months';
-  document.getElementById('inv-min-stock').value = '2';
+  const titleEl = document.getElementById('modal-inventory-title');
+  if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-boxes-stacked text-orange"></i> Add Spare Part / Material`;
+  const formEl = document.getElementById('form-inventory-item');
+  if (formEl) formEl.reset();
+  const idEl = document.getElementById('inv-item-id');
+  if (idEl) idEl.value = '';
+  const partNoEl = document.getElementById('inv-part-no');
+  if (partNoEl) {
+    partNoEl.readOnly = false;
+    partNoEl.value = `PRT-${Date.now().toString().slice(-5)}`;
+  }
+  const nameEl = document.getElementById('inv-part-name') || document.getElementById('inv-name');
+  if (nameEl) nameEl.value = '';
+  const unitEl = document.getElementById('inv-unit');
+  if (unitEl) unitEl.value = 'Nos';
+  const wtyEl = document.getElementById('inv-warranty');
+  if (wtyEl) wtyEl.value = '6 Months';
+  const minStockEl = document.getElementById('inv-min-stock');
+  if (minStockEl) minStockEl.value = '2';
   openModal('modal-inventory-item');
 }
 
@@ -196,38 +207,63 @@ function editInventoryItem(id) {
   const item = (allInventory || []).find(i => i.id === id || i.partNo === id);
   if (!item) return;
 
-  document.getElementById('modal-inventory-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-orange"></i> Edit Spare Part (${escapeHtml(item.partNo)})`;
-  document.getElementById('inv-item-id').value = item.id;
-  document.getElementById('inv-part-no').value = item.partNo || '';
-  document.getElementById('inv-part-no').readOnly = true;
-  document.getElementById('inv-name').value = item.name || '';
-  document.getElementById('inv-category').value = item.category || 'Mechanical';
-  document.getElementById('inv-stock-qty').value = item.stockQty !== undefined ? item.stockQty : 0;
-  document.getElementById('inv-unit').value = item.unit || 'Nos';
-  document.getElementById('inv-unit-price').value = item.unitPrice !== undefined ? item.unitPrice : '';
-  document.getElementById('inv-warranty').value = item.warranty || 'N/A';
-  document.getElementById('inv-min-stock').value = item.minStock !== undefined ? item.minStock : 2;
-  document.getElementById('inv-supplier').value = item.supplier || '';
-  document.getElementById('inv-location').value = item.location || '';
-  document.getElementById('inv-notes').value = item.notes || '';
+  const titleEl = document.getElementById('modal-inventory-title');
+  if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square text-orange"></i> Edit Spare Part (${escapeHtml(item.partNo)})`;
+  const idEl = document.getElementById('inv-item-id');
+  if (idEl) idEl.value = item.id;
+  const partNoEl = document.getElementById('inv-part-no');
+  if (partNoEl) {
+    partNoEl.value = item.partNo || '';
+    partNoEl.readOnly = true;
+  }
+  const nameEl = document.getElementById('inv-part-name') || document.getElementById('inv-name');
+  if (nameEl) nameEl.value = item.name || '';
+  const catEl = document.getElementById('inv-category');
+  if (catEl) catEl.value = item.category || 'Mechanical';
+  const stockEl = document.getElementById('inv-stock-qty');
+  if (stockEl) stockEl.value = item.stockQty !== undefined ? item.stockQty : 0;
+  const unitEl = document.getElementById('inv-unit');
+  if (unitEl) unitEl.value = item.unit || 'Nos';
+  const priceEl = document.getElementById('inv-unit-price');
+  if (priceEl) priceEl.value = item.unitPrice !== undefined ? item.unitPrice : '';
+  const wtyEl = document.getElementById('inv-warranty');
+  if (wtyEl) wtyEl.value = item.warranty || 'N/A';
+  const minEl = document.getElementById('inv-min-stock');
+  if (minEl) minEl.value = item.minStock !== undefined ? item.minStock : 2;
+  const suppEl = document.getElementById('inv-supplier');
+  if (suppEl) suppEl.value = item.supplier || '';
+  const locEl = document.getElementById('inv-location');
+  if (locEl) locEl.value = item.location || '';
+  const notesEl = document.getElementById('inv-notes');
+  if (notesEl) notesEl.value = item.notes || '';
+  const compVehEl = document.getElementById('inv-compatible-vehicles');
+  if (compVehEl) compVehEl.value = item.compatibleVehicles || '';
 
   openModal('modal-inventory-item');
 }
 
 async function handleSaveInventoryItem(e) {
-  e.preventDefault();
-  const id = document.getElementById('inv-item-id').value.trim();
-  const partNo = document.getElementById('inv-part-no').value.trim();
-  const name = document.getElementById('inv-name').value.trim();
-  const category = document.getElementById('inv-category').value.trim();
-  const stockQty = Number(document.getElementById('inv-stock-qty').value) || 0;
-  const unit = document.getElementById('inv-unit').value.trim() || 'Nos';
-  const unitPrice = Number(document.getElementById('inv-unit-price').value) || 0;
-  const warranty = document.getElementById('inv-warranty').value.trim() || 'N/A';
-  const minStock = Number(document.getElementById('inv-min-stock').value) || 2;
-  const supplier = document.getElementById('inv-supplier').value.trim();
-  const location = document.getElementById('inv-location').value.trim();
-  const notes = document.getElementById('inv-notes').value.trim();
+  if (e && e.preventDefault) e.preventDefault();
+  const id = document.getElementById('inv-item-id')?.value?.trim() || '';
+  const partNo = document.getElementById('inv-part-no')?.value?.trim() || `PRT-${Date.now().toString().slice(-5)}`;
+  const nameInput = document.getElementById('inv-part-name') || document.getElementById('inv-name');
+  const name = nameInput ? nameInput.value.trim() : '';
+
+  if (!name) {
+    showToast('Please enter the Spare Part / Item Name.', 'error');
+    return;
+  }
+
+  const category = document.getElementById('inv-category')?.value?.trim() || 'General Spares';
+  const stockQty = Number(document.getElementById('inv-stock-qty')?.value) || 0;
+  const unit = document.getElementById('inv-unit')?.value?.trim() || 'Nos';
+  const unitPrice = Number(document.getElementById('inv-unit-price')?.value) || 0;
+  const warranty = document.getElementById('inv-warranty')?.value?.trim() || 'N/A';
+  const minStock = Number(document.getElementById('inv-min-stock')?.value) || 2;
+  const supplier = document.getElementById('inv-supplier')?.value?.trim() || '';
+  const location = document.getElementById('inv-location')?.value?.trim() || '';
+  const notes = document.getElementById('inv-notes')?.value?.trim() || '';
+  const compatibleVehicles = document.getElementById('inv-compatible-vehicles')?.value?.trim() || '';
 
   const payload = {
     partNo,
@@ -240,7 +276,8 @@ async function handleSaveInventoryItem(e) {
     minStock,
     supplier,
     location,
-    notes
+    notes,
+    compatibleVehicles
   };
 
   const isEdit = Boolean(id);

@@ -3,12 +3,14 @@ function populateUserDropdowns() {
   const leaveSelect = document.getElementById('leave-select-user');
   const creditSelect = document.getElementById('credit-select-user');
 
-  const options = allUsers
+  const options = (allUsers || [])
     .filter((u) => u.role !== 'Super Admin')
     .map((u) => {
       const bal = u.leaveBalance !== undefined ? u.leaveBalance : 10;
       const tot = u.totalLeaves || 10;
-      return `<option value="${u.id || u.empId}">${escapeHtml(u.name)} (${u.empId}) - ${escapeHtml(u.role || 'Worker')} [Bal: ${bal} / ${tot} Days]</option>`;
+      const safeName = (typeof escapeHtml === 'function') ? escapeHtml(u.name || '') : (u.name || '');
+      const safeRole = (typeof escapeHtml === 'function') ? escapeHtml(u.role || 'Worker') : (u.role || 'Worker');
+      return `<option value="${u.id || u.empId}">${safeName} (${u.empId || ''}) - ${safeRole} [Bal: ${bal} / ${tot} Days]</option>`;
     })
     .join('');
 
@@ -39,7 +41,10 @@ function populateTechnicianDropdowns(leadId = '', asstId = '', helperId = '', is
 
   const formatOption = (u, selectedKey) => {
     const isSelected = (u.id === selectedKey || u.empId === selectedKey);
-    return `<option value="${u.id}" data-empid="${u.empId}" data-name="${escapeHtml(u.name)}" data-role="${escapeHtml(u.designation || 'Staff')}" ${isSelected ? 'selected' : ''}>${escapeHtml(u.name)} (${u.empId}) - ${escapeHtml(u.designation || 'Staff')}</option>`;
+    const safeName = (typeof escapeHtml === 'function') ? escapeHtml(u.name || '') : (u.name || '');
+    const safeDesig = (typeof escapeHtml === 'function') ? escapeHtml(u.designation || 'Staff') : (u.designation || 'Staff');
+    const uVal = u.id || u.empId || '';
+    return `<option value="${uVal}" data-empid="${u.empId || ''}" data-name="${safeName}" data-role="${safeDesig}" ${isSelected ? 'selected' : ''}>${safeName} (${u.empId || ''}) - ${safeDesig}</option>`;
   };
 
   const buildGroupedHtml = (emptyLabel, selectedVal) => {
@@ -52,6 +57,10 @@ function populateTechnicianDropdowns(leadId = '', asstId = '', helperId = '', is
     }
     if (others.length > 0) {
       html += `<optgroup label="👷 Plant Operators & Other Staff">` + others.map(u => formatOption(u, selectedVal)).join('') + `</optgroup>`;
+    }
+    // Fallback if no specific mechanic/helper tags found
+    if (mechanics.length === 0 && helpers.length === 0 && others.length === 0 && staff.length > 0) {
+      html += staff.map(u => formatOption(u, selectedVal)).join('');
     }
     return html;
   };
@@ -71,11 +80,11 @@ function populateTechnicianDropdowns(leadId = '', asstId = '', helperId = '', is
   const filterTechSelect = document.getElementById('filter-jc-mechanic');
   if (filterTechSelect) {
     let techFilterHtml = `<option value="ALL">All Technicians / Mechanics</option>`;
-    mechanics.forEach(m => {
-      techFilterHtml += `<option value="${m.id}">${escapeHtml(m.name)} (${m.empId})</option>`;
+    const techPool = mechanics.length > 0 ? mechanics : staff;
+    techPool.forEach(m => {
+      const safeName = (typeof escapeHtml === 'function') ? escapeHtml(m.name || '') : (m.name || '');
+      techFilterHtml += `<option value="${m.id || m.empId}">${safeName} (${m.empId || ''})</option>`;
     });
     filterTechSelect.innerHTML = techFilterHtml;
   }
 }
-
-

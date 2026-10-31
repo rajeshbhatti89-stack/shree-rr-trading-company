@@ -5,7 +5,12 @@ function initNavigation() {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const tabId = item.getAttribute('data-tab');
+      if (!tabId) return; // Never blank out the viewport
+      const vTab = item.getAttribute('data-vtab');
       switchTab(tabId);
+      if (vTab && typeof switchVehicleSubTab === 'function') {
+        switchVehicleSubTab(vTab);
+      }
     });
   });
 }
@@ -68,7 +73,14 @@ function closeMobileSidebar() {
 }
 
 function switchTab(tabId) {
+  if (!tabId) return;
   closeMobileSidebar();
+
+  let targetVTab = null;
+  if (tabId === 'compliance') {
+    tabId = 'vehicles';
+    targetVTab = 'compliance';
+  }
 
   document.querySelectorAll('.sidebar-menu .nav-item').forEach((i) => i.classList.remove('active'));
   document.querySelectorAll('.tab-pane').forEach((p) => p.classList.remove('active'));
@@ -86,7 +98,9 @@ function switchTab(tabId) {
     }
   }
 
-  const navItem = document.querySelector(`.sidebar-menu .nav-item[data-tab="${tabId}"]`);
+  const navItem = targetVTab
+    ? document.querySelector(`.sidebar-menu .nav-item[data-vtab="${targetVTab}"]`)
+    : (document.querySelector(`.sidebar-menu .nav-item[data-tab="${tabId}"]:not([data-vtab])`) || document.querySelector(`.sidebar-menu .nav-item[data-tab="${tabId}"]`));
   const tabPane = document.getElementById(`tab-${tabId}`);
 
   if (navItem) navItem.classList.add('active');
@@ -115,10 +129,14 @@ function switchTab(tabId) {
     if (typeof renderChallansTable === 'function') renderChallansTable();
     if (typeof renderInventoryTable === 'function') renderInventoryTable();
     if (typeof renderVehicleConsumptionAnalytics === 'function') renderVehicleConsumptionAnalytics();
+    if (typeof renderComplianceMatrix === 'function') renderComplianceMatrix();
+    if (typeof updateVehicleSubNavBadges === 'function') updateVehicleSubNavBadges();
+    if (targetVTab && typeof switchVehicleSubTab === 'function') {
+      switchVehicleSubTab(targetVTab);
+    }
   }
   if (tabId === 'muster') renderMusterRollTable();
   if (tabId === 'tomorrow') renderTomorrowScheduleTable();
   if (tabId === 'attendance-glass') renderAttendanceGlassCards();
   if (tabId === 'reports') populateReportsDefaults();
 }
-

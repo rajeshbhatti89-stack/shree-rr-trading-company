@@ -324,10 +324,10 @@ async function handleSaveJobCard(e) {
   const helperSelectedOpt = (helperSelect && helperSelect.selectedIndex >= 0) ? helperSelect.options[helperSelect.selectedIndex] : null;
   const helperName = helperId ? (helperSelectedOpt?.getAttribute('data-name') || '') : '';
 
-  const workCarriedOut = document.getElementById('jc-work-carried-out').value.trim();
-  const totalLaborHours = Number(document.getElementById('jc-labor-hours').value) || 0;
-  const completedDate = document.getElementById('jc-completed-date').value;
-  const notes = document.getElementById('jc-notes').value.trim();
+  const workCarriedOut = document.getElementById('jc-work-carried-out')?.value?.trim() || '';
+  const totalLaborHours = Number(document.getElementById('jc-labor-hours')?.value) || 0;
+  const completedDate = document.getElementById('jc-completed-date')?.value || '';
+  const notes = document.getElementById('jc-notes')?.value?.trim() || '';
 
   const payload = {
     jobCardNo,

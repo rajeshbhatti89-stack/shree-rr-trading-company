@@ -31,13 +31,18 @@ function showToast(msg, type = 'success') {
 }
 
 function escapeHtml(str) {
-  if (!str) return '';
+  if (!str && str !== 0) return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+function formatCurrency(amount) {
+  const num = Number(amount) || 0;
+  return '₹' + Math.round(num).toLocaleString('en-IN');
 }
 
 function numberToWordsIndian(num) {
@@ -79,3 +84,10 @@ function numberToWordsIndian(num) {
   return result ? result + ' Only' : 'Zero Only';
 }
 
+// Window global assignments to ensure universal accessibility
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.showToast = showToast;
+window.escapeHtml = escapeHtml;
+window.formatCurrency = formatCurrency;
+window.numberToWordsIndian = numberToWordsIndian;
