@@ -389,11 +389,23 @@ function sendComplianceWhatsAppAlert() {
 }
 
 function initOpeningWelcomePopup() {
-  const hasShown = sessionStorage.getItem('srr_welcome_popup_seen');
-  if (!hasShown) {
-    setTimeout(() => {
-      openModal('modal-opening-welcome');
-      sessionStorage.setItem('srr_welcome_popup_seen', 'true');
-    }, 600);
+  // Disabled automatic 600ms popup to prevent modal trapping and ensure seamless portal access
+  return;
+}
+
+// Self-initialization check for safety
+if (typeof document !== 'undefined') {
+  const initComp = () => {
+    const subFilter = document.getElementById('compliance-subview-priority-filter');
+    const modalFilter = document.getElementById('compliance-priority-filter');
+    if (subFilter && modalFilter) {
+      subFilter.addEventListener('change', () => { modalFilter.value = subFilter.value; renderComplianceMatrix(); });
+      modalFilter.addEventListener('change', () => { subFilter.value = modalFilter.value; renderComplianceMatrix(); });
+    }
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initComp);
+  } else {
+    initComp();
   }
 }

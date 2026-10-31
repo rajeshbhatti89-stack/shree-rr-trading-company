@@ -20,6 +20,26 @@ function initInventoryManagement() {
     formInv.addEventListener('submit', handleSaveInventoryItem);
   }
 
+  const btnSaveInv = document.getElementById('btn-save-inventory');
+  if (btnSaveInv) {
+    btnSaveInv.addEventListener('click', (e) => {
+      const name = (document.getElementById('inv-part-name')?.value || document.getElementById('inv-name')?.value || '').trim();
+      if (!name) {
+        e.preventDefault();
+        showToast('Please enter the Spare Part / Item Name.', 'error');
+        document.getElementById('inv-part-name')?.focus();
+        return;
+      }
+      const price = document.getElementById('inv-unit-price')?.value;
+      if (price === '' || isNaN(Number(price))) {
+        e.preventDefault();
+        showToast('Please enter the Unit Price (₹).', 'error');
+        document.getElementById('inv-unit-price')?.focus();
+        return;
+      }
+    });
+  }
+
   const formInward = document.getElementById('form-stock-inward');
   if (formInward) {
     formInward.addEventListener('submit', handleSaveStockInward);
@@ -430,4 +450,12 @@ function exportInventoryExcel() {
   const fileName = `Shree_RR_Trading_Spares_Inventory_Master_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(wb, fileName);
   showToast('Excel inventory report downloaded successfully!');
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initInventoryManagement);
+  } else {
+    initInventoryManagement();
+  }
 }

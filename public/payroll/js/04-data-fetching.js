@@ -18,8 +18,8 @@ async function loadAllData() {
 
 const MOCK_DATA_PURGE_IDS = {
   INVENTORY: new Set(['inv-001', 'inv-002', 'inv-003', 'inv-004', 'inv-005', 'inv-006', 'inv-007', 'inv-008', 'inv-009', 'inv-010', 'inv-011', 'inv-012']),
-  JOB_CARDS: new Set(['jc-001', 'jc-002', 'jc-003', 'JC-2026-0001', 'JC-2026-0002', 'JC-2026-0003']),
-  CHALLANS: new Set(['chl-001', 'chl-002', 'chl-003', 'CH-2026-0001', 'CH-2026-0002', 'CH-2026-0003']),
+  JOB_CARDS: new Set(['jc-001', 'jc-002', 'jc-003']),
+  CHALLANS: new Set(['chl-001', 'chl-002', 'chl-003']),
   VPC: new Set(['vpc-001', 'vpc-002', 'vpc-003', 'vpc-004', 'vpc-005', 'vpc-006', 'vpc-007'])
 };
 

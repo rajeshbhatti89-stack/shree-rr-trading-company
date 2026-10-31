@@ -4,7 +4,8 @@ compatibility_date = "2024-03-20"
 
 routes = [
   { pattern = "shreerrtradingcompany.com", custom_domain = true },
-  { pattern = "www.shreerrtradingcompany.com", custom_domain = true }
+  { pattern = "www.shreerrtradingcompany.com", custom_domain = true },
+  { pattern = "payroll.shreerrtradingcompany.com", custom_domain = true }
 ]
 
 [assets]

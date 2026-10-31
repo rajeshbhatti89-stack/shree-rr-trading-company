@@ -17,6 +17,36 @@ function initChallansManagement() {
     formChl.addEventListener('submit', handleSaveChallan);
   }
 
+  const btnSaveChl = document.getElementById('btn-save-challan');
+  if (btnSaveChl) {
+    btnSaveChl.addEventListener('click', (e) => {
+      const veh = document.getElementById('chl-vehicle-select')?.value?.trim();
+      if (!veh) {
+        e.preventDefault();
+        showToast('Please select a Plant Vehicle / Equipment for the challan.', 'error');
+        document.getElementById('chl-vehicle-select')?.focus();
+        return;
+      }
+      const tech = document.getElementById('chl-issued-to')?.value?.trim();
+      if (!tech) {
+        e.preventDefault();
+        showToast('Please select a Receiving Mechanic / Technician.', 'error');
+        document.getElementById('chl-issued-to')?.focus();
+        return;
+      }
+      const itemRows = document.querySelectorAll('#challan-items-tbody tr.challan-item-row');
+      let hasValidItem = false;
+      itemRows.forEach(r => {
+        if (r.querySelector('.chl-part-name')?.value?.trim()) hasValidItem = true;
+      });
+      if (!hasValidItem) {
+        e.preventDefault();
+        showToast('Please enter at least one spare part name / item row.', 'error');
+        return;
+      }
+    });
+  }
+
   const btnAdd = document.getElementById('btn-open-issue-challan');
   if (btnAdd) {
     btnAdd.addEventListener('click', () => openIssueChallanModal());
@@ -715,4 +745,12 @@ function exportChallansExcel() {
   const fileName = `Shree_RR_Trading_Material_Challans_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(wb, fileName);
   showToast('Excel Material Challans report downloaded successfully!');
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChallansManagement);
+  } else {
+    initChallansManagement();
+  }
 }

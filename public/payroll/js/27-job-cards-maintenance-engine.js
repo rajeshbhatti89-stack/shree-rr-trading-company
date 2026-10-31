@@ -25,6 +25,33 @@ function initJobCardsManagement() {
     formJc.addEventListener('submit', handleSaveJobCard);
   }
 
+  const btnSaveJc = document.getElementById('btn-save-job-card');
+  if (btnSaveJc) {
+    btnSaveJc.addEventListener('click', (e) => {
+      const vehNo = document.getElementById('jc-vehicle-select')?.value?.trim();
+      if (!vehNo) {
+        e.preventDefault();
+        showToast('Please select a Plant Vehicle / Equipment.', 'error');
+        document.getElementById('jc-vehicle-select')?.focus();
+        return;
+      }
+      const lead = document.getElementById('jc-lead-mechanic')?.value?.trim();
+      if (!lead) {
+        e.preventDefault();
+        showToast('Please select a Lead Mechanic / Technician.', 'error');
+        document.getElementById('jc-lead-mechanic')?.focus();
+        return;
+      }
+      const issue = document.getElementById('jc-issue-reported')?.value?.trim();
+      if (!issue) {
+        e.preventDefault();
+        showToast('Please describe the reported defect / maintenance symptom.', 'error');
+        document.getElementById('jc-issue-reported')?.focus();
+        return;
+      }
+    });
+  }
+
   const btnCreate = document.getElementById('btn-open-create-job-card');
   if (btnCreate) {
     btnCreate.addEventListener('click', () => openCreateJobCardModal());
@@ -613,4 +640,12 @@ function exportJobCardsExcel() {
   const fileName = `Shree_RR_Trading_Job_Cards_Register_${new Date().toISOString().split('T')[0]}.xlsx`;
   XLSX.writeFile(wb, fileName);
   showToast('Excel Job Cards report downloaded successfully!');
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initJobCardsManagement);
+  } else {
+    initJobCardsManagement();
+  }
 }

@@ -8,15 +8,38 @@ function openModal(id) {
 }
 
 function closeModal(id) {
+  if (!id) {
+    document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(m => m.classList.add('hidden'));
+    document.body.style.overflow = '';
+    return;
+  }
   const m = document.getElementById(id);
   if (m) {
     m.classList.add('hidden');
-    // If no other modal is open, restore overflow
-    const openModals = document.querySelectorAll('.modal-backdrop:not(.hidden)');
-    if (openModals.length === 0) {
-      document.body.style.overflow = '';
-    }
   }
+  // If no other modal is open, restore overflow
+  const openModals = document.querySelectorAll('.modal-backdrop:not(.hidden)');
+  if (openModals.length === 0) {
+    document.body.style.overflow = '';
+  }
+}
+
+// Global dismiss listeners: Backdrop Click & ESC Key
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) {
+      closeModal(e.target.id);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      const openModals = document.querySelectorAll('.modal-backdrop:not(.hidden)');
+      if (openModals.length > 0) {
+        closeModal(openModals[openModals.length - 1].id);
+      }
+    }
+  });
 }
 
 function showToast(msg, type = 'success') {

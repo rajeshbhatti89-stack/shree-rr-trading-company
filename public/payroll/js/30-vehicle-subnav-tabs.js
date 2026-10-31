@@ -111,3 +111,11 @@ function updateVehicleSubNavBadges() {
     fleetBadge.textContent = (allVehicles || []).length;
   }
 }
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVehicleSubNav);
+  } else {
+    initVehicleSubNav();
+  }
+}
