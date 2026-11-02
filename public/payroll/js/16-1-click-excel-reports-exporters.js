@@ -59,8 +59,18 @@ function exportTomorrowScheduleExcel() {
 }
 
 function exportMonthlyPayrollExcel() {
-  const selectedMonth = document.getElementById('report-month-select')?.value || document.getElementById('payroll-month-select')?.value || 'August 2026';
-  const monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
+  const selectedMonth = document.getElementById('report-month-select')?.value || document.getElementById('payroll-month-select')?.value || 'October 2026';
+  let monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
+
+  if (monthSlips.length === 0 && typeof generateClientSalarySlips === 'function' && Array.isArray(allUsers) && allUsers.length > 0) {
+    const activeUsers = allUsers.filter(u => u.role !== 'Super Admin' && u.status !== 'Inactive');
+    const newSlips = generateClientSalarySlips(selectedMonth, activeUsers);
+    if (newSlips.length > 0) {
+      allSalarySlips = [...allSalarySlips, ...newSlips];
+      if (typeof saveSlipsToStorage === 'function') saveSlipsToStorage(allSalarySlips);
+      monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
+    }
+  }
 
   if (monthSlips.length === 0) {
     showToast(`Please click "1-Click Generate All Slips" first before exporting payroll.`, 'error');
@@ -145,8 +155,18 @@ function exportMonthlyPayrollExcel() {
 }
 
 function exportBankDisbursalExcel() {
-  const selectedMonth = document.getElementById('report-month-select')?.value || document.getElementById('payroll-month-select')?.value || 'August 2026';
-  const monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
+  const selectedMonth = document.getElementById('report-month-select')?.value || document.getElementById('payroll-month-select')?.value || 'October 2026';
+  let monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
+
+  if (monthSlips.length === 0 && typeof generateClientSalarySlips === 'function' && Array.isArray(allUsers) && allUsers.length > 0) {
+    const activeUsers = allUsers.filter(u => u.role !== 'Super Admin' && u.status !== 'Inactive');
+    const newSlips = generateClientSalarySlips(selectedMonth, activeUsers);
+    if (newSlips.length > 0) {
+      allSalarySlips = [...allSalarySlips, ...newSlips];
+      if (typeof saveSlipsToStorage === 'function') saveSlipsToStorage(allSalarySlips);
+      monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
+    }
+  }
 
   if (monthSlips.length === 0) {
     showToast(`Please generate salary slips first before downloading bank disbursal file.`, 'error');

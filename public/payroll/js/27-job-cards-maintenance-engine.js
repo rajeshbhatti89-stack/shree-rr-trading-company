@@ -601,7 +601,11 @@ function openPrintJobCardModal(id) {
 }
 
 function printActiveJobCard() {
+  document.body.classList.add('printing-job-card');
   window.print();
+  setTimeout(() => {
+    document.body.classList.remove('printing-job-card');
+  }, 1000);
 }
 
 function exportJobCardsExcel() {

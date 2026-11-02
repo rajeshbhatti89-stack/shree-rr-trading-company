@@ -701,7 +701,11 @@ function openPrintChallanModal(id) {
 }
 
 function printActiveChallan() {
+  document.body.classList.add('printing-challan');
   window.print();
+  setTimeout(() => {
+    document.body.classList.remove('printing-challan');
+  }, 1000);
 }
 
 function exportChallansExcel() {

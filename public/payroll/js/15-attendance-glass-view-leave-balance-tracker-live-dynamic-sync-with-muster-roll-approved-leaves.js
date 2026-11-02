@@ -4,7 +4,7 @@ function renderAttendanceGlassCards() {
   if (!container) return;
 
   const search = (document.getElementById('glass-search-input')?.value || '').toLowerCase().trim();
-  const selectedMonth = document.getElementById('glass-month-select')?.value || 'September 2026';
+  const selectedMonth = document.getElementById('glass-month-select')?.value || 'October 2026';
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const [mName, yStr] = selectedMonth.split(' ');

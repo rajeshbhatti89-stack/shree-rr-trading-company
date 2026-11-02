@@ -4,7 +4,7 @@ function initSalarySlips() {
   const monthSelect = document.getElementById('payroll-month-select');
 
   const handleBulkGenerate = async () => {
-    const selectedMonth = monthSelect ? monthSelect.value : 'August 2026';
+    const selectedMonth = monthSelect ? monthSelect.value : 'October 2026';
     if (!confirm(`Generate official salary slips for all active employees for ${selectedMonth}?`)) return;
 
     try {
@@ -47,7 +47,7 @@ function renderSalaryTable() {
   if (!tbody) return;
 
   const search = (document.getElementById('slip-search-input')?.value || '').toLowerCase().trim();
-  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'August 2026';
+  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'October 2026';
 
   const filtered = allSalarySlips.filter((s) => {
     // Role-based visibility: Normal users only see their own slips (if they somehow access this view)

@@ -408,9 +408,10 @@ async function fetchSalarySlips() {
       }
     };
 
+    ensureMonthSlips('October 2026');
+    ensureMonthSlips('September 2026');
     ensureMonthSlips('August 2026');
     ensureMonthSlips('July 2026');
-    ensureMonthSlips('September 2026');
     saveSlipsToStorage(allSalarySlips);
   }
 

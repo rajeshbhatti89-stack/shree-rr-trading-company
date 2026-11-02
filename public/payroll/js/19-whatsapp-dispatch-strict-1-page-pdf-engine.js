@@ -303,7 +303,7 @@ function dispatchBulkWhatsApp() {
 }
 
 function openBulkWhatsAppModal() {
-  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'August 2026';
+  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'October 2026';
   const monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
 
   if (monthSlips.length === 0) {

@@ -2709,15 +2709,25 @@ body {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
     font-size: 11px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
+  /* Strictly keep all hidden modals and hidden elements from occupying print flow */
+  .hidden,
+  .modal-backdrop.hidden,
+  [hidden] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
   /* Hide all background portal layout, sidebars, toolbars & popups */
+  #app-container,
   .sidebar,
   .top-bar,
   .content-body,
@@ -2735,7 +2745,7 @@ body {
     visibility: hidden !important;
   }
 
-  .modal-backdrop {
+  .modal-backdrop:not(.hidden) {
     position: static !important;
     display: block !important;
     background: #FFFFFF !important;
@@ -2745,8 +2755,23 @@ body {
     z-index: 1 !important;
     width: 100% !important;
     height: auto !important;
-    max-height: 100% !important;
+    max-height: none !important;
     box-shadow: none !important;
+    overflow: visible !important;
+    visibility: visible !important;
+  }
+
+  .modal-backdrop:not(.hidden) * {
+    visibility: visible !important;
+  }
+
+  .modal-backdrop:not(.hidden) .modal-header,
+  .modal-backdrop:not(.hidden) .modal-footer,
+  .modal-backdrop:not(.hidden) .btn-close-modal,
+  .modal-backdrop:not(.hidden) .no-print,
+  .modal-backdrop:not(.hidden) .btn {
+    display: none !important;
+    visibility: hidden !important;
   }
 
   .modal-dialog {
@@ -3464,35 +3489,113 @@ body {
   align-items: flex-start;
 }
 
+/* ==================== OFFICIAL PRINTABLE WORK ORDER JOB CARD & MATERIAL CHALLAN ==================== */
 @media print {
-  body * {
-    visibility: hidden;
+  body.printing-challan > *:not(#modal-print-challan),
+  body.printing-job-card > *:not(#modal-print-job-card) {
+    display: none !important;
+    visibility: hidden !important;
   }
-  #modal-print-challan,
-  #modal-print-challan *,
-  #modal-print-job-card,
-  #modal-print-job-card * {
-    visibility: visible;
+
+  #modal-print-challan:not(.hidden),
+  #modal-print-job-card:not(.hidden) {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+    visibility: visible !important;
   }
-  #modal-print-challan,
-  #modal-print-job-card {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    background: #FFF !important;
+
+  #modal-print-challan:not(.hidden) *,
+  #modal-print-job-card:not(.hidden) * {
+    visibility: visible !important;
   }
-  .modal-dialog {
+
+  #modal-print-challan:not(.hidden) .modal-dialog,
+  #modal-print-job-card:not(.hidden) .modal-dialog {
     box-shadow: none !important;
     border: none !important;
     max-width: 100% !important;
     width: 100% !important;
     margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
   }
-  .modal-header,
-  .modal-footer {
+
+  #modal-print-challan:not(.hidden) .modal-header,
+  #modal-print-challan:not(.hidden) .modal-footer,
+  #modal-print-challan:not(.hidden) .btn-close-modal,
+  #modal-print-job-card:not(.hidden) .modal-header,
+  #modal-print-job-card:not(.hidden) .modal-footer,
+  #modal-print-job-card:not(.hidden) .btn-close-modal {
     display: none !important;
+    visibility: hidden !important;
+  }
+
+  #modal-print-challan:not(.hidden) .modal-body,
+  #modal-print-job-card:not(.hidden) .modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #FFFFFF !important;
+    overflow: visible !important;
+  }
+
+  .official-challan-sheet,
+  .official-job-card-sheet {
+    box-shadow: none !important;
+    border: 1.5px solid #000000 !important;
+    border-radius: 4px !important;
+    padding: 16px 20px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    box-sizing: border-box !important;
+  }
+
+  .official-challan-sheet *,
+  .official-job-card-sheet * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .sheet-header,
+  .official-job-card-header,
+  .official-challan-header {
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .official-job-card-sheet table,
+  .official-challan-sheet table,
+  .slip-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .official-job-card-sheet th,
+  .official-challan-sheet th,
+  .slip-table th {
+    background: #F1F5F9 !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .official-job-card-sheet td,
+  .official-challan-sheet td,
+  .slip-table td {
+    border: 1px solid #CBD5E1 !important;
+    color: #000000 !important;
   }
 }

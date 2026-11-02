@@ -16,7 +16,7 @@ function updateDashboardMetrics() {
     presentEl.textContent = todayMuster.length > 0 ? presentCount : Math.min(activeWorkers.length, Math.round(activeWorkers.length * 0.94));
   }
 
-  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'September 2026';
+  const selectedMonth = document.getElementById('payroll-month-select')?.value || 'October 2026';
   const monthSlips = allSalarySlips.filter((s) => s.monthYear === selectedMonth);
   const totalNet = monthSlips.reduce((sum, s) => sum + (Number(s.netPay) || 0), 0);
 
