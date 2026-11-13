@@ -275,6 +275,142 @@ ERP.reports = {
     XLSX.utils.book_append_sheet(wb, ws, 'Fleet Availability MTTR');
     XLSX.writeFile(wb, `Shree_RR_Fleet_MTTR_Availability_${today}.xlsx`);
     ERP.toast('Downloaded Excel: HEMM Availability & MTTR Reliability Report!', 'success');
+  },
+
+  // ==================== 5. VEHICLE PARTS CONSUMPTION EXCEL ====================
+  exportVehicleConsumption() {
+    if (typeof XLSX === 'undefined') {
+      ERP.toast('SheetJS Excel library not loaded.', 'error');
+      return;
+    }
+
+    const challans = ERP.state.data.challans || [];
+    const today = new Date().toISOString().split('T')[0];
+
+    const excelData = [
+      ['SHREE RR TRADING COMPANY - CENTRAL WAREHOUSE SPARES MANAGEMENT'],
+      [`VEHICLE PARTS CONSUMPTION & REPAIR COST STATEMENT (${today})`],
+      ['ACC Cement Works Central Garage Bay, Chandrapur'],
+      [],
+      [
+        'Sr. No',
+        'Challan No',
+        'Issue Date',
+        'Target Vehicle Reg No',
+        'Job Card Ref',
+        'Part No',
+        'Item Description',
+        'Quantity',
+        'Unit Price (₹)',
+        'Total Cost (₹)',
+        'Receiving Fitter / Mechanic'
+      ]
+    ];
+
+    let rowIdx = 1;
+    let grandTotal = 0;
+    challans.forEach(ch => {
+      (ch.items || []).forEach(it => {
+        const lineTot = Number(it.totalPrice) || ((Number(it.qty) || 0) * (Number(it.unitPrice) || 0));
+        grandTotal += lineTot;
+
+        excelData.push([
+          rowIdx++,
+          ch.challanNo,
+          ch.date || '',
+          ch.vehicleNo || 'General Store',
+          ch.jobCardNo || 'Direct Issue',
+          it.partNo || '',
+          it.partName || '',
+          `${it.qty} ${it.unit || 'Nos'}`,
+          Number(it.unitPrice || 0).toFixed(2),
+          Number(lineTot).toFixed(2),
+          ch.fitterName || 'Lead Fitter'
+        ]);
+      });
+    });
+
+    excelData.push([]);
+    excelData.push(['', '', '', '', '', '', '', 'GRAND TOTAL', '', grandTotal.toFixed(2), '']);
+
+    const ws = XLSX.utils.aoa_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Parts Consumption');
+    XLSX.writeFile(wb, `Shree_RR_Spares_Consumption_${today}.xlsx`);
+    ERP.toast('Downloaded Excel: Vehicle Parts Consumption Statement!', 'success');
+  },
+
+  // ==================== 6. STATUTORY COMPLIANCE EXPIRIES EXCEL ====================
+  exportComplianceMatrix() {
+    if (typeof XLSX === 'undefined') {
+      ERP.toast('SheetJS Excel library not loaded.', 'error');
+      return;
+    }
+
+    const veh = ERP.state.data.vehicles || [];
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const excelData = [
+      ['SHREE RR TRADING COMPANY - FLEET STATUTORY ROAD & MINING COMPLIANCE'],
+      [`VEHICLE COMPLIANCE & STATUTORY EXPIRIES MATRIX (${todayStr})`],
+      ['Statutory Verification for ACC Chanda & Ambuja Darlaghat Operations'],
+      [],
+      [
+        'Sr. No',
+        'Vehicle Reg No',
+        'Equipment Name',
+        'Model',
+        'Assigned Operator',
+        'Fitness Expiry Date',
+        'PUC Expiry Date',
+        'Insurance Expiry Date',
+        'Road Tax Expiry Date',
+        'Goods Permit Expiry Date',
+        'Overall Statutory Status'
+      ]
+    ];
+
+    veh.forEach((v, idx) => {
+      const comp = v.compliance || {};
+      const fit = comp.fitnessExpiry || v.fitnessExpiry || 'Not Set';
+      const puc = comp.pucExpiry || v.pucExpiry || 'Not Set';
+      const ins = comp.insuranceExpiry || v.insuranceExpiry || 'Not Set';
+      const tax = comp.roadTaxExpiry || comp.taxExpiry || v.roadTaxExpiry || 'Not Set';
+      const per = comp.permitExpiry || v.permitExpiry || 'Not Set';
+
+      let isCritical = false;
+      let isWarning = false;
+      [fit, puc, ins, tax, per].forEach(dStr => {
+        if (dStr && dStr !== 'Not Set') {
+          const days = Math.ceil((new Date(dStr) - today) / (1000 * 60 * 60 * 24));
+          if (days <= 0) isCritical = true;
+          else if (days <= 30) isWarning = true;
+        }
+      });
+
+      const status = isCritical ? 'CRITICAL - EXPIRED' : (isWarning ? 'WARNING - EXPIRING SOON' : 'VALID / COMPLIANT');
+
+      excelData.push([
+        idx + 1,
+        v.vehicleNo,
+        v.name,
+        v.model || 'HEMM',
+        v.assignedOperator || 'Pit Pool',
+        fit,
+        puc,
+        ins,
+        tax,
+        per,
+        status
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Statutory Compliance');
+    XLSX.writeFile(wb, `Shree_RR_Statutory_Compliance_${todayStr}.xlsx`);
+    ERP.toast('Downloaded Excel: Statutory Vehicle Compliance Matrix!', 'success');
   }
 };
 
@@ -283,4 +419,7 @@ window.exportMonthlyPayrollExcel = function() { ERP.reports.exportMonthlyPayroll
 window.exportBankNeftExcel = function() { ERP.reports.exportBankNeft(); };
 window.exportTomorrowScheduleExcel = function() { ERP.reports.exportTomorrowSchedule(); };
 window.exportFleetMTTRExcel = function() { ERP.reports.exportFleetMTTR(); };
+window.exportVehicleConsumptionExcel = function() { ERP.reports.exportVehicleConsumption(); };
+window.exportComplianceMatrixExcel = function() { ERP.reports.exportComplianceMatrix(); };
+
 

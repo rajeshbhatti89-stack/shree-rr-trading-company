@@ -756,6 +756,30 @@
                 <i class="fa-solid fa-file-excel"></i> 1-Click Download MTTR &amp; Availability (Excel)
               </button>
             </div>
+
+            <!-- Report 5: Vehicle Spares Consumption & Cost Statement -->
+            <div class="desk-doctype-card" style="padding: 24px;">
+              <div style="font-size: 28px; color: #EA580C; margin-bottom: 12px;"><i class="fa-solid fa-boxes-stacked"></i></div>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); margin-bottom: 6px;">Vehicle Spares Consumption &amp; Cost Ledger</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px;">
+                Complete warehouse parts issued audit per vehicle registration, delivery challan reference, part numbers, unit prices, total cost, and receiving fitters.
+              </p>
+              <button class="btn btn-outline-warning btn-block" onclick="ERP.reports.exportVehicleConsumption()">
+                <i class="fa-solid fa-file-excel"></i> 1-Click Download Spares Consumption (Excel)
+              </button>
+            </div>
+
+            <!-- Report 6: Statutory Vehicle Compliance Expiries Matrix -->
+            <div class="desk-doctype-card" style="padding: 24px;">
+              <div style="font-size: 28px; color: #0284C7; margin-bottom: 12px;"><i class="fa-solid fa-shield-halved"></i></div>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--logo-navy); margin-bottom: 6px;">Statutory Fleet Road &amp; Mining Compliance</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px;">
+                Statutory audit matrix of all heavy fleet machines: Fitness certificate, PUC pollution, Insurance policy, Road tax, and Commercial goods permits.
+              </p>
+              <button class="btn btn-outline-info btn-block" onclick="ERP.reports.exportComplianceMatrix()">
+                <i class="fa-solid fa-file-excel"></i> 1-Click Download Compliance Matrix (Excel)
+              </button>
+            </div>
           </div>
         </section>
 
@@ -1458,6 +1482,49 @@
     </div>
   </div>
 
+  <!-- MODAL: TOMORROW SHIFT SCHEDULE -->
+  <div id="modal-tomorrow-schedule" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-calendar-plus text-orange"></i> Assign Shift &amp; Machinery Schedule</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-tomorrow-schedule')">&times;</button>
+      </div>
+      <form onsubmit="event.preventDefault(); ERP.attendance.saveTomorrowSchedule();">
+        <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label>Scheduled Date *</label>
+            <input type="date" id="sched-date" class="custom-input" required>
+          </div>
+          <div class="form-group">
+            <label>Duty Shift *</label>
+            <select id="sched-shift" class="custom-select" required>
+              <option value="Shift A (06:00 - 14:00)">Shift A (06:00 - 14:00)</option>
+              <option value="Shift B (14:00 - 22:00)">Shift B (14:00 - 22:00)</option>
+              <option value="Night Shift (22:00 - 06:00)">Night Shift (22:00 - 06:00)</option>
+              <option value="General Shift (08:30 - 17:30)">General Shift (08:30 - 17:30)</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Assigned Operator / Driver *</label>
+            <select id="sched-operator-select" class="custom-select" required></select>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Assigned Machinery / Heavy Vehicle *</label>
+            <select id="sched-vehicle-select" class="custom-select" required></select>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Pit Bay / Location</label>
+            <input type="text" id="sched-location" class="custom-input" value="ACC Chanda Mining Quarry Bay">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-tomorrow-schedule')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: SALARY STRUCTURE CORRECTION -->
   <div id="modal-salary-correction" class="modal-backdrop hidden">
     <div class="modal-dialog peach-glass" style="max-width: 650px;">
@@ -1552,12 +1619,14 @@
   </div>
 
   <!-- ==================== NEW CLEAN MODULAR SCRIPTS ==================== -->
-  <script src="/payroll/js/erp-core.js?v=2.8.0"></script>
-  <script src="/payroll/js/erp-fleet-maintenance.js?v=2.8.0"></script>
-  <script src="/payroll/js/erp-stock-inventory.js?v=2.8.0"></script>
-  <script src="/payroll/js/erp-hr-payroll.js?v=2.8.0"></script>
-  <script src="/payroll/js/erp-reports.js?v=2.8.0"></script>
-  <script src="/pwa.js?v=2.8.0"></script>
+  <script src="/payroll/js/erp-core.js?v=2.8.1"></script>
+  <script src="/payroll/js/erp-hr.js?v=2.8.1"></script>
+  <script src="/payroll/js/erp-payroll.js?v=2.8.1"></script>
+  <script src="/payroll/js/erp-fleet.js?v=2.8.1"></script>
+  <script src="/payroll/js/erp-maintenance.js?v=2.8.1"></script>
+  <script src="/payroll/js/erp-stock-inventory.js?v=2.8.1"></script>
+  <script src="/payroll/js/erp-reports.js?v=2.8.1"></script>
+  <script src="/pwa.js?v=2.8.1"></script>
 
   <!-- Desk Bootstrap Initialization Script -->
   <script>

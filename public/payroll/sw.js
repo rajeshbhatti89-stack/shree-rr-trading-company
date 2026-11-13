@@ -1,4 +1,4 @@
-const CACHE_NAME = 'srr-payroll-pwa-v2.8.0';
+const CACHE_NAME = 'srr-payroll-pwa-v2.8.1';
 const STATIC_ASSETS = [
   '/payroll/',
   '/payroll/index.html',
@@ -6,9 +6,11 @@ const STATIC_ASSETS = [
   '/payroll/manifest.json',
   '/pwa.js',
   '/payroll/js/erp-core.js',
-  '/payroll/js/erp-fleet-maintenance.js',
+  '/payroll/js/erp-hr.js',
+  '/payroll/js/erp-payroll.js',
+  '/payroll/js/erp-fleet.js',
+  '/payroll/js/erp-maintenance.js',
   '/payroll/js/erp-stock-inventory.js',
-  '/payroll/js/erp-hr-payroll.js',
   '/payroll/js/erp-reports.js',
   '/images/logo.png',
   '/images/logo.svg',
