@@ -23,14 +23,6 @@ app.onError((err, c) => {
   }, 500)
 })
 
-// Global 404 Handler
-app.notFound((c) => {
-  return c.json({
-    success: false,
-    message: 'Requested API endpoint was not found on this server.'
-  }, 404)
-})
-
 // Subdomain auto-redirect to /payroll/
 app.use('*', async (c, next) => {
   const url = new URL(c.req.url)
@@ -40,6 +32,32 @@ app.use('*', async (c, next) => {
     }
   }
   await next()
+})
+
+// Global 404 Handler with Cloudflare Static Assets Fallback
+app.notFound(async (c) => {
+  if (c.env && c.env.ASSETS) {
+    try {
+      // 1. Try directly with raw request
+      let assetRes = await c.env.ASSETS.fetch(c.req.raw)
+      if (assetRes && assetRes.status !== 404) {
+        return assetRes
+      }
+      // 2. If 404 on subdomain (like payroll.shreerrtradingcompany.com), rewrite URL origin to primary domain
+      const u = new URL(c.req.url)
+      const primaryAssetUrl = new URL(u.pathname + u.search, 'https://shreerrtradingcompany.com')
+      assetRes = await c.env.ASSETS.fetch(new Request(primaryAssetUrl.toString(), c.req.raw))
+      if (assetRes && assetRes.status !== 404) {
+        return assetRes
+      }
+    } catch (err) {
+      console.warn('[Assets Fetch Warning]:', err && err.message ? err.message : err)
+    }
+  }
+  return c.json({
+    success: false,
+    message: 'Requested API endpoint was not found on this server.'
+  }, 404)
 })
 
 // Security Input Sanitization & Validation Helpers

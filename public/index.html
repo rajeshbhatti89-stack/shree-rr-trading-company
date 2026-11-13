@@ -2,6 +2,11 @@
 <html lang="en">
 
 <head>
+  <script>
+    if (window.location.hostname.startsWith('payroll.') && (window.location.pathname === '/' || window.location.pathname === '' || window.location.pathname === '/index.html')) {
+      window.location.replace('/payroll/');
+    }
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Shree RR Trading Company | 40+ Years Plant O&M, Heavy Fleets & Infra (Ambuja Cement Darlaghat)</title>

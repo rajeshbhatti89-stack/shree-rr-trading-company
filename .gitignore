@@ -44,5 +44,7 @@ tools/**/auth_info_baileys/
 tools/**/node_modules/
 auth_info_baileys/
 *.zip
+backup_*/
+
 
 
