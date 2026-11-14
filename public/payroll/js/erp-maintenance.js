@@ -231,6 +231,28 @@ ERP.maintenance = {
       }
 
       if (res && res.success) {
+        // Auto-synchronize vehicle status with Job Card state
+        const v = (ERP.state.data.vehicles || []).find(veh => veh.vehicleNo === payload.vehicleNo);
+        if (v) {
+          if (payload.status === 'Completed' || payload.status === 'Closed') {
+            if (v.status === 'Under Maintenance') {
+              v.status = 'Active (Plant Duty)';
+              ERP.api.put(`/api/payroll/vehicles/${encodeURIComponent(v.id || v.vehicleNo)}`, {
+                ...v,
+                status: 'Active (Plant Duty)'
+              }).catch(() => {});
+            }
+          } else if (payload.status === 'In Progress' || payload.status === 'Waiting for Parts' || payload.status === 'Open') {
+            if (v.status !== 'Under Maintenance') {
+              v.status = 'Under Maintenance';
+              ERP.api.put(`/api/payroll/vehicles/${encodeURIComponent(v.id || v.vehicleNo)}`, {
+                ...v,
+                status: 'Under Maintenance'
+              }).catch(() => {});
+            }
+          }
+        }
+
         ERP.toast(`Job Card ${payload.jobCardNo} ${isEdit ? 'updated' : 'created'} successfully!`, 'success');
         ERP.modal.close('modal-job-card');
         await ERP.loadAllData();
