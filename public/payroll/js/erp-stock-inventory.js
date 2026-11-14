@@ -363,9 +363,26 @@ ERP.inventory = {
     const dateInput = document.getElementById('chl-date');
     if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
 
-    if (preVeh) {
-      const vehSel = document.getElementById('chl-vehicle-select');
-      if (vehSel) vehSel.value = preVeh;
+    // Populate Vehicle Dropdown
+    const vehSel = document.getElementById('chl-vehicle-select');
+    if (vehSel) {
+      vehSel.innerHTML = '<option value="">-- Choose Machine / Vehicle * --</option>' +
+        (ERP.state.data.vehicles || []).map(v => `
+          <option value="${v.vehicleNo}" ${preVeh && v.vehicleNo === preVeh ? 'selected' : ''}>
+            ${ERP.utils.escapeHtml(v.vehicleNo)} - ${ERP.utils.escapeHtml(v.name)}
+          </option>
+        `).join('');
+      if (preVeh) vehSel.value = preVeh;
+    }
+
+    // Populate Receiving Technician Dropdown
+    const recSel = document.getElementById('chl-issued-to');
+    if (recSel) {
+      const activeStaff = (ERP.state.data.users || []).filter(u => u.status !== 'Inactive');
+      recSel.innerHTML = '<option value="">-- Choose Receiving Technician / Fitter * --</option>' +
+        activeStaff.map(u => `
+          <option value="${u.id || u.empId}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Staff')}</option>
+        `).join('');
     }
 
     const jcInput = document.getElementById('chl-job-card-no');

@@ -747,14 +747,14 @@ ERP.populateCommonDropdowns = function() {
     if (sel) sel.innerHTML = crewOptionsHtml;
   });
 
-  // Vehicle select options
+  // Vehicle select options across all modals (Job Card, Challan, Breakdown, Schedule)
   const veh = ERP.state.data.vehicles || [];
   const vehOptionsHtml = `
     <option value="">-- Select Equipment / Fleet --</option>
-    ${veh.map(v => `<option value="${ERP.utils.escapeHtml(v.vehicleNo)}">${ERP.utils.escapeHtml(v.vehicleNo)} - ${ERP.utils.escapeHtml(v.name || 'Equipment')} (${ERP.utils.escapeHtml(v.category || 'General')})</option>`).join('')}
+    ${veh.map(v => `<option value="${ERP.utils.escapeHtml(v.vehicleNo)}">${ERP.utils.escapeHtml(v.vehicleNo)} - ${ERP.utils.escapeHtml(v.name || 'Equipment')} (${ERP.utils.escapeHtml(v.status || 'Active')})</option>`).join('')}
   `;
 
-  ['jc-vehicle-select', 'chl-vehicle-select'].forEach(id => {
+  ['jc-vehicle-select', 'chl-vehicle-select', 'bd-vehicle-select', 'sched-vehicle-select'].forEach(id => {
     const sel = document.getElementById(id);
     if (sel) sel.innerHTML = vehOptionsHtml;
   });
@@ -768,12 +768,12 @@ ERP.populateCommonDropdowns = function() {
     `;
   }
 
-  // Staff options for Leave Management modals
+  // Staff options for Leave Management and Shift Scheduling modals
   const staffSelectOptions = `
     <option value="">-- Choose Employee / Staff --</option>
     ${activeStaff.map(u => `<option value="${u.id || u.empId}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Staff')}</option>`).join('')}
   `;
-  ['leave-apply-user', 'leave-credit-user', 'leave-deduct-user'].forEach(id => {
+  ['leave-apply-user', 'leave-credit-user', 'leave-deduct-user', 'sched-operator-select'].forEach(id => {
     const sel = document.getElementById(id);
     if (sel) sel.innerHTML = staffSelectOptions;
   });

@@ -130,6 +130,13 @@ ERP.fleet = {
     const idInput = document.getElementById('vehicle-id');
     if (idInput) idInput.value = '';
 
+    const opSelect = document.getElementById('veh-operator');
+    if (opSelect) {
+      const activeStaff = (ERP.state.data.users || []).filter(u => u.status !== 'Inactive');
+      opSelect.innerHTML = '<option value="">-- Assign Equipment Operator / Driver --</option>' +
+        activeStaff.map(u => `<option value="${ERP.utils.escapeHtml(u.name)}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Operator')}</option>`).join('');
+    }
+
     ERP.modal.open('modal-vehicle');
   },
 
@@ -142,6 +149,13 @@ ERP.fleet = {
       const el = document.getElementById(elemId);
       if (el) el.value = val || '';
     };
+
+    const opSelect = document.getElementById('veh-operator');
+    if (opSelect) {
+      const activeStaff = (ERP.state.data.users || []).filter(u => u.status !== 'Inactive');
+      opSelect.innerHTML = '<option value="">-- Assign Equipment Operator / Driver --</option>' +
+        activeStaff.map(u => `<option value="${ERP.utils.escapeHtml(u.name)}" ${v.assignedOperator === u.name ? 'selected' : ''}>${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Operator')}</option>`).join('');
+    }
 
     setVal('vehicle-id', v.id || v.vehicleNo);
     setVal('veh-number', v.vehicleNo);
@@ -266,7 +280,15 @@ ERP.fleet = {
     if (form) form.reset();
 
     const sel = document.getElementById('bd-vehicle-select');
-    if (sel && vehNo) sel.value = vehNo;
+    if (sel) {
+      sel.innerHTML = '<option value="">-- Choose Machine / Vehicle * --</option>' +
+        (ERP.state.data.vehicles || []).map(v => `
+          <option value="${v.vehicleNo}" ${vehNo && v.vehicleNo === vehNo ? 'selected' : ''}>
+            ${ERP.utils.escapeHtml(v.vehicleNo)} - ${ERP.utils.escapeHtml(v.name)} (${ERP.utils.escapeHtml(v.status || 'Active')})
+          </option>
+        `).join('');
+      if (vehNo) sel.value = vehNo;
+    }
 
     const dateInput = document.getElementById('bd-date') || document.getElementById('bd-start-time');
     if (dateInput) {

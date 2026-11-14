@@ -276,6 +276,11 @@ ERP.hr = {
     }
   },
 
+  handleSavePermissions(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    return this.savePermissions();
+  },
+
   // ==================== 4. APPOINTMENT LETTER GENERATOR ====================
   printAppointmentLetter(userId) {
     const u = (ERP.state.data.users || []).find(usr => usr.id === userId || usr.empId === userId);
@@ -772,8 +777,15 @@ ERP.leaves = {
   },
 
   openApplyModal(empId = '') {
+    const activeStaff = (ERP.state.data.users || []).filter(u => u.status !== 'Inactive');
+    const staffOptions = '<option value="">-- Choose Employee / Staff * --</option>' +
+      activeStaff.map(u => `<option value="${u.id || u.empId}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Staff')}</option>`).join('');
+
     const sel = document.getElementById('leave-apply-user');
-    if (sel && empId) sel.value = empId;
+    if (sel) {
+      sel.innerHTML = staffOptions;
+      if (empId) sel.value = empId;
+    }
     
     const today = new Date().toISOString().split('T')[0];
     const sInput = document.getElementById('leave-apply-start');
@@ -825,8 +837,15 @@ ERP.leaves = {
   },
 
   openCreditModal(empId = '') {
+    const activeStaff = (ERP.state.data.users || []).filter(u => u.status !== 'Inactive');
+    const staffOptions = '<option value="">-- Choose Employee / Staff * --</option>' +
+      activeStaff.map(u => `<option value="${u.id || u.empId}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Staff')}</option>`).join('');
+
     const sel = document.getElementById('leave-credit-user');
-    if (sel && empId) sel.value = empId;
+    if (sel) {
+      sel.innerHTML = staffOptions;
+      if (empId) sel.value = empId;
+    }
     const dInput = document.getElementById('leave-credit-days');
     const nInput = document.getElementById('leave-credit-notes');
     if (dInput) dInput.value = 1;
@@ -835,8 +854,15 @@ ERP.leaves = {
   },
 
   openDeductModal(empId = '') {
+    const activeStaff = (ERP.state.data.users || []).filter(u => u.status !== 'Inactive');
+    const staffOptions = '<option value="">-- Choose Employee / Staff * --</option>' +
+      activeStaff.map(u => `<option value="${u.id || u.empId}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Staff')}</option>`).join('');
+
     const sel = document.getElementById('leave-deduct-user');
-    if (sel && empId) sel.value = empId;
+    if (sel) {
+      sel.innerHTML = staffOptions;
+      if (empId) sel.value = empId;
+    }
     const dInput = document.getElementById('leave-deduct-days');
     const nInput = document.getElementById('leave-deduct-notes');
     if (dInput) dInput.value = 1;
