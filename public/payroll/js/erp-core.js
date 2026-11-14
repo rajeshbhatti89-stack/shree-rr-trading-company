@@ -353,6 +353,7 @@ ERP.router = {
         'dashboard': 'Executive Operations Overview',
         'payroll': 'Payroll & Salary Slips Master',
         'attendance': 'Live Attendance & Muster Roll',
+        'leaves': 'Leave Management & Balance Register',
         'fleet': 'Plant Fleets & Heavy Machinery O&M',
         'maintenance': 'Job Cards & Maintenance Bay',
         'inventory': 'Warehouse Spares & Delivery Challans',
@@ -377,7 +378,11 @@ ERP.router = {
     if (wsId === 'maintenance' && typeof ERP.maintenance?.renderJobCardsTable === 'function') ERP.maintenance.renderJobCardsTable();
     if (wsId === 'inventory' && typeof ERP.inventory?.renderInventoryTable === 'function') ERP.inventory.renderInventoryTable();
     if (wsId === 'attendance' && typeof ERP.attendance?.renderMusterRoll === 'function') ERP.attendance.renderMusterRoll();
-    if (wsId === 'employees' && typeof ERP.employees?.renderUsersTable === 'function') ERP.employees.renderUsersTable();
+    if (wsId === 'leaves' && typeof ERP.leaves?.renderAll === 'function') ERP.leaves.renderAll();
+    if (wsId === 'employees') {
+      if (typeof ERP.employees?.renderUsersTable === 'function') ERP.employees.renderUsersTable();
+      else if (typeof ERP.hr?.renderUsersTable === 'function') ERP.hr.renderUsersTable();
+    }
   }
 };
 
@@ -762,5 +767,19 @@ ERP.populateCommonDropdowns = function() {
       ${activeStaff.map(u => `<option value="${ERP.utils.escapeHtml(u.name)}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Operator')}</option>`).join('')}
     `;
   }
+
+  // Staff options for Leave Management modals
+  const staffSelectOptions = `
+    <option value="">-- Choose Employee / Staff --</option>
+    ${activeStaff.map(u => `<option value="${u.id || u.empId}">${ERP.utils.escapeHtml(u.name)} (${u.empId || ''}) - ${ERP.utils.escapeHtml(u.designation || 'Staff')}</option>`).join('')}
+  `;
+  ['leave-apply-user', 'leave-credit-user', 'leave-deduct-user'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (sel) sel.innerHTML = staffSelectOptions;
+  });
 };
+
+// Aliases for global compatibility
+ERP.employees = ERP.hr;
+window.ERP = ERP;
 

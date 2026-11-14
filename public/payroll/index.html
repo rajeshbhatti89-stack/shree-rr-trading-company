@@ -115,6 +115,9 @@
         <a class="desk-nav-item" data-workspace="attendance" onclick="ERP.router.navigate('attendance')">
           <i class="fa-solid fa-calendar-check"></i> Live Muster Roll
         </a>
+        <a class="desk-nav-item" data-workspace="leaves" onclick="ERP.router.navigate('leaves')">
+          <i class="fa-solid fa-calendar-days"></i> Leave Management
+        </a>
         <a class="desk-nav-item" data-workspace="employees" onclick="ERP.router.navigate('employees')">
           <i class="fa-solid fa-users"></i> Staff &amp; Employees
         </a>
@@ -130,7 +133,7 @@
 
       <div class="desk-sidebar-footer">
         <div><i class="fa-solid fa-circle text-green" style="font-size: 8px;"></i> Live ACC Chanda</div>
-        <div style="font-family: var(--font-mono); font-weight: 700;">v2.8.0</div>
+        <div style="font-family: var(--font-mono); font-weight: 700;">v2.8.2</div>
       </div>
     </aside>
 
@@ -181,6 +184,9 @@
               </a>
               <a class="dropdown-item" onclick="this.parentElement.classList.add('hidden'); ERP.inventory.openStockInwardModal();" style="padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer;">
                 <i class="fa-solid fa-boxes-stacked text-purple"></i> Inward Stock (GRN)
+              </a>
+              <a class="dropdown-item" onclick="this.parentElement.classList.add('hidden'); ERP.leaves.openApplyModal();" style="padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer;">
+                <i class="fa-solid fa-calendar-days text-orange"></i> Record / Apply Leave
               </a>
               <a class="dropdown-item" onclick="this.parentElement.classList.add('hidden'); ERP.employees.openAddUserModal();" style="padding: 10px 14px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer;">
                 <i class="fa-solid fa-user-plus text-green"></i> Onboard Employee
@@ -587,12 +593,45 @@
               <p>Daily shift attendance records (G, A, B, C shifts), on-duty equipment operators, leave balances, and daily lock.</p>
             </div>
             <div class="desk-workspace-actions">
+              <button class="btn btn-outline-primary btn-sm" onclick="ERP.attendance.openTomorrowScheduleModal()">
+                <i class="fa-solid fa-calendar-plus"></i> Assign Tomorrow Shift
+              </button>
               <button class="btn btn-outline-success btn-sm" onclick="ERP.reports.exportTomorrowSchedule()">
                 <i class="fa-solid fa-file-excel"></i> Export Tomorrow Schedule
               </button>
               <button class="btn btn-primary btn-sm btn-glow" onclick="ERP.attendance.saveTodayMusterRoll()">
                 <i class="fa-solid fa-lock"></i> Save &amp; Lock Today Muster
               </button>
+            </div>
+          </div>
+
+          <div class="desk-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+            <div class="desk-kpi-card">
+              <div class="desk-kpi-icon" style="background: rgba(40,167,69,0.12); color: #28a745;">
+                <i class="fa-solid fa-user-check"></i>
+              </div>
+              <div class="desk-kpi-body">
+                <div class="desk-kpi-value" id="muster-count-present">0</div>
+                <div class="desk-kpi-label">Present On Duty Today</div>
+              </div>
+            </div>
+            <div class="desk-kpi-card">
+              <div class="desk-kpi-icon" style="background: rgba(220,53,69,0.12); color: #dc3545;">
+                <i class="fa-solid fa-user-xmark"></i>
+              </div>
+              <div class="desk-kpi-body">
+                <div class="desk-kpi-value" id="muster-count-absent">0</div>
+                <div class="desk-kpi-label">Absent / Off Today</div>
+              </div>
+            </div>
+            <div class="desk-kpi-card">
+              <div class="desk-kpi-icon" style="background: rgba(255,102,0,0.12); color: #ff6600;">
+                <i class="fa-solid fa-business-time"></i>
+              </div>
+              <div class="desk-kpi-body">
+                <div class="desk-kpi-value" id="muster-total-ot-hours">0 hrs</div>
+                <div class="desk-kpi-label">Total Overtime Hours</div>
+              </div>
             </div>
           </div>
 
@@ -614,15 +653,138 @@
                 <thead>
                   <tr>
                     <th style="width: 40px; text-align: center;">#</th>
-                    <th style="width: 140px;">Emp ID</th>
-                    <th>Staff / Operator Name</th>
-                    <th>Assigned Shift &amp; Timings</th>
-                    <th style="width: 100px; text-align: center;">In Time</th>
-                    <th style="width: 100px; text-align: center;">Out Time</th>
-                    <th style="width: 100px; text-align: center;">Status</th>
+                    <th>Staff / Operator Name &amp; Designation</th>
+                    <th style="width: 140px; text-align: center;">Status</th>
+                    <th style="width: 140px; text-align: center;">Assigned Shift</th>
+                    <th style="width: 100px; text-align: center;">OT Hours</th>
+                    <th>Remarks / Bay Location</th>
                   </tr>
                 </thead>
-                <tbody id="muster-table-body"></tbody>
+                <tbody id="muster-roll-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== WORKSPACE 6B: LEAVE MANAGEMENT & LEDGER ==================== -->
+        <section id="workspace-leaves" class="desk-workspace-pane hidden">
+          <div class="desk-workspace-header">
+            <div class="desk-workspace-title-area">
+              <h2><i class="fa-solid fa-calendar-days text-orange"></i> Leave Management &amp; Balance Register</h2>
+              <p>Track employee leave balances, casual / earned / medical leave credits, and approved leave records.</p>
+            </div>
+            <div class="desk-workspace-actions">
+              <button class="btn btn-outline-success btn-sm" onclick="ERP.leaves.openCreditModal()">
+                <i class="fa-solid fa-gift"></i> Credit Leave Days
+              </button>
+              <button class="btn btn-outline-danger btn-sm" onclick="ERP.leaves.openDeductModal()">
+                <i class="fa-solid fa-minus"></i> Deduct Leave Days
+              </button>
+              <button class="btn btn-primary btn-sm btn-glow" onclick="ERP.leaves.openApplyModal()">
+                <i class="fa-solid fa-plus"></i> Record / Apply Leave
+              </button>
+            </div>
+          </div>
+
+          <!-- Leave KPIs -->
+          <div class="desk-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px;">
+            <div class="desk-kpi-card">
+              <div class="desk-kpi-icon" style="background: rgba(30,58,138,0.1); color: var(--logo-navy);">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <div class="desk-kpi-body">
+                <div class="desk-kpi-value" id="leave-kpi-total-staff">0</div>
+                <div class="desk-kpi-label">Active Staff Enrolled</div>
+              </div>
+            </div>
+            <div class="desk-kpi-card">
+              <div class="desk-kpi-icon" style="background: rgba(40,167,69,0.12); color: #28a745;">
+                <i class="fa-solid fa-calendar-plus"></i>
+              </div>
+              <div class="desk-kpi-body">
+                <div class="desk-kpi-value" id="leave-kpi-total-allocated">0 Days</div>
+                <div class="desk-kpi-label">Total Leaves Allocated</div>
+              </div>
+            </div>
+            <div class="desk-kpi-card">
+              <div class="desk-kpi-icon" style="background: rgba(220,53,69,0.12); color: #dc3545;">
+                <i class="fa-solid fa-calendar-xmark"></i>
+              </div>
+              <div class="desk-kpi-body">
+                <div class="desk-kpi-value" id="leave-kpi-total-taken">0 Days</div>
+                <div class="desk-kpi-label">Approved Leaves Consumed</div>
+              </div>
+            </div>
+            <div class="desk-kpi-card">
+              <div class="desk-kpi-icon" style="background: rgba(255,102,0,0.12); color: #ff6600;">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </div>
+              <div class="desk-kpi-body">
+                <div class="desk-kpi-value" id="leave-kpi-total-balance">0 Days</div>
+                <div class="desk-kpi-label">Available Leave Balance</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DocType Card 1: Leave Balance & Allocation Ledger -->
+          <div class="desk-doctype-card" style="margin-bottom: 24px;">
+            <div class="desk-card-toolbar">
+              <div class="desk-toolbar-left">
+                <div class="search-box-wrapper" style="flex: 1; max-width: 360px;">
+                  <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                  <input type="text" id="leave-balance-search" class="custom-input" placeholder="Search staff by name or Emp ID..." oninput="ERP.leaves.renderBalancesTable()">
+                </div>
+                <h4 style="font-size: 14px; font-weight: 800; color: var(--logo-navy); margin: 0;">Employee Leave Balances</h4>
+              </div>
+            </div>
+
+            <div class="desk-table-container">
+              <table class="desk-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px; text-align: center;">#</th>
+                    <th>Staff / Employee Name</th>
+                    <th>Role &amp; Department</th>
+                    <th style="text-align: center; width: 130px;">Total Quota</th>
+                    <th style="text-align: center; width: 130px;">Leaves Taken</th>
+                    <th style="text-align: center; width: 130px;">Remaining Balance</th>
+                    <th style="text-align: center; width: 140px;">Status</th>
+                    <th style="text-align: center; width: 180px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="leave-balances-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- DocType Card 2: Approved Leave Applications Register -->
+          <div class="desk-doctype-card">
+            <div class="desk-card-toolbar">
+              <div class="desk-toolbar-left">
+                <div class="search-box-wrapper" style="flex: 1; max-width: 360px;">
+                  <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                  <input type="text" id="leave-history-search" class="custom-input" placeholder="Search approved leave records..." oninput="ERP.leaves.renderHistoryTable()">
+                </div>
+                <h4 style="font-size: 14px; font-weight: 800; color: var(--logo-navy); margin: 0;">Approved Leave Applications History</h4>
+              </div>
+            </div>
+
+            <div class="desk-table-container">
+              <table class="desk-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px; text-align: center;">#</th>
+                    <th>Staff / Operator</th>
+                    <th style="width: 140px;">Leave Type</th>
+                    <th style="width: 120px; text-align: center;">From Date</th>
+                    <th style="width: 120px; text-align: center;">To Date</th>
+                    <th style="width: 90px; text-align: center;">Days</th>
+                    <th>Reason / Purpose</th>
+                    <th style="width: 110px; text-align: center;">Status</th>
+                    <th style="width: 90px; text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="leaves-history-table-body"></tbody>
               </table>
             </div>
           </div>
@@ -1606,6 +1768,137 @@
     </div>
   </div>
 
+  <!-- MODAL: RECORD / APPLY LEAVE -->
+  <div id="modal-leave-apply" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-calendar-check text-orange"></i> Record / Apply Leave</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-leave-apply')">&times;</button>
+      </div>
+      <form onsubmit="ERP.leaves.handleSaveLeave(event)">
+        <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Select Staff / Employee *</label>
+            <select id="leave-apply-user" class="custom-select" required onchange="ERP.leaves.onUserSelected(this.value)"></select>
+            <div id="leave-user-balance-hint" style="font-size: 11.5px; color: var(--text-dim); margin-top: 4px;"></div>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Leave Type *</label>
+            <select id="leave-apply-type" class="custom-select" required>
+              <option value="Casual Leave">Casual Leave (CL)</option>
+              <option value="Paid Leave">Paid Leave / Earned Leave (PL)</option>
+              <option value="Sick / Medical Leave">Sick / Medical Leave (SL)</option>
+              <option value="Loss of Pay (LOP)">Loss of Pay / Unpaid (LOP)</option>
+              <option value="Bereavement Leave">Bereavement Leave</option>
+              <option value="Compensatory Off">Compensatory Off (Comp-off)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Start Date *</label>
+            <input type="date" id="leave-apply-start" class="custom-input" required onchange="ERP.leaves.calculateDays()">
+          </div>
+          <div class="form-group">
+            <label>End Date *</label>
+            <input type="date" id="leave-apply-end" class="custom-input" required onchange="ERP.leaves.calculateDays()">
+          </div>
+          <div class="form-group">
+            <label>Number of Days *</label>
+            <input type="number" id="leave-apply-days" class="custom-input" min="0.5" max="365" step="0.5" value="1" required>
+          </div>
+          <div class="form-group">
+            <label>Approval Status</label>
+            <input type="text" class="custom-input" value="Approved (Official)" readonly style="background: #f1f5f9;">
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Reason / Notes *</label>
+            <textarea id="leave-apply-reason" class="custom-input" rows="2" placeholder="e.g. Family function, Medical appointment, Emergency..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-apply')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Approve &amp; Save Leave</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREDIT LEAVE DAYS -->
+  <div id="modal-leave-credit" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-gift text-green"></i> Credit Leave Days (Allocation)</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-leave-credit')">&times;</button>
+      </div>
+      <form onsubmit="ERP.leaves.handleCreditLeave(event)">
+        <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group">
+            <label>Staff / Employee *</label>
+            <select id="leave-credit-user" class="custom-select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Days to Credit *</label>
+            <input type="number" id="leave-credit-days" class="custom-input" min="1" max="100" step="1" value="1" required>
+          </div>
+          <div class="form-group">
+            <label>Credit Reason / Type *</label>
+            <select id="leave-credit-reason" class="custom-select" required>
+              <option value="Annual Quota Credit">Annual Quota Credit (10 Days)</option>
+              <option value="Overtime Comp-off Credit">Overtime Comp-off Credit</option>
+              <option value="Festival / Special Bonus Credit">Festival / Special Bonus Credit</option>
+              <option value="Management Approved Adjustment">Management Approved Adjustment</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Additional Notes</label>
+            <input type="text" id="leave-credit-notes" class="custom-input" placeholder="Optional approval remarks...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-credit')">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background: #28a745;"><i class="fa-solid fa-plus"></i> Confirm Credit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DEDUCT LEAVE DAYS -->
+  <div id="modal-leave-deduct" class="modal-backdrop hidden">
+    <div class="modal-dialog peach-glass" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-minus text-red"></i> Deduct Leave Quota (Adjustment)</h3>
+        <button class="btn-close-modal" onclick="closeModal('modal-leave-deduct')">&times;</button>
+      </div>
+      <form onsubmit="ERP.leaves.handleDeductLeave(event)">
+        <div class="modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group">
+            <label>Staff / Employee *</label>
+            <select id="leave-deduct-user" class="custom-select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Days to Deduct *</label>
+            <input type="number" id="leave-deduct-days" class="custom-input" min="1" max="100" step="1" value="1" required>
+          </div>
+          <div class="form-group">
+            <label>Deduction Reason *</label>
+            <select id="leave-deduct-reason" class="custom-select" required>
+              <option value="Unauthorized Absence Adjustment">Unauthorized Absence Adjustment</option>
+              <option value="Excess Quota Correction">Excess Quota Correction</option>
+              <option value="Disciplinary Deduction">Disciplinary Deduction</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Additional Notes</label>
+            <input type="text" id="leave-deduct-notes" class="custom-input" placeholder="Optional audit explanation...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-leave-deduct')">Cancel</button>
+          <button type="submit" class="btn btn-danger"><i class="fa-solid fa-minus"></i> Confirm Deduction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: AWESOMEBAR GLOBAL SEARCH (CTRL+K) -->
   <div id="modal-awesome-search" class="modal-backdrop hidden" onclick="if(event.target === this) closeModal('modal-awesome-search')">
     <div class="awesome-modal-box">
@@ -1619,14 +1912,14 @@
   </div>
 
   <!-- ==================== NEW CLEAN MODULAR SCRIPTS ==================== -->
-  <script src="/payroll/js/erp-core.js?v=2.8.1"></script>
-  <script src="/payroll/js/erp-hr.js?v=2.8.1"></script>
-  <script src="/payroll/js/erp-payroll.js?v=2.8.1"></script>
-  <script src="/payroll/js/erp-fleet.js?v=2.8.1"></script>
-  <script src="/payroll/js/erp-maintenance.js?v=2.8.1"></script>
-  <script src="/payroll/js/erp-stock-inventory.js?v=2.8.1"></script>
-  <script src="/payroll/js/erp-reports.js?v=2.8.1"></script>
-  <script src="/pwa.js?v=2.8.1"></script>
+  <script src="/payroll/js/erp-core.js?v=2.8.2"></script>
+  <script src="/payroll/js/erp-hr.js?v=2.8.2"></script>
+  <script src="/payroll/js/erp-payroll.js?v=2.8.2"></script>
+  <script src="/payroll/js/erp-fleet.js?v=2.8.2"></script>
+  <script src="/payroll/js/erp-maintenance.js?v=2.8.2"></script>
+  <script src="/payroll/js/erp-stock-inventory.js?v=2.8.2"></script>
+  <script src="/payroll/js/erp-reports.js?v=2.8.2"></script>
+  <script src="/pwa.js?v=2.8.2"></script>
 
   <!-- Desk Bootstrap Initialization Script -->
   <script>

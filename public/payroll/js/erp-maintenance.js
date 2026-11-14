@@ -14,8 +14,8 @@ ERP.maintenance = {
     if (!tbody) return;
 
     const allJc = ERP.state.data.jobCards || [];
-    const search = (document.getElementById('jobcard-search-input')?.value || '').toLowerCase().trim();
-    const statusFilter = document.getElementById('jobcard-filter-status')?.value || 'ALL';
+    const search = (document.getElementById('jc-search-input')?.value || document.getElementById('jobcard-search-input')?.value || '').toLowerCase().trim();
+    const statusFilter = document.getElementById('jc-filter-status')?.value || document.getElementById('jobcard-filter-status')?.value || 'ALL';
 
     const filtered = allJc.filter(j => {
       if (statusFilter !== 'ALL' && j.status !== statusFilter) return false;
@@ -114,7 +114,7 @@ ERP.maintenance = {
     if (idInput) idInput.value = '';
 
     const nextNo = `JC-${new Date().getFullYear()}-${String((ERP.state.data.jobCards || []).length + 1).padStart(4, '0')}`;
-    const noInput = document.getElementById('jc-no');
+    const noInput = document.getElementById('jc-card-no') || document.getElementById('jc-no');
     if (noInput) noInput.value = nextNo;
 
     const dateInput = document.getElementById('jc-date');
@@ -160,14 +160,14 @@ ERP.maintenance = {
     const idInput = document.getElementById('jc-id');
     if (idInput) idInput.value = jc.id || jc.jobCardNo;
 
-    const noInput = document.getElementById('jc-no');
+    const noInput = document.getElementById('jc-card-no') || document.getElementById('jc-no');
     if (noInput) noInput.value = jc.jobCardNo;
 
     const dateInput = document.getElementById('jc-date');
     if (dateInput) dateInput.value = jc.dateOpened || jc.date || '';
 
-    const catSel = document.getElementById('jc-category');
-    if (catSel) catSel.value = jc.category || 'Corrective Breakdown';
+    const catSel = document.getElementById('jc-maintenance-type') || document.getElementById('jc-category');
+    if (catSel) catSel.value = jc.category || 'Breakdown Repair';
 
     const statSel = document.getElementById('jc-status');
     if (statSel) statSel.value = jc.status || 'In Progress';
@@ -203,10 +203,10 @@ ERP.maintenance = {
     const isEdit = !!id;
 
     const payload = {
-      jobCardNo: document.getElementById('jc-no')?.value?.trim(),
+      jobCardNo: document.getElementById('jc-card-no')?.value?.trim() || document.getElementById('jc-no')?.value?.trim(),
       vehicleNo: document.getElementById('jc-vehicle-select')?.value?.trim().toUpperCase(),
       dateOpened: document.getElementById('jc-date')?.value || new Date().toISOString().split('T')[0],
-      category: document.getElementById('jc-category')?.value || 'Corrective Breakdown',
+      category: document.getElementById('jc-maintenance-type')?.value || document.getElementById('jc-category')?.value || 'Breakdown Repair',
       status: document.getElementById('jc-status')?.value || 'In Progress',
       laborHours: Number(document.getElementById('jc-labor-hours')?.value) || 0,
       leadMechanicName: document.getElementById('jc-lead-mechanic')?.value?.trim() || '',

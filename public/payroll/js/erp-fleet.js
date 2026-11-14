@@ -144,14 +144,22 @@ ERP.fleet = {
     };
 
     setVal('vehicle-id', v.id || v.vehicleNo);
+    setVal('veh-number', v.vehicleNo);
     setVal('v-no', v.vehicleNo);
+    setVal('veh-name', v.name);
     setVal('v-name', v.name);
+    setVal('veh-model', v.model);
     setVal('v-model', v.model);
+    setVal('veh-type', v.category || 'Excavator');
     setVal('v-category', v.category || 'Excavator');
+    setVal('veh-operator', v.assignedOperator);
     setVal('v-operator', v.assignedOperator);
     setVal('v-operator-phone', v.operatorContact);
+    setVal('veh-rate', v.hourlyRate || 0);
     setVal('v-hourly-rate', v.hourlyRate || 0);
+    setVal('veh-site', v.site || 'ACC Chanda Plant Site');
     setVal('v-site', v.site || 'ACC Chanda Plant Site');
+    setVal('veh-status', v.status || 'Active (Plant Duty)');
     setVal('v-status', v.status || 'Active (Plant Duty)');
 
     ERP.modal.open('modal-vehicle');
@@ -163,15 +171,15 @@ ERP.fleet = {
     const isEdit = !!id;
 
     const payload = {
-      vehicleNo: document.getElementById('v-no')?.value?.trim().toUpperCase(),
-      name: document.getElementById('v-name')?.value?.trim(),
-      model: document.getElementById('v-model')?.value?.trim(),
-      category: document.getElementById('v-category')?.value,
-      assignedOperator: document.getElementById('v-operator')?.value?.trim() || '',
+      vehicleNo: (document.getElementById('veh-number')?.value || document.getElementById('v-no')?.value)?.trim().toUpperCase(),
+      name: (document.getElementById('veh-name')?.value || document.getElementById('v-name')?.value)?.trim(),
+      model: (document.getElementById('veh-model')?.value || document.getElementById('v-model')?.value)?.trim() || '',
+      category: document.getElementById('veh-type')?.value || document.getElementById('v-category')?.value || 'Excavator',
+      assignedOperator: document.getElementById('veh-operator')?.value?.trim() || document.getElementById('v-operator')?.value?.trim() || '',
       operatorContact: document.getElementById('v-operator-phone')?.value?.trim() || '',
-      hourlyRate: Number(document.getElementById('v-hourly-rate')?.value) || 0,
-      site: document.getElementById('v-site')?.value?.trim() || 'ACC Chanda Plant Site',
-      status: document.getElementById('v-status')?.value || 'Active (Plant Duty)'
+      hourlyRate: Number(document.getElementById('veh-rate')?.value || document.getElementById('v-hourly-rate')?.value) || 0,
+      site: document.getElementById('veh-site')?.value?.trim() || document.getElementById('v-site')?.value?.trim() || 'ACC Chanda Plant Site',
+      status: document.getElementById('veh-status')?.value || document.getElementById('v-status')?.value || 'Active (Plant Duty)'
     };
 
     if (!payload.vehicleNo || !payload.name) {
@@ -260,10 +268,9 @@ ERP.fleet = {
     const sel = document.getElementById('bd-vehicle-select');
     if (sel && vehNo) sel.value = vehNo;
 
-    const dateInput = document.getElementById('bd-start-time');
+    const dateInput = document.getElementById('bd-date') || document.getElementById('bd-start-time');
     if (dateInput) {
-      const now = new Date();
-      dateInput.value = now.toISOString().slice(0, 16);
+      dateInput.value = new Date().toISOString().split('T')[0];
     }
 
     ERP.modal.open('modal-vehicle-breakdown');
@@ -273,20 +280,25 @@ ERP.fleet = {
     if (e) e.preventDefault();
 
     const vehNo = document.getElementById('bd-vehicle-select')?.value;
-    const bdType = document.getElementById('bd-type')?.value;
-    const startTime = document.getElementById('bd-start-time')?.value;
-    const desc = document.getElementById('bd-description')?.value?.trim();
+    const bdDate = document.getElementById('bd-date')?.value || document.getElementById('bd-start-time')?.value || new Date().toISOString().split('T')[0];
+    const bdHours = Number(document.getElementById('bd-hours')?.value) || 0;
+    const bdReason = document.getElementById('bd-reason')?.value?.trim() || document.getElementById('bd-description')?.value?.trim() || document.getElementById('bd-type')?.value || 'Mechanical Breakdown';
+    const bdAction = document.getElementById('bd-action')?.value?.trim() || '';
 
-    if (!vehNo || !startTime) {
-      ERP.toast('Vehicle and Breakdown start time are required', 'warning');
+    if (!vehNo) {
+      ERP.toast('Please select a vehicle', 'warning');
       return;
     }
 
     const payload = {
       vehicleNo: vehNo,
-      type: bdType,
-      startTime: startTime,
-      description: desc,
+      date: bdDate,
+      breakdownHours: bdHours,
+      type: bdReason,
+      startTime: bdDate,
+      reason: bdReason,
+      description: bdReason,
+      correctiveAction: bdAction,
       status: 'Open'
     };
 

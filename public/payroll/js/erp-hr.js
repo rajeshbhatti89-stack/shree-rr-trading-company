@@ -139,7 +139,9 @@ ERP.hr = {
     setVal('user-empid', u.empId);
     setVal('user-name', u.name);
     setVal('user-father', u.fatherName);
+    setVal('user-mobile', u.phone || u.mobile);
     setVal('user-phone', u.phone || u.mobile);
+    setVal('user-email', u.email || '');
     setVal('user-designation', u.designation);
     setVal('user-rank', u.rank || 'Skilled Operations');
     setVal('user-role', u.role || 'Worker');
@@ -148,12 +150,15 @@ ERP.hr = {
     setVal('user-salary', u.baseSalary || u.ctc || 25000);
     setVal('user-dob', u.dob);
     setVal('user-doj', u.dateOfJoining);
-    setVal('user-bank-account', u.bankAccount);
+    setVal('user-bank-ac', u.bankAccount || u.bankAc || '');
+    setVal('user-bank-account', u.bankAccount || u.bankAc || '');
     setVal('user-ifsc', u.ifsc);
     setVal('user-bank-name', u.bankName);
     setVal('user-uan', u.uan);
-    setVal('user-pf-no', u.pfNo);
-    setVal('user-esic-no', u.esicNo);
+    setVal('user-pf', u.pfNo || u.pf || '');
+    setVal('user-pf-no', u.pfNo || u.pf || '');
+    setVal('user-esic', u.esicNo || u.esic || '');
+    setVal('user-esic-no', u.esicNo || u.esic || '');
     setVal('user-address', u.address);
 
     ERP.modal.open('modal-user');
@@ -169,8 +174,9 @@ ERP.hr = {
       empId: document.getElementById('user-empid')?.value?.trim() || '',
       name: document.getElementById('user-name')?.value?.trim() || '',
       fatherName: document.getElementById('user-father')?.value?.trim() || '',
-      phone: document.getElementById('user-phone')?.value?.trim() || '',
-      mobile: document.getElementById('user-phone')?.value?.trim() || '',
+      phone: document.getElementById('user-mobile')?.value?.trim() || document.getElementById('user-phone')?.value?.trim() || '',
+      mobile: document.getElementById('user-mobile')?.value?.trim() || document.getElementById('user-phone')?.value?.trim() || '',
+      email: document.getElementById('user-email')?.value?.trim() || '',
       designation: document.getElementById('user-designation')?.value?.trim() || 'Staff',
       rank: document.getElementById('user-rank')?.value?.trim() || 'Skilled Operations',
       role: document.getElementById('user-role')?.value || 'Worker',
@@ -181,12 +187,12 @@ ERP.hr = {
       ctc: Number(document.getElementById('user-salary')?.value) || 25000,
       dob: document.getElementById('user-dob')?.value || '',
       dateOfJoining: document.getElementById('user-doj')?.value || '',
-      bankAccount: document.getElementById('user-bank-account')?.value?.trim() || '',
+      bankAccount: document.getElementById('user-bank-ac')?.value?.trim() || document.getElementById('user-bank-account')?.value?.trim() || '',
       ifsc: document.getElementById('user-ifsc')?.value?.trim() || '',
       bankName: document.getElementById('user-bank-name')?.value?.trim() || '',
       uan: document.getElementById('user-uan')?.value?.trim() || '',
-      pfNo: document.getElementById('user-pf-no')?.value?.trim() || '',
-      esicNo: document.getElementById('user-esic-no')?.value?.trim() || '',
+      pfNo: document.getElementById('user-pf')?.value?.trim() || document.getElementById('user-pf-no')?.value?.trim() || '',
+      esicNo: document.getElementById('user-esic')?.value?.trim() || document.getElementById('user-esic-no')?.value?.trim() || '',
       address: document.getElementById('user-address')?.value?.trim() || '',
       status: 'Active'
     };
@@ -380,12 +386,22 @@ ERP.hr = {
 // ==================== 5. ATTENDANCE & LIVE MUSTER ROLL ====================
 ERP.attendance = {
   renderMusterRoll() {
-    const tbody = document.getElementById('muster-roll-tbody');
+    const tbody = document.getElementById('muster-roll-tbody') || document.getElementById('muster-table-body');
     if (!tbody) return;
 
     const allUsers = ERP.state.data.users || [];
-    const activeStaff = allUsers.filter(u => u.role !== 'Super Admin' && u.status !== 'Inactive');
+    let activeStaff = allUsers.filter(u => u.role !== 'Super Admin' && u.status !== 'Inactive');
     const today = new Date().toISOString().split('T')[0];
+
+    const searchVal = (document.getElementById('muster-search-input')?.value || '').toLowerCase().trim();
+    if (searchVal) {
+      activeStaff = activeStaff.filter(u =>
+        (u.name || '').toLowerCase().includes(searchVal) ||
+        (u.empId || '').toLowerCase().includes(searchVal) ||
+        (u.designation || '').toLowerCase().includes(searchVal) ||
+        (u.department || '').toLowerCase().includes(searchVal)
+      );
+    }
 
     const attList = ERP.state.data.attendance || [];
     const todayMap = {};
@@ -395,15 +411,27 @@ ERP.attendance = {
       }
     });
 
+    const allLeaves = ERP.state.data.leaves || [];
+    const todayLeavesMap = {};
+    allLeaves.forEach(lev => {
+      if (lev.startDate && (today >= lev.startDate) && (!lev.endDate || today <= lev.endDate)) {
+        todayLeavesMap[lev.userId || lev.empId] = lev;
+      }
+    });
+
     let pCount = 0;
     let aCount = 0;
     let otHoursTotal = 0;
 
     let rowsHtml = '';
     activeStaff.forEach((u, idx) => {
-      const rec = todayMap[u.id] || todayMap[u.empId] || { status: 'P', otHours: 0, shift: 'A' };
+      const onLeave = todayLeavesMap[u.id] || todayLeavesMap[u.empId];
+      const defaultStatus = onLeave ? 'PL' : 'P';
+      const defaultRemarks = onLeave ? (onLeave.leaveType || 'Approved Leave') : '';
+
+      const rec = todayMap[u.id] || todayMap[u.empId] || { status: defaultStatus, otHours: 0, shift: 'A', remarks: defaultRemarks };
       if (rec.status === 'P') pCount++;
-      else if (rec.status === 'A') aCount++;
+      else if (rec.status === 'A' || rec.status === 'PL' || rec.status === 'WO') aCount++;
       otHoursTotal += Number(rec.otHours || 0);
 
       rowsHtml += `
@@ -411,10 +439,10 @@ ERP.attendance = {
           <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
           <td>
             <div style="font-weight: 700; color: var(--logo-navy);">${ERP.utils.escapeHtml(u.name)}</div>
-            <div style="font-size: 11px; color: var(--text-dim);">${ERP.utils.escapeHtml(u.empId || 'EMP-' + idx)} • ${ERP.utils.escapeHtml(u.designation || 'Staff')}</div>
+            <div style="font-size: 11px; color: var(--text-dim); font-family: var(--font-mono);">${ERP.utils.escapeHtml(u.empId || 'EMP-' + idx)} • ${ERP.utils.escapeHtml(u.designation || 'Staff')}</div>
           </td>
           <td style="text-align: center;">
-            <select class="custom-select muster-status-sel" style="font-weight: 800; width: 110px;">
+            <select class="custom-select muster-status-sel" style="font-weight: 800; width: 130px;">
               <option value="P" ${rec.status === 'P' ? 'selected' : ''}>🟢 Present</option>
               <option value="A" ${rec.status === 'A' ? 'selected' : ''}>🔴 Absent</option>
               <option value="HD" ${rec.status === 'HD' ? 'selected' : ''}>🟡 Half-Day</option>
@@ -423,11 +451,11 @@ ERP.attendance = {
             </select>
           </td>
           <td style="text-align: center;">
-            <select class="custom-select muster-shift-sel" style="width: 100px;">
-              <option value="A" ${rec.shift === 'A' ? 'selected' : ''}>Shift A (06-14)</option>
-              <option value="B" ${rec.shift === 'B' ? 'selected' : ''}>Shift B (14-22)</option>
-              <option value="Night" ${rec.shift === 'Night' ? 'selected' : ''}>Night (22-06)</option>
-              <option value="General" ${rec.shift === 'General' ? 'selected' : ''}>General (09-18)</option>
+            <select class="custom-select muster-shift-sel" style="width: 130px;">
+              <option value="Shift A (06:00 - 14:00)" ${rec.shift && rec.shift.includes('A') ? 'selected' : ''}>Shift A (06-14)</option>
+              <option value="Shift B (14:00 - 22:00)" ${rec.shift && rec.shift.includes('B') ? 'selected' : ''}>Shift B (14-22)</option>
+              <option value="Night Shift (22:00 - 06:00)" ${rec.shift && rec.shift.includes('Night') ? 'selected' : ''}>Night (22-06)</option>
+              <option value="General Shift (08:30 - 17:30)" ${rec.shift && (rec.shift.includes('General') || rec.shift.includes('G')) ? 'selected' : ''}>General (09-18)</option>
             </select>
           </td>
           <td style="text-align: center;">
@@ -448,7 +476,7 @@ ERP.attendance = {
   },
 
   async saveMusterRoll() {
-    const tbody = document.getElementById('muster-roll-tbody');
+    const tbody = document.getElementById('muster-roll-tbody') || document.getElementById('muster-table-body');
     if (!tbody) return;
 
     const today = new Date().toISOString().split('T')[0];
@@ -457,7 +485,7 @@ ERP.attendance = {
     tbody.querySelectorAll('tr[data-user-id]').forEach(tr => {
       const uId = tr.getAttribute('data-user-id');
       const status = tr.querySelector('.muster-status-sel')?.value || 'P';
-      const shift = tr.querySelector('.muster-shift-sel')?.value || 'A';
+      const shift = tr.querySelector('.muster-shift-sel')?.value || 'Shift A (06:00 - 14:00)';
       const otHours = Number(tr.querySelector('.muster-ot-input')?.value) || 0;
       const remarks = tr.querySelector('.muster-remarks-input')?.value?.trim() || '';
 
@@ -560,5 +588,391 @@ ERP.attendance = {
   }
 };
 
+// ==================== 6. LEAVE MANAGEMENT & QUOTA LEDGER ====================
+ERP.leaves = {
+  renderAll() {
+    this.renderBalancesTable();
+    this.renderHistoryTable();
+    this.updateKPIs();
+  },
+
+  updateKPIs() {
+    const allUsers = ERP.state.data.users || [];
+    const activeStaff = allUsers.filter(u => u.role !== 'Super Admin' && u.status !== 'Inactive');
+
+    let totalAllocated = 0;
+    let totalTaken = 0;
+    let totalBalance = 0;
+
+    activeStaff.forEach(u => {
+      const quota = Number(u.totalLeaves) || 10;
+      const taken = Number(u.leavesTaken) || 0;
+      const bal = (u.leaveBalance !== undefined && u.leaveBalance !== null) ? Number(u.leaveBalance) : Math.max(0, quota - taken);
+      totalAllocated += quota;
+      totalTaken += taken;
+      totalBalance += bal;
+    });
+
+    ERP.utils.setElemText('leave-kpi-total-staff', activeStaff.length);
+    ERP.utils.setElemText('leave-kpi-total-allocated', `${totalAllocated} Days`);
+    ERP.utils.setElemText('leave-kpi-total-taken', `${totalTaken} Days`);
+    ERP.utils.setElemText('leave-kpi-total-balance', `${totalBalance} Days`);
+  },
+
+  renderBalancesTable() {
+    const tbody = document.getElementById('leave-balances-table-body');
+    if (!tbody) return;
+
+    const allUsers = ERP.state.data.users || [];
+    let activeStaff = allUsers.filter(u => u.role !== 'Super Admin' && u.status !== 'Inactive');
+
+    const searchVal = (document.getElementById('leave-balance-search')?.value || '').toLowerCase().trim();
+    if (searchVal) {
+      activeStaff = activeStaff.filter(u =>
+        (u.name || '').toLowerCase().includes(searchVal) ||
+        (u.empId || '').toLowerCase().includes(searchVal) ||
+        (u.designation || '').toLowerCase().includes(searchVal) ||
+        (u.department || '').toLowerCase().includes(searchVal)
+      );
+    }
+
+    if (activeStaff.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 36px; color: var(--text-dim);">
+            <i class="fa-solid fa-folder-open" style="font-size: 28px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+            No staff records found matching filter.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = activeStaff.map((u, idx) => {
+      const quota = Number(u.totalLeaves) || 10;
+      const taken = Number(u.leavesTaken) || 0;
+      const bal = (u.leaveBalance !== undefined && u.leaveBalance !== null) ? Number(u.leaveBalance) : Math.max(0, quota - taken);
+
+      let statusBadge = '';
+      if (bal > 4) {
+        statusBadge = '<span class="status-badge" style="background: rgba(40,167,69,0.12); color: #28a745;"><i class="fa-solid fa-circle-check"></i> Healthy Quota</span>';
+      } else if (bal > 0) {
+        statusBadge = '<span class="status-badge" style="background: rgba(255,102,0,0.12); color: #ff6600;"><i class="fa-solid fa-triangle-exclamation"></i> Low Balance</span>';
+      } else {
+        statusBadge = '<span class="status-badge" style="background: rgba(220,53,69,0.12); color: #dc3545;"><i class="fa-solid fa-ban"></i> Quota Exhausted</span>';
+      }
+
+      const initials = (u.name || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+
+      return `
+        <tr>
+          <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="user-avatar-circle" style="width: 32px; height: 32px; font-size: 11px;">${initials}</div>
+              <div>
+                <div style="font-weight: 700; color: var(--logo-navy);">${ERP.utils.escapeHtml(u.name)}</div>
+                <div style="font-size: 11px; color: var(--text-dim); font-family: var(--font-mono);">${ERP.utils.escapeHtml(u.empId || '')} • ${ERP.utils.escapeHtml(u.phone || 'No phone')}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div style="font-weight: 600;">${ERP.utils.escapeHtml(u.designation || 'Staff')}</div>
+            <div style="font-size: 11px; color: var(--text-dim);">${ERP.utils.escapeHtml(u.department || 'Operations')} • ${ERP.utils.escapeHtml(u.site || 'ACC Site')}</div>
+          </td>
+          <td style="text-align: center; font-weight: 700; font-family: var(--font-mono); color: var(--logo-navy);">${quota} Days</td>
+          <td style="text-align: center; font-weight: 700; font-family: var(--font-mono); color: #dc3545;">${taken} Days</td>
+          <td style="text-align: center; font-weight: 800; font-family: var(--font-mono); font-size: 14px; color: ${bal > 0 ? '#28a745' : '#dc3545'};">${bal} Days</td>
+          <td style="text-align: center;">${statusBadge}</td>
+          <td style="text-align: center;">
+            <div style="display: inline-flex; gap: 4px;">
+              <button class="btn btn-outline-primary btn-sm" onclick="ERP.leaves.openApplyModal('${u.id || u.empId}')" title="Apply Leave">
+                <i class="fa-solid fa-plus"></i> Apply
+              </button>
+              <button class="btn btn-outline-success btn-sm" onclick="ERP.leaves.openCreditModal('${u.id || u.empId}')" title="Credit Leave Days">
+                <i class="fa-solid fa-gift"></i>
+              </button>
+              <button class="btn btn-outline-danger btn-sm" onclick="ERP.leaves.openDeductModal('${u.id || u.empId}')" title="Deduct Leave Days">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  renderHistoryTable() {
+    const tbody = document.getElementById('leaves-history-table-body');
+    if (!tbody) return;
+
+    let leaves = ERP.state.data.leaves || [];
+    const searchVal = (document.getElementById('leave-history-search')?.value || '').toLowerCase().trim();
+    if (searchVal) {
+      leaves = leaves.filter(l =>
+        (l.userName || '').toLowerCase().includes(searchVal) ||
+        (l.empId || '').toLowerCase().includes(searchVal) ||
+        (l.leaveType || '').toLowerCase().includes(searchVal) ||
+        (l.reason || '').toLowerCase().includes(searchVal)
+      );
+    }
+
+    if (leaves.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align: center; padding: 36px; color: var(--text-dim);">
+            <i class="fa-solid fa-calendar-xmark" style="font-size: 28px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+            No approved leave records found.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = leaves.map((l, idx) => {
+      const typeBadgeColor = {
+        'Casual Leave': 'background: rgba(30,58,138,0.1); color: var(--logo-navy);',
+        'Paid Leave': 'background: rgba(40,167,69,0.12); color: #28a745;',
+        'Sick / Medical Leave': 'background: rgba(255,102,0,0.12); color: #ff6600;',
+        'Loss of Pay (LOP)': 'background: rgba(220,53,69,0.12); color: #dc3545;'
+      }[l.leaveType] || 'background: #f1f5f9; color: var(--text-dim);';
+
+      return `
+        <tr>
+          <td style="text-align: center; font-weight: 700;">${idx + 1}</td>
+          <td>
+            <div style="font-weight: 700; color: var(--logo-navy);">${ERP.utils.escapeHtml(l.userName || 'Employee')}</div>
+            <div style="font-size: 11px; color: var(--text-dim); font-family: var(--font-mono);">${ERP.utils.escapeHtml(l.empId || '')}</div>
+          </td>
+          <td>
+            <span class="status-badge" style="${typeBadgeColor}">${ERP.utils.escapeHtml(l.leaveType || 'Leave')}</span>
+          </td>
+          <td style="text-align: center; font-family: var(--font-mono);">${ERP.utils.formatDate(l.startDate)}</td>
+          <td style="text-align: center; font-family: var(--font-mono);">${ERP.utils.formatDate(l.endDate || l.startDate)}</td>
+          <td style="text-align: center; font-weight: 800; font-family: var(--font-mono);">${l.days || 1} d</td>
+          <td>
+            <div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${ERP.utils.escapeHtml(l.reason || '')}">
+              ${ERP.utils.escapeHtml(l.reason || 'Personal Leave')}
+            </div>
+            <div style="font-size: 10px; color: var(--text-dim);">Applied: ${l.appliedDate || '--'}</div>
+          </td>
+          <td style="text-align: center;">
+            <span class="status-badge" style="background: rgba(40,167,69,0.12); color: #28a745;">
+              <i class="fa-solid fa-circle-check"></i> ${ERP.utils.escapeHtml(l.status || 'Approved')}
+            </span>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn-icon text-red" onclick="ERP.leaves.deleteLeave('${l.id}')" title="Revert / Delete Leave Application">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  openApplyModal(empId = '') {
+    const sel = document.getElementById('leave-apply-user');
+    if (sel && empId) sel.value = empId;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const sInput = document.getElementById('leave-apply-start');
+    const eInput = document.getElementById('leave-apply-end');
+    const dInput = document.getElementById('leave-apply-days');
+    const rInput = document.getElementById('leave-apply-reason');
+
+    if (sInput) sInput.value = today;
+    if (eInput) eInput.value = today;
+    if (dInput) dInput.value = 1;
+    if (rInput) rInput.value = '';
+
+    if (sel) this.onUserSelected(sel.value);
+    ERP.modal.open('modal-leave-apply');
+  },
+
+  onUserSelected(val) {
+    const hint = document.getElementById('leave-user-balance-hint');
+    if (!hint) return;
+    if (!val) {
+      hint.innerHTML = '';
+      return;
+    }
+    const allUsers = ERP.state.data.users || [];
+    const u = allUsers.find(x => x.id === val || x.empId === val);
+    if (u) {
+      const quota = Number(u.totalLeaves) || 10;
+      const taken = Number(u.leavesTaken) || 0;
+      const bal = (u.leaveBalance !== undefined && u.leaveBalance !== null) ? Number(u.leaveBalance) : Math.max(0, quota - taken);
+      hint.innerHTML = `<strong>Current Balance:</strong> <span style="color: ${bal > 0 ? '#28a745' : '#dc3545'}; font-weight: 800;">${bal} Days</span> (Consumed: ${taken} / Total: ${quota} Days)`;
+    } else {
+      hint.innerHTML = '';
+    }
+  },
+
+  calculateDays() {
+    const s = document.getElementById('leave-apply-start')?.value;
+    const e = document.getElementById('leave-apply-end')?.value;
+    const daysEl = document.getElementById('leave-apply-days');
+    if (s && e && daysEl) {
+      const d1 = new Date(s);
+      const d2 = new Date(e);
+      if (d2 >= d1) {
+        const diffMs = d2 - d1;
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+        daysEl.value = diffDays;
+      }
+    }
+  },
+
+  openCreditModal(empId = '') {
+    const sel = document.getElementById('leave-credit-user');
+    if (sel && empId) sel.value = empId;
+    const dInput = document.getElementById('leave-credit-days');
+    const nInput = document.getElementById('leave-credit-notes');
+    if (dInput) dInput.value = 1;
+    if (nInput) nInput.value = '';
+    ERP.modal.open('modal-leave-credit');
+  },
+
+  openDeductModal(empId = '') {
+    const sel = document.getElementById('leave-deduct-user');
+    if (sel && empId) sel.value = empId;
+    const dInput = document.getElementById('leave-deduct-days');
+    const nInput = document.getElementById('leave-deduct-notes');
+    if (dInput) dInput.value = 1;
+    if (nInput) nInput.value = '';
+    ERP.modal.open('modal-leave-deduct');
+  },
+
+  async handleSaveLeave(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const userId = document.getElementById('leave-apply-user')?.value;
+    const leaveType = document.getElementById('leave-apply-type')?.value;
+    const startDate = document.getElementById('leave-apply-start')?.value;
+    const endDate = document.getElementById('leave-apply-end')?.value;
+    const days = Number(document.getElementById('leave-apply-days')?.value) || 1;
+    const reason = document.getElementById('leave-apply-reason')?.value?.trim();
+
+    if (!userId || !startDate) {
+      ERP.toast('Please select an employee and start date', 'warning');
+      return;
+    }
+
+    try {
+      ERP.toast('Recording leave application...', 'info');
+      const res = await ERP.api.post('/api/payroll/leaves', {
+        userId,
+        leaveType,
+        startDate,
+        endDate: endDate || startDate,
+        days,
+        reason
+      });
+
+      if (res && res.success) {
+        ERP.toast('Leave recorded & quota balance updated successfully!', 'success');
+        ERP.modal.close('modal-leave-apply');
+        await ERP.loadAllData();
+        this.renderAll();
+        if (ERP.attendance?.renderMusterRoll) ERP.attendance.renderMusterRoll();
+      } else {
+        throw new Error((res && res.message) || 'Failed to save leave');
+      }
+    } catch (err) {
+      ERP.toast(err.message || 'Error recording leave', 'error');
+    }
+  },
+
+  async handleCreditLeave(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const userId = document.getElementById('leave-credit-user')?.value;
+    const creditDays = Number(document.getElementById('leave-credit-days')?.value) || 1;
+    const reason = document.getElementById('leave-credit-reason')?.value;
+    const notes = document.getElementById('leave-credit-notes')?.value?.trim() || '';
+
+    if (!userId) {
+      ERP.toast('Please select an employee', 'warning');
+      return;
+    }
+
+    try {
+      ERP.toast('Crediting leave quota...', 'info');
+      const res = await ERP.api.post('/api/payroll/leaves/credit', {
+        userId,
+        creditDays,
+        reason,
+        notes
+      });
+
+      if (res && res.success) {
+        ERP.toast(res.message || `Successfully credited ${creditDays} day(s)!`, 'success');
+        ERP.modal.close('modal-leave-credit');
+        await ERP.loadAllData();
+        this.renderAll();
+      } else {
+        throw new Error((res && res.message) || 'Failed to credit leave');
+      }
+    } catch (err) {
+      ERP.toast(err.message || 'Error crediting leave', 'error');
+    }
+  },
+
+  async handleDeductLeave(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const userId = document.getElementById('leave-deduct-user')?.value;
+    const deductDays = Number(document.getElementById('leave-deduct-days')?.value) || 1;
+    const reason = document.getElementById('leave-deduct-reason')?.value;
+    const notes = document.getElementById('leave-deduct-notes')?.value?.trim() || '';
+
+    if (!userId) {
+      ERP.toast('Please select an employee', 'warning');
+      return;
+    }
+
+    try {
+      ERP.toast('Deducting leave quota...', 'info');
+      const res = await ERP.api.post('/api/payroll/leaves/deduct', {
+        userId,
+        deductDays,
+        reason,
+        notes
+      });
+
+      if (res && res.success) {
+        ERP.toast(res.message || `Successfully deducted ${deductDays} day(s)!`, 'success');
+        ERP.modal.close('modal-leave-deduct');
+        await ERP.loadAllData();
+        this.renderAll();
+      } else {
+        throw new Error((res && res.message) || 'Failed to deduct leave');
+      }
+    } catch (err) {
+      ERP.toast(err.message || 'Error deducting leave', 'error');
+    }
+  },
+
+  async deleteLeave(id) {
+    if (!confirm('Are you sure you want to revert and remove this leave application? The employee quota balance will be restored.')) {
+      return;
+    }
+
+    try {
+      ERP.toast('Reverting leave record...', 'info');
+      const res = await ERP.api.delete(`/api/payroll/leaves/${id}`);
+      if (res && res.success) {
+        ERP.toast('Leave record reverted successfully.', 'success');
+        await ERP.loadAllData();
+        this.renderAll();
+        if (ERP.attendance?.renderMusterRoll) ERP.attendance.renderMusterRoll();
+      } else {
+        throw new Error((res && res.message) || 'Failed to revert leave');
+      }
+    } catch (err) {
+      ERP.toast(err.message || 'Error deleting leave', 'error');
+    }
+  }
+};
+
 // Aliases for global compatibility
+ERP.employees = ERP.hr;
 window.allUsers = ERP.state.data.users;

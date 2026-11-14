@@ -1,4 +1,4 @@
-const CACHE_NAME = 'srr-payroll-pwa-v2.8.1';
+const CACHE_NAME = 'srr-payroll-pwa-v2.8.2';
 const STATIC_ASSETS = [
   '/payroll/',
   '/payroll/index.html',
